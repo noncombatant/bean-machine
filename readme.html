@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<meta charset="UTF-8">
+<title>Bean Machine</title>
+<link rel="stylesheet" href="bean-machine.css"/>
+
+<style>
+body {
+  margin: 5em;
+}
+</style>
+
+<h1>Bean Machine</h1>
+
+<p>Bean Machine is a web application that plays audio and video in a browser
+from files served from a server. The server can be on a local intranet or on the
+internet. This software package contains both components: the server software,
+and the JavaScript and HTML that run in the browser.</p>
+
+<h2>How To Install And Run Bean Machine</h2>
+
+<h3>1: Install The Go Language</h3>
+
+<p>The Bean Machine server component is written in a programming language called
+Go. Go does not (yet) come installed by default as part of your computer’s
+operating system, but you can install it for free.</p>
+
+<p>To run Bean Machine, you will need to <a
+href="https://golang.org/dl/"><strong>download the Go programming
+language</strong></a> for your computer. Download the <strong>latest stable
+version</strong> of the <strong>installer package</strong>, and install it.</p>
+
+<h3>2: Build The Server</h3>
+
+<p>Then you’ll need to build the server executable for your machine.</p>
+
+<p><strong>First</strong>, open a command shell terminal. (That’s Terminal on
+macOS, or CMD.EXE on Windows.)</p>
+
+<p><strong>Second</strong>, change the shell’s working directory to the location
+of this <code>readme.html</code> file. This example assumes you’ve downloaded it
+into your <code>Downloads</code> folder, which you probably have.</p>
+
+<table>
+
+<tr>
+<th>macOS And Linux</th>
+<th>Windows</th>
+</tr>
+
+<tr>
+<td>
+<pre>
+$ <strong>cd ~/Downloads/bean-machine</strong>
+$ <strong>go build .</strong>
+</pre>
+</td>
+<td>
+<pre>
+$ <strong>cd %HOMEPATH%\Downloads\bean-machine</strong>
+$ <strong>go build .</strong>
+</pre>
+</td>
+</tr>
+
+</table>
+
+<p>The result of this process will be a file named <code>bean-machine</code>
+(macOS and Linux) or <code>bean-machine.exe</code> (Windows). This is the
+Bean Machine server program. It is a <em>command line program</em>, meaning it
+has a textual interface instead of a graphical user interface. Its purpose is to
+scan your music collection to build a catalog, and then to serve that catalog
+and your music to web browsers. The actual music-playing user interface appears
+in the browser.</p>
+
+<h3>3. Run The Server</h3>
+
+<p><strong>Third</strong>, run <code>bean-machine</code>, to tell it to build
+the music catalog and run the web server. Tell it the pathname of your music
+directory. On macOS, many Linux systems, and Windows, that is most likely to be
+your <code>Music</code> folder.</p>
+
+<table>
+
+<tr>
+<th>macOS And Linux</th>
+<th>Windows</th>
+</tr>
+
+<tr>
+<td>
+<pre>
+$ <strong>./bean-machine ~/Music</strong>
+</pre>
+</td>
+<td>
+<pre>
+$ <strong>.\bean-machine.exe %HOMEPATH\Music</strong>
+</pre>
+</tr>
+
+</table>
+
+<p>The output should look something like this (on all platforms):</p>
+
+<pre>
+2016/11/19 14:20:56 Building catalog of audio files in "/Users/chris/Music". This might take a while.
+2016/11/19 14:20:56 1000 items
+2016/11/19 14:20:56 2000 items
+2016/11/19 14:20:56 3000 items
+2016/11/19 14:20:57 Finished building catalog.
+2016/11/19 14:20:57 Installed web front-end files in "/Users/chris/Music".
+2016/11/19 14:20:57 Starting the web server. Point your browser to any of these addresses:
+2016/11/19 14:20:57     https://localhost:8443/
+2016/11/19 14:20:57     https://127.0.0.1:8443/
+2016/11/19 14:20:57     https://192.168.1.100:8443/
+</pre>
+
+<p>The web addresses <code>bean-machine</code> prints are quite likely to be
+different on your computer than in the example above (although every computer
+calls itself <code>localhost</code> and <code>127.0.0.1</code>).</p>
+
+<h4>Important Note</h4>
+
+<p>Finally, note that when you browse to your Bean Machine server, your browser
+will warn you about the ‘invalid’ server security certificate that Bean Machine
+uses. (Bean Machine creates a new certificate for itself as part of starting the
+server.) Normally, you shouldn’t expect to see invalid certificates on real,
+public internet sites.</p>
+
+<p>But for running servers (like Bean Machine) on your own computer at home,
+it’s OK, and you can click through this warning without hurting anything.
+Although you know you are talking to your own server, the browser doesn’t ‘know’
+that, and so it warns you out of an abundance of caution.</p>
+
+<p>For public web sites like facebook.com or google.com, such a warning would be
+important and real, and you should not click through it.</p>
+
+<h2>Help</h2>
+
+<p>There is also <a href="help.html">a help page for Bean Machine’s search
+interface</a>.</p>

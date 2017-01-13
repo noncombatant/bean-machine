@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<meta charset="UTF-8">
+<title>Bean Machine Help</title>
+<link rel="stylesheet" href="bean-machine.css"/>
+
+<style>
+body {
+  margin: 5em;
+}
+</style>
+
+<h1>Bean Machine Help</h1>
+
+<h2>Searching And Filtering</h2>
+
+<p>The search language is simple but flexible. Here are some examples.</p>
+
+<p>You can show <strong>all</strong> items by leaving the search field empty, or
+with the explicit query:</p>
+
+<pre>(all)</pre>
+
+<p>Show items for which <strong>any</strong> metadata field matches “arch”
+<strong>and</strong> “enemy”:</p>
+
+<pre>arch enemy</pre>
+
+<p>Or, equivalently:</p>
+
+<pre>(any arch enemy)</pre>
+
+<p>Show items by <strong>artist</strong> “coltrane”:</p>
+
+<pre>(artist coltrane)</pre>
+
+<p>Show items from <strong>albums</strong> matching “vivid” or “time’s up”:</p>
+
+<pre>(or (album vivid) (album time's up))</pre>
+
+<p>Show any items matching “bach” except those that match “yo-yo” and “ma”:</p>
+
+<pre>(and (any bach) (not (any yo-yo ma)))</pre>
+
+<p>You’re probably getting the idea by now. Here are the predicates
+available:</p>
+
+<dl>
+
+<dt><code>(all)</code></dt> <dd>Show all items.</dd>
+
+<dt><code>(and expressions...)</code></dt> <dd>Items for which each
+<var>expression</var> is true.</dd>
+
+<dt><code>(or expressions...)</code></dt> <dd>Items for which any
+<var>expression</var> is true.</dd>
+
+<dt><code>(not expressions...)</code></dt> <dd>Items for which each
+<var>expression</var> is false.</dd>
+
+<dt><code>(any terms...)</code></dt> <dd>Items for which any metadata field
+matches each <var>term</var>.</dd>
+
+<dt><code>(audio)</code></dt> <dd>Items whose pathnames indicate they are audio
+files. If you provide additional arguments, Bean Machine will search audio files
+for those terms in any place in their metadata.</dd>
+
+<dt><code>(video)</code></dt> <dd>Items whose pathnames indicate they are video
+files. If you provide additional arguments, Bean Machine will search video files
+for those terms in any place in their metadata.</dd>
+
+<dt><code>(path terms...)</code></dt> <dd>Items whose pathnames match each
+<var>term</var>.</dd>
+
+<dt><code>(name terms...)</code></dt> <dd>Items whose titles match each
+<var>term</var>.</dd>
+
+<dt><code>(album terms...)</code></dt> <dd>Items whose album titles match each
+<var>term</var>.</dd>
+
+<dt><code>(artist terms...)</code></dt> <dd>Items whose artist names match each
+<var>term</var>.</dd>
+
+<dt><code>(track terms...)</code></dt> <dd>Items whose track numbers match each
+<var>term</var>.</dd>
+
+<dt><code>(disc terms...)</code></dt> <dd>Items whose disc numbers match each
+<var>term</var>.</dd>
+
+<dt><code>(year terms...)</code></dt> <dd>Items whose years of publication match
+each <var>term</var>.</dd>
+
+<dt><code>(genre terms...)</code></dt> <dd>Items whose genres match each
+<var>term</var>.</dd>
+
+<dt><code>(recent)</code></dt> <dd>Items whose last modified times are less than
+2 months ago.</dd>
+
+</dl>
+
+</div>
+
+<h2>About Bean Machine</h2>
+
+<p>This is Bean Machine version 2017-01-13, written by <a
+href="https://noncombatant.org/">Chris Palmer</a>. The search query language is
+adapted from the <a
+href="https://www.recurse.com/blog/21-little-lisp-interpreter">Little Lisp
+interpreter by Mary Rose Cook</a>. The command line utility uses the <a
+href="https://github.com/ascherkus/go-id3"><code>id3</code> package by Andrew
+Scherkus</a>, and uses X.509 certificate generation code adapted from an example
+by The Go Authors. The parts Chris wrote are released under the <a
+href="https://www.gnu.org/licenses/gpl-3.0.en.html">GNU General Public License,
+version 3</a>.</p>

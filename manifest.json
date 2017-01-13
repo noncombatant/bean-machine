@@ -1,0 +1,31 @@
+{
+  "short_name": "Bean Machine",
+  "name": "Bean Machine",
+  "description": "A delightful music player",
+  "start_url": "./",
+  "display": "fullscreen",
+  "orientation": "portrait",
+  "theme_color": "#acf",
+  "icons": [
+    {
+      "src": "clef-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "clef-144.png",
+      "sizes": "144x144",
+      "type": "image/png"
+    },
+    {
+      "src": "clef-96.png",
+      "sizes": "96x96",
+      "type": "image/png"
+    },
+    {
+      "src": "clef-64.png",
+      "sizes": "64x64",
+      "type": "image/png"
+    }
+  ]
+}

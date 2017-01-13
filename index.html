@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Bean Machine</title>
+<link rel="manifest" href="manifest.json">
+<link rel="stylesheet" href="bean-machine.css"/>
+
+<noscript><strong>Bean-Machine requires JavaScript to work.</strong></noscript>
+
+<div id="controlsDiv">
+
+  <div id="nowPlayingDiv">
+    <span id="nowPlayingTitle">Click on any track or album to play.</span>
+    &nbsp;&nbsp;&nbsp;<a id="shareLink"></a>
+    <br/>
+    <audio id="audioPlayer" controls></audio>
+  </div>
+
+  <div>
+    <button id="showHistoryButton">Show History</button>
+    <button id="nextButton">Next</button>
+    <label><input type="checkbox" id="randomCheckbox" value="value"> Random</label>
+  </div>
+
+  <div id="searchDiv">
+    <input type="text" name="search" id="searchInput" value="" placeholder="Search" />
+  </div>
+
+  <div>
+    <span id="messageSpan">Loading media. Please wait...</span>
+    <span>sorted by
+    <label><input type="radio" id="sortByAlbum" name="sortByRadio" value="album"> album</label>
+    <label><input type="radio" id="sortByArtist" name="sortByRadio" value="artist"> artist</label>
+    </span>
+    <a href="help.html" target="_new">Help</a>
+  </div>
+
+  <div id="letterButtonsContainer"><div id="quickSearchDiv">
+    <button id="letter_a">A</button>
+    <button id="letter_b">B</button>
+    <button id="letter_c">C</button>
+    <button id="letter_d">D</button>
+    <button id="letter_e">E</button>
+    <button id="letter_f">F</button>
+    <button id="letter_g">G</button>
+    <button id="letter_h">H</button>
+    <button id="letter_i">I</button>
+    <button id="letter_j">J</button>
+    <button id="letter_k">K</button>
+    <button id="letter_l">L</button>
+    <button id="letter_m">M</button>
+    <button id="letter_n">N</button>
+    <button id="letter_o">O</button>
+    <button id="letter_p">P</button>
+    <button id="letter_q">Q</button>
+    <button id="letter_r">R</button>
+    <button id="letter_s">S</button>
+    <button id="letter_t">T</button>
+    <button id="letter_u">U</button>
+    <button id="letter_v">V</button>
+    <button id="letter_w">W</button>
+    <button id="letter_x">X</button>
+    <button id="letter_y">Y</button>
+    <button id="letter_z">Z</button>
+    <button id="letter_0">0</button>
+    <button id="letter_1">1</button>
+    <button id="letter_2">2</button>
+    <button id="letter_3">3</button>
+    <button id="letter_4">4</button>
+    <button id="letter_5">5</button>
+    <button id="letter_6">6</button>
+    <button id="letter_7">7</button>
+    <button id="letter_8">8</button>
+    <button id="letter_9">9</button>
+    <button id="letter_japanese">Japanese</button>
+  </div></div>
+
+</div>
+
+<div id="itemListDiv"></div>
+
+<div id="videoPlayerBackground">
+  <div id="videoPlayerDiv" class="hidden">
+    <video id="videoPlayer" controls width="400" height="300"></video>
+    <br/>
+    <button id="videoCloseButton">Close</button>
+  </div>
+</div>
+
+<script src="catalog.js"></script>
+<script src="util.js"></script>
+<script src="search.js"></script>
+<script src="bean-machine.js"></script>
