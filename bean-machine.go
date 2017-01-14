@@ -181,6 +181,12 @@ func (s *ItemInfo) ToJSON() string {
 	if name == "" {
 		name = "Unknown Item"
 	}
+	if disc == "" {
+		disc = "1"
+	}
+	if track == "" {
+		track = "1"
+	}
 
 	disc = normalizeNumericString(disc)
 	track = normalizeNumericString(track)
