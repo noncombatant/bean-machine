@@ -24,7 +24,7 @@ const (
 )
 
 var (
-	anonymousFiles            = []string{"manifest.json", "bean-machine.css", "readme.html", "help.html"}
+	anonymousFiles = []string{"manifest.json", "bean-machine.css", "readme.html", "help.html"}
 )
 
 func generateCapabilityKey() []byte {
