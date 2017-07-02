@@ -7,25 +7,34 @@
 
 <noscript><strong>Bean-Machine requires JavaScript to work.</strong></noscript>
 
-<div id="controlsDiv">
+<div id="controlsDiv"><table>
 
-  <div id="nowPlayingDiv">
-    <span id="nowPlayingTitle">Click on any track or album to play.</span>
-    &nbsp;&nbsp;&nbsp;<a id="shareLink"></a>
-    <br/>
-    <audio id="audioPlayer" controls preload="auto"></audio>
-  </div>
+  <tr>
+    <td><span id="nowPlayingTitle">Click on any track or album to play.</span></td>
+    <td class="narrow"><a id="shareLink"></a></td>
+  <tr>
 
-  <div>
-    <button id="showHistoryButton">Show History</button>
-    <button id="nextButton">Next</button>
-    <label><input type="checkbox" id="randomCheckbox" value="value"> Random</label>
-  </div>
+  <tr>
+    <td><audio id="audioPlayer" controls preload="auto"></audio></td>
+    <td class="narrow"><button id="nextButton">Next</button></td>
+  </tr>
 
-  <div id="searchDiv">
-    <input type="text" name="search" id="searchInput" value="" placeholder="Search" />
-  </div>
+  <tr>
+    <td><input type="text" name="search" id="searchInput" value="" /></td>
+    <td class="narrow"><button id="searchButton">Search</button></td>
+  </tr>
 
+  <tr>
+    <td>
+      <button id="showHistoryButton">Show History</button>
+      <label><input type="checkbox" id="randomCheckbox" value="value"> Random</label>
+    </td>
+    <td class="narrow">&nbsp;</td>
+  </tr>
+
+</table></div>
+
+<div class="hidden">
   <div>
     <span id="messageSpan">Loading media. Please wait...</span>
     <span>sorted by
@@ -74,7 +83,6 @@
     <button id="letter_9">9</button>
     <button id="letter_japanese">Japanese</button>
   </div></div>
-
 </div>
 
 <div id="itemListDiv"></div>
