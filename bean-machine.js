@@ -355,12 +355,12 @@ const playerOnError = function(e) {
 
 const searchInputOnKeyUp = function(e) {
   showHistoryButton.className = ""
-  let enterKeyCode = 13
+  const enterKeyCode = 13
   enterKeyCode == e.keyCode && searchCatalog(this.value, false)
 }
 
-const searchInputOnBlur = function(e) {
-  searchCatalog(this.value, false)
+const executeSearch = function(e) {
+  searchCatalog(searchInput.value, false)
 }
 
 const showHistoryButtonOnClick = function(e) {
@@ -429,8 +429,9 @@ const addEventListeners = function() {
   player.addEventListener("loadedmetadata", playerLoadedMetadata)
   player.addEventListener("volumechange", onPlayerVolumeChange)
   randomCheckbox.addEventListener("click", randomCheckboxOnClick)
-  searchInput.addEventListener("blur", searchInputOnBlur)
+  searchInput.addEventListener("blur", executeSearch)
   searchInput.addEventListener("keyup", searchInputOnKeyUp)
+  searchButton.addEventListener("click", executeSearch)
   showHistoryButton.addEventListener("click", showHistoryButtonOnClick)
   sortByAlbum.addEventListener("change", onSortByChange)
   sortByArtist.addEventListener("change", onSortByChange)

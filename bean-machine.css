@@ -29,8 +29,20 @@ th, td {
   line-height: 190%;
 }
 
-#searchDiv {
-  margin-top: 0.5em;
+#controlsDiv, table {
+  width: 100%;
+}
+
+td {
+  padding: 0.25em;
+}
+
+.narrow {
+  width: 7em;
+}
+
+.right {
+  text-align: right;
 }
 
 #quickSearchDiv {
@@ -63,7 +75,7 @@ th, td {
 }
 
 audio, #searchInput {
-  width: 50%;
+  width: 100%;
 }
 
 .itemDivCell {
@@ -136,4 +148,8 @@ pre {
   height: 50%;
   z-index:1002;
   overflow: auto;
+}
+
+.hidden {
+  display: none;
 }
