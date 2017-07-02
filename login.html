@@ -4,20 +4,31 @@
 <title>Bean Machine</title>
 <link rel="stylesheet" href="bean-machine.css"/>
 
-<style>
-body {
-  margin: 5em;
-}
-</style>
+<div class="loginForm"><div>
 
 <h1>Bean Machine</h1>
 
 <form action="login.html" method="POST">
 
-<p><input type="text" name="name" placeholder="Name" autofocus/></p>
+<table>
 
-<p><input type="password" name="password" placeholder="Password"/></p>
+<tr>
+<th>Name</th>
+<td><input type="text" name="name" autofocus/></td>
+</tr>
 
-<input type="submit" value="Log In"/>
+<tr>
+<th>Password</th>
+<td><input type="password" name="password"/></td>
+</tr>
+
+<tr>
+<th>&nbsp;</th>
+<td><input type="submit" value="Log In"/></td>
+</tr>
+
+</table>
 
 </form>
+
+</div></div>

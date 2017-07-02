@@ -4,6 +4,20 @@ body {
   margin: 0px;
 }
 
+.loginForm {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+th {
+  text-align: right;
+}
+
+th, td {
+  padding: 0.25em;
+}
+
 #controlsDiv {
   padding: 0.5em;
   position: -webkit-sticky;
