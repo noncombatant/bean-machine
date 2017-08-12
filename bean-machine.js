@@ -14,7 +14,7 @@ let playHistory = []
 let randomHistory = {}
 
 const buildCatalogLimit = 50
-const sortingProperties = [ Album, Artist, Year, Disc, Track, Name, Pathname ]
+const sortingProperties = [ Album, Artist, Disc, Track, Name, Pathname ]
 
 // C O R E   F U N C T I O N A L I T Y
 
@@ -30,12 +30,10 @@ const setSortBy = function(key) {
   if ("album" === key) {
     sortingProperties[0] = Album
     sortingProperties[1] = Artist
-    sortingProperties[2] = Year
     sortByAlbum.checked = true
   } else {
     sortingProperties[0] = Artist
-    sortingProperties[1] = Year
-    sortingProperties[2] = Album
+    sortingProperties[1] = Album
     sortByArtist.checked = true
   }
 }
