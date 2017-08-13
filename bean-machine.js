@@ -260,6 +260,8 @@ const extendCatalog = function() {
 const itemMatchesQuery = interpret
 
 const doSearchCatalog = function(query) {
+  setSingleTextChild(messageSpan, "Loading media. Please wait...")
+
   if ("" === query) {
     searchHits = resetSearchHits()
   } else {
