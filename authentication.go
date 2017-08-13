@@ -55,11 +55,12 @@ func generateCapabilityString(name string) string {
 }
 
 func checkCapability(name, capability string) bool {
-	expected := generateCapabilityBytes(name)[:capabilityBytesLength]
 	bytes, err := hex.DecodeString(capability)
 	if err != nil {
 		return false
 	}
+
+	expected := generateCapabilityBytes(name)[:capabilityBytesLength]
 	return hmac.Equal(expected, bytes)
 }
 
@@ -75,6 +76,11 @@ type AuthenticatingFileHandler struct {
 }
 
 func (h AuthenticatingFileHandler) isRequestAuthenticated(r *http.Request) bool {
+	caps := r.URL.Query()["cap"]
+	if len(caps) == 1 {
+		return checkCapability(h.normalizePathname(r.URL.Path)[len(h.Root):], caps[0])
+	}
+
 	cookie, e := r.Cookie("token")
 	if e == nil && len(cookie.Value) == 2*authenticationTokenLength {
 		if _, e := hex.DecodeString(cookie.Value); e != nil {
@@ -85,12 +91,7 @@ func (h AuthenticatingFileHandler) isRequestAuthenticated(r *http.Request) bool 
 		}
 	}
 
-	caps := r.URL.Query()["cap"]
-	if len(caps) != 1 {
-		return false
-	}
-
-	return checkCapability(h.normalizePathname(r.URL.Path)[len(h.Root):], caps[0])
+	return false
 }
 
 func (h AuthenticatingFileHandler) handleLogIn(w http.ResponseWriter, r *http.Request) {
@@ -124,7 +125,9 @@ func (h AuthenticatingFileHandler) handleGetCap(w http.ResponseWriter, r *http.R
 		return
 	}
 
-	file, info := openFileIfPublic(pathnames[0])
+	pathname := h.Root + "/" + pathnames[0]
+
+	file, info := openFileIfPublic(pathname)
 	if file == nil || info == nil {
 		http.NotFound(w, r)
 		return
@@ -132,7 +135,7 @@ func (h AuthenticatingFileHandler) handleGetCap(w http.ResponseWriter, r *http.R
 	defer file.Close()
 
 	cap := generateCapabilityString(pathnames[0])
-	http.ServeContent(w, r, r.URL.Path+"?n="+pathnames[0], info.ModTime(), strings.NewReader(cap))
+	http.ServeContent(w, r, r.URL.Path+"?n="+pathname, info.ModTime(), strings.NewReader(cap))
 }
 
 func openFileIfPublic(pathname string) (*os.File, os.FileInfo) {
