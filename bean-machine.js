@@ -338,6 +338,18 @@ const albumTitleDivOnClick = function(e) {
 }
 const itemDivOnClick = albumTitleDivOnClick
 
+const togglePlayback = function(e) {
+  e.stopPropagation()
+  if ("p" !== e.key) {
+    return
+  }
+  if (player.paused) {
+    player.play()
+  } else {
+    player.pause()
+  }
+}
+
 let errorCount = 0
 const playerLoadedMetadata = function(e) {
   errorCount = 0
@@ -352,6 +364,7 @@ const playerOnError = function(e) {
 }
 
 const searchInputOnKeyUp = function(e) {
+  e.stopPropagation()
   showHistoryButton.className = ""
   const enterKeyCode = 13
   enterKeyCode == e.keyCode && searchCatalog(this.value, false)
@@ -395,6 +408,7 @@ const onPlayerVolumeChange = function(e) {
   setLocationHash()
 }
 
+// TODO: This can be removed when we remove the letter links.
 const letterLinkOnClick = function(e) {
   const letter = e.target.id.substring("letter_".length)
   console.log(letter)
@@ -436,6 +450,7 @@ const addEventListeners = function() {
   videoCloseButton.addEventListener("click", closeVideo)
   window.addEventListener("resize", windowOnResize)
   window.addEventListener("scroll", windowOnScroll)
+  document.body.addEventListener("keyup", togglePlayback)
 
   for (let i = 0; i < 26; i++) {
     $("letter_" + String.fromCharCode(97 + i)).addEventListener("click", letterLinkOnClick)
