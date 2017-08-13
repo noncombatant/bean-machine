@@ -31,7 +31,7 @@ const (
 )
 
 var (
-	frontEndFiles = []string{"login.html", "index.html", "help.html", formatsJsonBasename, "bean-machine.css", "bean-machine.js", "util.js", "favicon.ico", "search.js",
+	frontEndFiles = []string{"login.html", "index.html", "help.html", formatsJsonBasename, "bean-machine.css", "bean-machine.js", "util.js", "favicon.ico", "levenshtein.js", "search.js",
 		"clef-192.png", "clef-144.png", "clef-96.png", "clef-64.png", "manifest.json"}
 	homePathname          = os.Getenv("HOME")
 	configurationPathname = path.Join(homePathname, configurationBasename)

@@ -4,14 +4,43 @@
 // P R E D I C A T E S
 
 let reCache = {}
+let editDistanceCache = {}
+const editDistanceThreshold = 2
+const allDigits = new RegExp(/^\d+$/)
+
 const match = function(property, term) {
+  term = term.toLocaleLowerCase()
+
   if (!(term in reCache)) {
     reCache[term] = new RegExp(term, "i")
   }
-  return reCache[term].test(property)
+  if (reCache[term].test(property)) {
+    return true
+  }
+  if (allDigits.test(property)) {
+    return false
+  }
+
+  const longer = Math.max(property.length, term.length)
+  const shorter = Math.min(property.length, term.length)
+  if (longer - shorter > editDistanceThreshold) {
+    return false
+  }
+
+  // TODO: Consider splitting words in `property` so that "amusink" will match
+  // e.g. "Amusing Noises".
+  property = property.toLocaleLowerCase()
+  if (!(property in editDistanceCache)) {
+    editDistanceCache[property] = levenshteinEditDistance(
+        property.toLocaleLowerCase(), term.toLocaleLowerCase())
+  }
+
+  return editDistanceCache[property] <= editDistanceThreshold
 }
 
 const matchAny = function(object, term) {
+  // NOTE: This is the global function `any` defined in util.js, not in
+  // `searchFilters` below.
   return any(object, function(property) { return match(property, term) })
 }
 
