@@ -14,7 +14,7 @@ let playHistory = []
 let randomHistory = {}
 
 const buildCatalogLimit = 50
-const sortingProperties = [ Album, Artist, Disc, Track, Name, Pathname ]
+const sortingProperties = [ Album, Disc, Track, Pathname, Name ]
 
 // C O R E   F U N C T I O N A L I T Y
 
@@ -24,18 +24,6 @@ const resetSearchHits = function() {
     hits[i] = i
   }
   return hits
-}
-
-const setSortBy = function(key) {
-  if ("album" === key) {
-    sortingProperties[0] = Album
-    sortingProperties[1] = Artist
-    sortByAlbum.checked = true
-  } else {
-    sortingProperties[0] = Artist
-    sortingProperties[1] = Album
-    sortByArtist.checked = true
-  }
 }
 
 const setAudioVideoControls = function(itemID) {
@@ -105,7 +93,6 @@ const itemComparator = function(a, b) {
 
 const assertStateDefaults = function(state) {
   state.itemID = parseIntOr(idOrLast(state.itemID), 0)
-  state.sortBy = idOrLast(state.sortBy) || "album"
   const random = idOrLast(state.random)
   state.random = random ? "true" === random.toString() : false
   state.volume = Number(idOrLast(state.volume)) || 0.5
@@ -126,7 +113,6 @@ const deserializeState = function(string) {
 const setLocationHash = function() {
   document.location.hash = serializeState({
     "itemID": player.itemID,
-    "sortBy": sortByAlbum.checked ? "album" : "artist",
     "random": randomCheckbox.checked,
     "volume": player.volume.toFixed(1),
     "query": searchInput.value,
@@ -378,11 +364,9 @@ const executeSearch = function(e) {
 const showHistoryButtonOnClick = function(e) {
   if ("Show History" === showHistoryButton.innerText) {
     showHistoryButton.innerText = "Show Search Results"
-    searchInput.disabled = sortByAlbum.disabled = sortByArtist.disabled = true
     showPlayHistory()
   } else {
     showHistoryButton.innerText = "Show History"
-    searchInput.disabled = sortByAlbum.disabled = sortByArtist.disabled = false
     doSearchCatalog(searchInput.value)
   }
 }
@@ -397,12 +381,6 @@ const windowOnScroll = function(e) {
     window.requestAnimationFrame(extendCatalog)
   }
   extendCatalogRequested = true
-}
-
-const onSortByChange = function(e) {
-  setSortBy("sortByAlbum" === this.id ? "album" : "artist")
-  setLocationHash()
-  searchCatalog(searchInput.value, true)
 }
 
 const onPlayerVolumeChange = function(e) {
@@ -446,8 +424,6 @@ const addEventListeners = function() {
   searchInput.addEventListener("keyup", searchInputOnKeyUp)
   searchButton.addEventListener("click", executeSearch)
   showHistoryButton.addEventListener("click", showHistoryButtonOnClick)
-  sortByAlbum.addEventListener("change", onSortByChange)
-  sortByArtist.addEventListener("change", onSortByChange)
   videoCloseButton.addEventListener("click", closeVideo)
   window.addEventListener("resize", windowOnResize)
   window.addEventListener("scroll", windowOnScroll)
@@ -464,7 +440,6 @@ const addEventListeners = function() {
 
 const applyState = function(serialized) {
   let state = deserializeState(serialized)
-  setSortBy(state.sortBy)
   searchInput.value = state.query
   randomCheckbox.checked = state.random
   player.volume = state.volume
