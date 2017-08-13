@@ -222,7 +222,8 @@ const buildAlbumTitleDiv = function(itemID) {
   let albumSpan = createElement("span", "itemDivCell albumTitle", item[Album])
   div.appendChild(albumSpan)
 
-  let artistSpan = createElement("span", "itemDivCell artistName", item[Artist])
+  const artist = item[Pathname].startsWith("Compilations/") ? "Various Artists" : item[Artist]
+  let artistSpan = createElement("span", "itemDivCell artistName", artist)
   div.appendChild(artistSpan)
 
   if (item[Year]) {
