@@ -5,7 +5,7 @@
 <link rel="manifest" href="manifest.json">
 <link rel="stylesheet" href="bean-machine.css"/>
 
-<noscript><strong>Bean-Machine requires JavaScript to work.</strong></noscript>
+<noscript><strong>Bean Machine requires JavaScript to work.</strong></noscript>
 
 <div id="controlsDiv"><table>
 
@@ -28,6 +28,8 @@
     <td>
       <button id="showHistoryButton">Show History</button>
       <label><input type="checkbox" id="randomCheckbox" value="value"> Random</label>
+      <span id="messageSpan">Loading media. Please wait...</span>
+      <a href="help.html" target="_new">Help</a>
     </td>
     <td class="narrow">&nbsp;</td>
   </tr>
@@ -35,11 +37,6 @@
 </table></div>
 
 <div class="hidden">
-  <div>
-    <span id="messageSpan">Loading media. Please wait...</span>
-    <a href="help.html" target="_new">Help</a>
-  </div>
-
   <div id="letterButtonsContainer"><div id="quickSearchDiv">
     <button id="letter_a">A</button>
     <button id="letter_b">B</button>

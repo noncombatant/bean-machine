@@ -28,6 +28,11 @@ th, td {
   line-height: 190%;
 }
 
+#messageSpan {
+  color: #777;
+  font-style: italic;
+}
+
 #controlsDiv, table {
   width: 100%;
 }
