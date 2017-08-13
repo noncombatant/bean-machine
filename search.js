@@ -3,10 +3,11 @@
 
 // P R E D I C A T E S
 
-let reCache = {}
 let editDistanceCache = {}
+let reCache = {}
 const editDistanceThreshold = 2
 const allDigits = new RegExp(/^\d+$/)
+const spaces = new RegExp(/\s+/)
 
 const match = function(property, term) {
   term = term.toLocaleLowerCase()
@@ -21,21 +22,18 @@ const match = function(property, term) {
     return false
   }
 
-  const longer = Math.max(property.length, term.length)
-  const shorter = Math.min(property.length, term.length)
-  if (longer - shorter > editDistanceThreshold) {
-    return false
+  const words = property.toLocaleLowerCase().split(spaces)
+  for (let i = 0; i < words.length; ++i) {
+    const key = words[i] + "\x00" + term
+    if (!(key in editDistanceCache)) {
+      editDistanceCache[key] = levenshteinEditDistance(words[i], term)
+    }
+    if (editDistanceCache[key] <= editDistanceThreshold) {
+      return true
+    }
   }
 
-  // TODO: Consider splitting words in `property` so that "amusink" will match
-  // e.g. "Amusing Noises".
-  property = property.toLocaleLowerCase()
-  if (!(property in editDistanceCache)) {
-    editDistanceCache[property] = levenshteinEditDistance(
-        property.toLocaleLowerCase(), term.toLocaleLowerCase())
-  }
-
-  return editDistanceCache[property] <= editDistanceThreshold
+  return false
 }
 
 const matchAny = function(object, term) {
