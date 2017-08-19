@@ -24,9 +24,17 @@ const match = function(property, term) {
 
   const words = property.toLocaleLowerCase().split(spaces)
   for (let i = 0; i < words.length; ++i) {
-    const key = words[i] + "\x00" + term
+    const word = words[i]
+
+    const shorter = Math.min(word.length, term.length)
+    const longer = Math.max(word.length, term.length)
+    if (longer - shorter > editDistanceThreshold) {
+      continue
+    }
+
+    const key = word + "\x00" + term
     if (!(key in editDistanceCache)) {
-      editDistanceCache[key] = levenshteinEditDistance(words[i], term)
+      editDistanceCache[key] = levenshteinEditDistance(word, term)
     }
     if (editDistanceCache[key] <= editDistanceThreshold) {
       return true
