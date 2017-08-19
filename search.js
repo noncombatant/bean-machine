@@ -5,7 +5,7 @@
 
 let editDistanceCache = {}
 let reCache = {}
-const editDistanceThreshold = 2
+const editDistanceThreshold = 1
 const allDigits = new RegExp(/^\d+$/)
 const spaces = new RegExp(/\s+/)
 
