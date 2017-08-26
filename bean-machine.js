@@ -260,6 +260,7 @@ const extendCatalog = function() {
 const itemMatchesQuery = interpret
 
 const doSearchCatalog = function(query) {
+  const start = performance.now()
   setSingleTextChild(messageSpan, "Loading media. Please wait...")
 
   if ("" === query) {
@@ -276,8 +277,10 @@ const doSearchCatalog = function(query) {
     }
   }
 
+  const end = performance.now()
+
   setLocationHash()
-  setSingleTextChild(messageSpan, searchHits.length.toLocaleString() + " items")
+  setSingleTextChild(messageSpan, "Found " + searchHits.length.toLocaleString() + " items in " + Math.round(end - start) + " ms")
   searchHits.sort(itemComparator)
   previousLastItem = buildCatalog(0)
 }
