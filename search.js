@@ -3,11 +3,11 @@
 
 // P R E D I C A T E S
 
-let editDistanceCache = {}
+//let editDistanceCache = {}
+//const editDistanceThreshold = 1
+//const allDigits = new RegExp(/^\d+$/)
+//const spaces = new RegExp(/\s+/)
 let reCache = {}
-const editDistanceThreshold = 1
-const allDigits = new RegExp(/^\d+$/)
-const spaces = new RegExp(/\s+/)
 
 const match = function(property, term) {
   term = term.toLocaleLowerCase()
@@ -18,28 +18,29 @@ const match = function(property, term) {
   if (reCache[term].test(property)) {
     return true
   }
-  if (allDigits.test(property)) {
-    return false
-  }
 
-  const words = property.toLocaleLowerCase().split(spaces)
-  for (let i = 0; i < words.length; ++i) {
-    const word = words[i]
+  //if (allDigits.test(property)) {
+  //  return false
+  //}
 
-    const shorter = Math.min(word.length, term.length)
-    const longer = Math.max(word.length, term.length)
-    if (longer - shorter > editDistanceThreshold) {
-      continue
-    }
+  //const words = property.toLocaleLowerCase().split(spaces)
+  //for (let i = 0; i < words.length; ++i) {
+  //  const word = words[i]
 
-    const key = word + "\x00" + term
-    if (!(key in editDistanceCache)) {
-      editDistanceCache[key] = levenshteinEditDistance(word, term)
-    }
-    if (editDistanceCache[key] <= editDistanceThreshold) {
-      return true
-    }
-  }
+  //  const shorter = Math.min(word.length, term.length)
+  //  const longer = Math.max(word.length, term.length)
+  //  if (longer - shorter > editDistanceThreshold) {
+  //    continue
+  //  }
+
+  //  const key = word + "\x00" + term
+  //  if (!(key in editDistanceCache)) {
+  //    editDistanceCache[key] = levenshteinEditDistance(word, term)
+  //  }
+  //  if (editDistanceCache[key] <= editDistanceThreshold) {
+  //    return true
+  //  }
+  //}
 
   return false
 }
