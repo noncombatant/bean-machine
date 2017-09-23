@@ -30,12 +30,14 @@ const match = function(property, term) {
   term = normalizeStringForSearch(term)
   property = normalizeStringForSearch(property)
 
-  if (!(term in reCache)) {
-    reCache[term] = new RegExp(term, "i")
-  }
-  if (reCache[term].test(property)) {
-    return true
-  }
+  return -1 !== property.indexOf(term)
+
+  /// if (!(term in reCache)) {
+  ///   reCache[term] = new RegExp(term, "i")
+  /// }
+  /// if (reCache[term].test(property)) {
+  ///   return true
+  /// }
 
   //if (allDigits.test(property)) {
   //  return false
