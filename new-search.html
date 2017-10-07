@@ -15,9 +15,14 @@ const arraysEqual = function(a, b) {
   return true
 }
 
-const string = 'hello:test "very \\"good\\"" "yes":wow "scrunch pumpkin":"goat leg"'
-const expectedTokens = ['hello:', 'test', 'very "good"', 'yes:', 'wow', 'scrunch pumpkin:', 'goat leg']
-const lexedTokens = getTokens(string)
+const testLexer = function(string, expectedTokens) {
+  const tokens = getTokens(string)
+  console.log(string, tokens)
+  return arraysEqual(expectedTokens, getTokens(string))
+}
 
-setSingleTextChild(result, arraysEqual(lexedTokens, expectedTokens) ? "Success" : "Failure")
+const string = 'hello:test "very \\"good\\"" "yes":wow "scrunch pumpkin":"goat leg" -goat:no -"short pants"'
+const expectedTokens = ['hello:', 'test', 'very "good"', 'yes:', 'wow', 'scrunch pumpkin:', 'goat leg', '-goat:', 'no', '-short pants']
+
+setSingleTextChild(result, testLexer(string, expectedTokens) ? "Success" : "Failure")
 </script>

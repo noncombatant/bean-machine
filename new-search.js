@@ -32,9 +32,10 @@ const getTokens = function(string) {
   let currentToken = ""
   for (let i = 0; i < string.length; ++i) {
     const c = string[i]
+    const next = i < (string.length - 1) ? string[i + 1] : ''
 
     // Allow escaped quotes.
-    if ('\\' === c && i < (string.length - 1) && '"' === string[i + 1]) {
+    if ('\\' === c && '"' === next) {
       currentToken += '"'
       ++i
       continue
@@ -42,20 +43,18 @@ const getTokens = function(string) {
 
     if (inQuotes) {
       if ('"' === c) {
-        if (i < (string.length - 1) && ":" === string[i + 1]) {
+        if (":" === next) {
           currentToken += ":"
           ++i
         }
         pushIf(tokens, currentToken)
         currentToken = ""
-        inQuotes = true
+        inQuotes = false
       } else {
         currentToken += c
       }
     } else {
       if ('"' === c) {
-        pushIf(tokens, currentToken)
-        currentToken = ""
         inQuotes = true
       } else if (isSpace(c)) {
         pushIf(tokens, currentToken)
