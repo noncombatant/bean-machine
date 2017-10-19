@@ -59,19 +59,24 @@ th, td {
 
 .itemDiv {
   display: row;
-  color: #333;
-  padding-left: 1em;
+  color: #111;
+  padding: 0.5em;
+  border-radius: 3px;
+  background-color: #eee;
+  margin: 3px;
 }
 
 .itemDiv:hover, .albumTitleDiv:hover {
-  background: #acf;
+  background: #ccc;
   color: #000;
 }
 
 .albumTitleDiv {
-  background-color: #eee;
-  border-bottom: 1px #aaa solid;
-  padding: 0.5em;
+  background-color: #ddd;
+/*  border-bottom: 1px #aaa solid;*/
+  margin: 3px;
+  border-radius: 4px;
+  padding: 1em;
   display: row;
 }
 
