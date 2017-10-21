@@ -212,6 +212,7 @@ func Catalog(root string) {
 	}
 	defer output.Close()
 
+	fmt.Fprintln(output, "\"use strict\";")
 	fmt.Fprintln(output, "const Pathname = 0")
 	fmt.Fprintln(output, "const Album = 1")
 	fmt.Fprintln(output, "const Artist = 2")
