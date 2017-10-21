@@ -61,27 +61,29 @@ th, td {
   display: row;
   color: #111;
   padding: 0.5em;
-  border-radius: 3px;
+  border-radius: 0.5em;
   background-color: #eee;
-  margin: 3px;
+  border: 1px solid #ddd;
+  margin: 0.2em;
 }
 
 .itemDiv:hover, .albumTitleDiv:hover {
-  background: #ccc;
+  background: #cce;
   color: #000;
 }
 
 .albumTitleDiv {
+  font-size: 110%;
   background-color: #ddd;
-/*  border-bottom: 1px #aaa solid;*/
-  margin: 3px;
-  border-radius: 4px;
-  padding: 1em;
   display: row;
+  padding: 0.5em;
+  border-radius: 0.5em;
+  border: 1px solid #ccc;
+  margin: 0.2em;
 }
 
 audio, #searchInput {
-  width: 100%;
+  width: 97%;
 }
 
 .itemDivCell {
@@ -114,6 +116,18 @@ audio, #searchInput {
 button, input {
   font-family: inherit;
   font-size: 100%;
+  border-radius: 0.5em;
+  padding: 0.5em;
+}
+
+input {
+  border: 2px solid #333;
+}
+
+button {
+  border: 2px solid #333;
+  font-weight: bold;
+  background-color: #fff;
 }
 
 pre {
