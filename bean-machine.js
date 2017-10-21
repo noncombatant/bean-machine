@@ -250,7 +250,6 @@ const itemMatchesQuery = interpret
 
 const doSearchCatalog = function(query) {
   const start = performance.now()
-  setSingleTextChild(messageSpan, "Loading media. Please wait...")
 
   if ("" === query) {
     searchHits = resetSearchHits()
@@ -269,7 +268,6 @@ const doSearchCatalog = function(query) {
   const end = performance.now()
 
   setLocationHash()
-  setSingleTextChild(messageSpan, "Found " + searchHits.length.toLocaleString() + " items in " + Math.round(end - start) + " ms")
   searchHits.sort(itemComparator)
   previousLastItem = buildCatalog(0)
 }
@@ -337,7 +335,7 @@ const playerLoadedMetadata = function(e) {
 }
 
 const playerOnError = function(e) {
-  setSingleTextChild(messageSpan, catalog[player.itemID][Pathname])
+  console.log("Could not load", catalog[player.itemID][Pathname], e)
   if (errorCount < 10) {
     this.dispatchEvent(new Event("ended"))
   }
@@ -346,23 +344,12 @@ const playerOnError = function(e) {
 
 const searchInputOnKeyUp = function(e) {
   e.stopPropagation()
-  showHistoryButton.className = ""
   const enterKeyCode = 13
   enterKeyCode == e.keyCode && searchCatalog(this.value, false)
 }
 
 const executeSearch = function(e) {
   searchCatalog(searchInput.value, false)
-}
-
-const showHistoryButtonOnClick = function(e) {
-  if ("Show History" === showHistoryButton.innerText) {
-    showHistoryButton.innerText = "Show Search Results"
-    showPlayHistory()
-  } else {
-    showHistoryButton.innerText = "Show History"
-    doSearchCatalog(searchInput.value)
-  }
 }
 
 const randomCheckboxOnClick = function(e) {
@@ -374,30 +361,6 @@ const windowOnScroll = function(e) {
     window.requestAnimationFrame(extendCatalog)
   }
   extendCatalogRequested = true
-}
-
-// TODO: This can be removed when we remove the letter links.
-const letterLinkOnClick = function(e) {
-  const letter = e.target.id.substring("letter_".length)
-  console.log(letter)
-  if ("japanese" === letter) {
-    // http://stackoverflow.com/questions/15033196/using-javascript-to-check-whether-a-string-contains-japanese-characters-includi
-    searchInput.value = "[\\u3000-\\u303f\\u3040-\\u309f\\u30a0-\\u30ff\\uff00-\\uff9f\\u4e00-\\u9faf\\u3400-\\u4dbf]"
-  } else {
-    searchInput.value = "(artist ^" + letter + ")"
-  }
-  searchCatalog(searchInput.value, true)
-}
-
-const windowOnResize = function(e) {
-  const windowHeight = window.innerHeight
-  const quickSearchHeight = quickSearchDiv.getBoundingClientRect().height
-  const controlsHeight = controlsDiv.getBoundingClientRect().height
-  if (windowHeight > (controlsHeight - quickSearchHeight) * 3.3) {
-    quickSearchDiv.style.display = "block"
-  } else {
-    quickSearchDiv.style.display = "none"
-  }
 }
 
 const hashChange = function(event) {
@@ -416,20 +379,10 @@ const addEventListeners = function() {
   searchInput.addEventListener("blur", executeSearch)
   searchInput.addEventListener("keyup", searchInputOnKeyUp)
   searchButton.addEventListener("click", executeSearch)
-  showHistoryButton.addEventListener("click", showHistoryButtonOnClick)
   videoCloseButton.addEventListener("click", closeVideo)
-  window.addEventListener("resize", windowOnResize)
   window.addEventListener("scroll", windowOnScroll)
   document.body.addEventListener("keyup", togglePlayback)
   window.addEventListener("hashchange", hashChange, false);
-
-  for (let i = 0; i < 26; i++) {
-    $("letter_" + String.fromCharCode(97 + i)).addEventListener("click", letterLinkOnClick)
-  }
-  for (let i = 0; i < 10; i++) {
-    $("letter_" + String.fromCharCode(48 + i)).addEventListener("click", letterLinkOnClick)
-  }
-  $("letter_japanese").addEventListener("click", letterLinkOnClick)
 }
 
 const applyState = function(serialized) {
@@ -447,7 +400,6 @@ const applyState = function(serialized) {
 }
 
 const main = function() {
-  windowOnResize()
   getFormatExtensions()
   addEventListeners()
   applyState(document.location.hash.substring(1))

@@ -28,12 +28,6 @@ th, td {
   line-height: 190%;
 }
 
-#messageSpan {
-  color: #777;
-  font-style: italic;
-  font-size: 90%;
-}
-
 #controlsDiv, table {
   width: 100%;
 }
@@ -44,10 +38,6 @@ th, td {
 
 .right {
   text-align: right;
-}
-
-#quickSearchDiv {
-  display: none;
 }
 
 #itemListDiv {
