@@ -1,6 +1,8 @@
 // Copyright 2016 by Chris Palmer (https://noncombatant.org), and released under
 // the terms of the GNU GPL3. See help.html for more information.
 
+"use strict";
+
 const $ = function(id) {
   return document.getElementById(id)
 }
@@ -8,8 +10,8 @@ const $ = function(id) {
 const isElementInViewport = function(element) {
   let top = element.offsetTop
   let left = element.offsetLeft
-  let width = element.offsetWidth
-  let height = element.offsetHeight
+  const width = element.offsetWidth
+  const height = element.offsetHeight
 
   while (element.offsetParent) {
     element = element.offsetParent
@@ -31,7 +33,7 @@ const scrollElementIntoView = function(element) {
 }
 
 const createElement = function(type, className, text) {
-  let e = document.createElement(type)
+  const e = document.createElement(type)
   if (className) {
     e.className = className
   }
@@ -71,7 +73,7 @@ const any = function(array, predicate) {
 }
 
 const basename = function(pathname) {
-  let i = pathname.lastIndexOf("/")
+  const i = pathname.lastIndexOf("/")
   return -1 == i ? pathname : pathname.substring(i + 1)
 }
 
@@ -80,12 +82,12 @@ const dirname = function(pathname) {
 }
 
 const fileExtension = function(pathname) {
-  let i = pathname.lastIndexOf(".")
+  const i = pathname.lastIndexOf(".")
   return -1 == i ? "" : pathname.substring(i)
 }
 
 const isPathnameInExtensions = function(pathname, extensions) {
-  let e = fileExtension(pathname)
+  const e = fileExtension(pathname)
   return any(extensions, function(extension) { return e == extension })
 }
 
@@ -93,7 +95,7 @@ let formatExtensions = { "started": false }
 const getFormatExtensions = function() {
   if (!formatExtensions.started) {
     formatExtensions.started = true
-    let xhr = new XMLHttpRequest()
+    const xhr = new XMLHttpRequest()
     xhr.addEventListener("load", function() {
       formatExtensions = JSON.parse(this.responseText)
       formatExtensions.started = true
@@ -131,7 +133,7 @@ const getRandomIndexWithoutRepeating = function(array, historyObject) {
 }
 
 const get2MonthsAgo = function() {
-  let now = (new Date()).getTime() / 1000
+  const now = (new Date()).getTime() / 1000
   return now - (2 * 30 * 24 * 60 * 60)
 }
 
@@ -176,10 +178,10 @@ const parseIntOr = function(string, fallback, base) {
 }
 
 const parseQueryString = function(string) {
-  let result = {}
+  const result = {}
   for (let pair of string.split("&")) {
-    let kv = pair.split("=", 2).map(decodeURIComponent)
-    let key = kv[0], value = kv[1]
+    const kv = pair.split("=", 2).map(decodeURIComponent)
+    const key = kv[0], value = kv[1]
     if (result[key]) {
       result[key].push(value)
     } else {
@@ -190,13 +192,13 @@ const parseQueryString = function(string) {
 }
 
 const constructQueryString = function(object) {
-  let result = []
+  const result = []
   for (let key in object) {
     if (!object.hasOwnProperty(key)) {
       continue
     }
 
-    let value = object[key]
+    const value = object[key]
     if (Array !== value.constructor) {
       result.push(encodeURIComponent(key.toString()) + "=" + encodeURIComponent(value.toString()))
     } else {

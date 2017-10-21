@@ -1,7 +1,7 @@
 // Copyright 2016 by Chris Palmer (https://noncombatant.org), and released under
 // the terms of the GNU GPL3. See help.html for more information.
 
-"use strict"
+"use strict";
 
 // G L O B A L   V A R I A B L E S
 //
@@ -19,7 +19,7 @@ const sortingProperties = [ Album, Disc, Track, Pathname, Name ]
 // C O R E   F U N C T I O N A L I T Y
 
 const resetSearchHits = function() {
-  let hits = new Array(catalog.length)
+  const hits = new Array(catalog.length)
   for (let i = 0; i < catalog.length; ++i) {
     hits[i] = i
   }
@@ -27,7 +27,7 @@ const resetSearchHits = function() {
 }
 
 const setAudioVideoControls = function(itemID) {
-  let pathname = catalog[itemID][Pathname]
+  const pathname = catalog[itemID][Pathname]
   const volume = player.volume
   if (isAudioPathname(pathname)) {
     player = audioPlayer
@@ -43,7 +43,7 @@ const setAudioVideoControls = function(itemID) {
 const displayNowPlaying = function(item, element) {
   removeAllChildren(element)
 
-  let trackName = item[Name] || basename(item[Pathname])
+  const trackName = item[Name] || basename(item[Pathname])
   element.appendChild(createElement("span", "", item[Disc] + "-" + item[Track] + " “" + trackName + "”\u200A—\u200A"))
   element.appendChild(createElement("strong", "", item[Artist]))
   element.appendChild(createElement("span", "", "\u200A—\u200A"))
@@ -54,19 +54,19 @@ const displayNowPlaying = function(item, element) {
   // TODO: Re-enable this when fully supported. As of December 2016, Firefox
   // ignores `silent`, and Chrome for Android throws an "illegal constructor"
   // exception.
-  //let icon = dirname(player.src) + "/cover.jpg"
+  //const icon = dirname(player.src) + "/cover.jpg"
   //showNotification(document.title, { silent: true, icon: icon, badge: icon })
 }
 
 const leadingJunk = new RegExp("^(the\\s+|a\\s+|an\\s+|les?\\s+|las?\\s+|\"|'|\\.+\\s*)", "i")
 const normalizeTitle = function(title) {
-  let match = title.match(leadingJunk)
+  const match = title.match(leadingJunk)
   return match ? title.substr(match[0].length) : title
 }
 
 const compareNormalizedStrings = function(a, b) {
-  let aa = normalizeTitle(a)
-  let bb = normalizeTitle(b)
+  const aa = normalizeTitle(a)
+  const bb = normalizeTitle(b)
   if (aa === bb) {
     return 0
   }
@@ -80,7 +80,7 @@ const itemComparator = function(a, b) {
   a = catalog[a]
   b = catalog[b]
   for (let p of sortingProperties) {
-    let c =
+    const c =
       (Disc == p || Track == p || Year == p)
         ? parseIntOr(a[p], 1) - parseIntOr(b[p], 1)
         : compareNormalizedStrings(a[p], b[p])
@@ -111,13 +111,13 @@ const setLocationHash = function() {
 const updateShareLink = function() {
   shareLink.href = ""
   setSingleTextChild(shareLink, "")
-  let item = catalog[player.itemID]
+  const item = catalog[player.itemID]
   if (!item) {
     return
   }
-  let pathname = item[Pathname]
+  const pathname = item[Pathname]
 
-  let xhr = new XMLHttpRequest()
+  const xhr = new XMLHttpRequest()
   xhr.open("GET", "/get-cap?n=" + pathname)
   xhr.addEventListener("load", function() {
     const l = document.location
@@ -134,7 +134,7 @@ const updateShareLink = function() {
 const doPlay = function(itemID) {
   player.pause()
   setAudioVideoControls(itemID)
-  let item = catalog[itemID]
+  const item = catalog[itemID]
   player.src = item[Pathname]
   player.itemID = itemID
   player.play()
@@ -172,37 +172,37 @@ const playNext = function(e) {
 }
 
 const buildItemDiv = function(itemID) {
-  let item = catalog[itemID]
-  let div = createElement("div", "itemDiv")
+  const item = catalog[itemID]
+  const div = createElement("div", "itemDiv")
   div.itemID = itemID
   div.addEventListener("dblclick", itemDivOnClick)
   div.addEventListener("click", itemDivOnClick)
 
-  let trackSpan = createElement("span", "itemDivCell trackNumber", (item[Disc] || "1") + "-" + (item[Track] || "1"))
+  const trackSpan = createElement("span", "itemDivCell trackNumber", (item[Disc] || "1") + "-" + (item[Track] || "1"))
   div.appendChild(trackSpan)
 
-  let nameSpan = createElement("span", "itemDivCell", item[Name])
+  const nameSpan = createElement("span", "itemDivCell", item[Name])
   div.appendChild(nameSpan)
 
   return div
 }
 
 const buildAlbumTitleDiv = function(itemID) {
-  let item = catalog[itemID]
-  let div = createElement("div", "albumTitleDiv")
+  const item = catalog[itemID]
+  const div = createElement("div", "albumTitleDiv")
   div.itemID = itemID
   div.addEventListener("dblclick", albumTitleDivOnClick)
   div.addEventListener("click", albumTitleDivOnClick)
 
-  let albumSpan = createElement("span", "itemDivCell albumTitle", item[Album])
+  const albumSpan = createElement("span", "itemDivCell albumTitle", item[Album])
   div.appendChild(albumSpan)
 
   const artist = item[Pathname].startsWith("Compilations/") ? "Various Artists" : item[Artist]
-  let artistSpan = createElement("span", "itemDivCell artistName", artist)
+  const artistSpan = createElement("span", "itemDivCell artistName", artist)
   div.appendChild(artistSpan)
 
   if (item[Year]) {
-    let yearSpan = createElement("span", "itemDivCell year", item[Year])
+    const yearSpan = createElement("span", "itemDivCell year", item[Year])
     div.appendChild(yearSpan)
   }
 
@@ -218,11 +218,11 @@ const buildCatalog = function(start) {
     itemListDiv.removeChild($("bottom"))
   }
 
-  let limit = Math.min(searchHits.length, buildCatalogLimit)
+  const limit = Math.min(searchHits.length, buildCatalogLimit)
   let i
   for (i = 0; i < limit && start + i < searchHits.length; ++i) {
-    let itemID = searchHits[start + i]
-    let item = catalog[itemID]
+    const itemID = searchHits[start + i]
+    const item = catalog[itemID]
     const albumPathname = dirname(item[Pathname])
     if (albumPathname !== currentAlbumPathname) {
       itemListDiv.appendChild(buildAlbumTitleDiv(itemID))
@@ -231,7 +231,7 @@ const buildCatalog = function(start) {
     itemListDiv.appendChild(buildItemDiv(itemID))
   }
 
-  let bottom = createElement("div")
+  const bottom = createElement("div")
   bottom.id = "bottom"
   itemListDiv.appendChild(bottom)
 
@@ -255,8 +255,8 @@ const doSearchCatalog = function(query) {
   if ("" === query) {
     searchHits = resetSearchHits()
   } else {
-    let ast = parse(searchInput.value)
-    let context = new Context(searchFilters)
+    const ast = parse(searchInput.value)
+    const context = new Context(searchFilters)
     searchHits = []
     for (let i = 0; i < catalog.length; ++i) {
       context.scope.item = catalog[i]
@@ -300,7 +300,7 @@ const closeVideo = function(e) {
 }
 
 const albumTitleDivOnClick = function(e) {
-  let itemID = this.itemID
+  const itemID = this.itemID
   randomCheckbox.checked = false
   setLocationHash()
   if (player.paused || player.itemID != itemID) {

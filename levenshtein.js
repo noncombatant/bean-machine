@@ -22,6 +22,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+"use strict";
+
 const levenshteinEditDistance = function(a, b) {
   if (a.length == 0) return b.length
   if (b.length == 0) return a.length

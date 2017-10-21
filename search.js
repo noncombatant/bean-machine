@@ -1,6 +1,8 @@
 // Copyright 2016 by Chris Palmer (https://noncombatant.org), and released under
 // the terms of the GNU GPL3. See help.html for more information.
 
+"use strict";
+
 // Borrowed from
 // https://github.com/mathiasbynens/strip-combining-marks/blob/master/strip-combining-marks.js
 // by Mathias Bynens <https://mathiasbynens.be/>.
@@ -24,7 +26,7 @@ const normalizeStringForSearch = function(string) {
 //const editDistanceThreshold = 1
 //const allDigits = new RegExp(/^\d+$/)
 //const spaces = new RegExp(/\s+/)
-let reCache = {}
+//const reCache = {}
 
 const match = function(property, term) {
   term = normalizeStringForSearch(term)
@@ -87,13 +89,13 @@ const searchFilters = {
   },
 
   any: function() {
-    let x = this
+    const x = this
     return all(arguments, function(term) { return matchAny(x, term) })
   },
 
   audio: function() {
     if (arguments.length > 0) {
-      let x = this
+      const x = this
       return isAudioPathname(this[Pathname]) &&
              all(arguments, function(term) { return matchAny(x, term) })
     }
@@ -102,7 +104,7 @@ const searchFilters = {
 
   video: function() {
     if (arguments.length > 0) {
-      let x = this
+      const x = this
       return isVideoPathname(this[Pathname]) &&
              all(arguments, function(term) { return matchAny(x, term) })
     }
@@ -110,42 +112,42 @@ const searchFilters = {
   },
 
   path: function() {
-    let p = this[Pathname]
+    const p = this[Pathname]
     return all(arguments, function(term) { return match(p, term) })
   },
 
   album: function() {
-    let a = this[Album]
+    const a = this[Album]
     return all(arguments, function(term) { return match(a, term) })
   },
 
   artist: function() {
-    let a = this[Artist]
+    const a = this[Artist]
     return all(arguments, function(term) { return match(a, term) })
   },
 
   name: function() {
-    let n = this[Name]
+    const n = this[Name]
     return all(arguments, function(term) { return match(n, term) })
   },
 
   disc: function() {
-    let d = parseIntOr(this[Disc], 1)
+    const d = parseIntOr(this[Disc], 1)
     return all(arguments, function(term) { return d === parseIntOr(term, 1) })
   },
 
   track: function() {
-    let t = parseIntOr(this[Track], 1)
+    const t = parseIntOr(this[Track], 1)
     return all(arguments, function(term) { return t === parseIntOr(term, 1) })
   },
 
   year: function() {
-    let y = parseIntOr(this[Year], 1970)
+    const y = parseIntOr(this[Year], 1970)
     return all(arguments, function(term) { return y === parseIntOr(term, 1970) })
   },
 
   genre: function() {
-    let g = this[Genre]
+    const g = this[Genre]
     return all(arguments, function(term) { return match(g, term) })
   },
 
@@ -180,7 +182,7 @@ const categorize = function(token, is_first) {
 }
 
 const parenthesize = function(tokens, list) {
-  let token = tokens.shift()
+  const token = tokens.shift()
   if (undefined === token) {
     return list.pop()
   }
@@ -196,7 +198,7 @@ const parenthesize = function(tokens, list) {
 }
 
 const parse = function(query) {
-  let tokens = tokenize(query)
+  const tokens = tokenize(query)
 
   if (0 == tokens.length) {
     return parse("(all)")
@@ -229,7 +231,7 @@ const interpret = function(input, context) {
 }
 
 const interpretList = function(input, context) {
-  let list = input.map(function(x) { return interpret(x, context) })
+  const list = input.map(function(x) { return interpret(x, context) })
   if (list[0] instanceof Function) {
     return list[0].apply(context.get("item"), list.slice(1))
   }
