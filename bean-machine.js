@@ -93,30 +93,19 @@ const itemComparator = function(a, b) {
 
 const assertStateDefaults = function(state) {
   state.itemID = parseIntOr(idOrLast(state.itemID), 0)
-  const random = idOrLast(state.random)
-  state.random = random ? "true" === random.toString() : false
-  state.volume = Number(idOrLast(state.volume)) || 0.5
   state.query = idOrLast(state.query) || ""
 }
 
-const serializeState = function(state) {
-  assertStateDefaults(state)
-  return constructQueryString(state)
-}
-
 const deserializeState = function(string) {
-  let state = parseQueryString(string)
+  const state = parseQueryString(string)
   assertStateDefaults(state)
   return state
 }
 
 const setLocationHash = function() {
-  document.location.hash = serializeState({
-    "itemID": player.itemID,
-    "random": randomCheckbox.checked,
-    "volume": player.volume.toFixed(1),
-    "query": searchInput.value,
-  })
+  const state = { "itemID": player.itemID, "query": searchInput.value }
+  assertStateDefaults(state)
+  document.location.hash = constructQueryString(state)
 }
 
 const updateShareLink = function() {
@@ -287,7 +276,7 @@ const doSearchCatalog = function(query) {
 
 const searchCatalog = function(query, forceSearch) {
   query = query.trim()
-  let previousQuery = deserializeState(document.location.hash).query
+  const previousQuery = deserializeState(document.location.hash).query
   if (!forceSearch && previousQuery === query) {
     return
   }
@@ -378,7 +367,6 @@ const showHistoryButtonOnClick = function(e) {
 
 const randomCheckboxOnClick = function(e) {
   randomHistory = {}
-  setLocationHash()
 }
 
 const windowOnScroll = function(e) {
@@ -386,10 +374,6 @@ const windowOnScroll = function(e) {
     window.requestAnimationFrame(extendCatalog)
   }
   extendCatalogRequested = true
-}
-
-const onPlayerVolumeChange = function(e) {
-  setLocationHash()
 }
 
 // TODO: This can be removed when we remove the letter links.
@@ -416,6 +400,11 @@ const windowOnResize = function(e) {
   }
 }
 
+const hashChange = function(event) {
+  searchInput.value = deserializeState(document.location.hash).query
+  doSearchCatalog(searchInput.value)
+}
+
 // M A I N
 
 const addEventListeners = function() {
@@ -423,7 +412,6 @@ const addEventListeners = function() {
   player.addEventListener("ended", playNext)
   player.addEventListener("error", playerOnError)
   player.addEventListener("loadedmetadata", playerLoadedMetadata)
-  player.addEventListener("volumechange", onPlayerVolumeChange)
   randomCheckbox.addEventListener("click", randomCheckboxOnClick)
   searchInput.addEventListener("blur", executeSearch)
   searchInput.addEventListener("keyup", searchInputOnKeyUp)
@@ -433,6 +421,7 @@ const addEventListeners = function() {
   window.addEventListener("resize", windowOnResize)
   window.addEventListener("scroll", windowOnScroll)
   document.body.addEventListener("keyup", togglePlayback)
+  window.addEventListener("hashchange", hashChange, false);
 
   for (let i = 0; i < 26; i++) {
     $("letter_" + String.fromCharCode(97 + i)).addEventListener("click", letterLinkOnClick)
@@ -444,11 +433,9 @@ const addEventListeners = function() {
 }
 
 const applyState = function(serialized) {
-  let state = deserializeState(serialized)
+  const state = deserializeState(serialized)
   searchInput.value = state.query
-  randomCheckbox.checked = state.random
-  player.volume = state.volume
-  let item = catalog[state.itemID]
+  const item = catalog[state.itemID]
   if (item) {
     player.itemID = state.itemID
     player.src = item[Pathname]
