@@ -96,7 +96,8 @@ const getTerms = function(tokens) {
         continue
       }
       token = token.substring(0, token.length - 1)
-      term.property = token
+      // TODO: Use normalizeStringForSearch here.
+      term.property = token.toLocaleLowerCase()
       token = next
       ++i
     }
@@ -110,4 +111,112 @@ const getTerms = function(tokens) {
     terms.push(term)
   }
   return terms
+}
+
+// catalog.js must have been included first. TODO: Might be good to define this
+// in catalog.js instead. TODO: Remove this testing stuff.
+const Pathname = 0
+const Album = 1
+const Artist = 2
+const Name = 3
+const Disc = 4
+const Track = 5
+const Year = 6
+const Genre = 7
+const Mtime = 8
+
+const termPropertiesMap = {
+  "path": Pathname,
+  "album": Album,
+  "artist": Artist,
+  "name": Name,
+  "disc": Disc,
+  "track": Track,
+  "year": Year,
+  "before": Year,
+  "after": Year,
+  "genre": Genre,
+  "mtime": Mtime,
+  "mbefore": Mtime,
+  "mafter": Mtime,
+}
+
+// TODO: Implement before and after as well. Requires a 3rd argument.
+//
+// TODO: If itemPropertyValue is numeric, match numerically. Otherwise, debate
+// indexOf or startsWith? indexOf for Pathname, startsWith for other string
+// properties.
+const matchPropertyValue = function(itemPropertyValue, termValue) {
+  if ("number" === typeof(itemPropertyValue)) {
+    return itemPropertyValue == Number(termValue)
+  } else {
+    // TODO: Use normalizeStringForSearch here.
+    const normalized = itemPropertyValue.toString().toLocaleLowerCase()
+    return normalized.startsWith(termValue)
+  }
+}
+
+// Returns true if the catalog `item` matches the `terms`, false if not.
+const matchItem = function(terms, item) {
+  for (let term of terms) {
+    const itemPropertyIndex = termPropertiesMap[term.property]
+    term.value
+
+    // Test the presence of the property.
+    if (term.property) {
+      if (!itemPropertyIndex) {
+        if (term.negated) {
+          continue
+        }
+        return false
+      }
+
+      // Test if the property matches.
+      const itemPropertyValue = item[itemPropertyIndex]
+      if (matchPropertyValue(itemPropertyValue, term.value) === term.negated) {
+        return false
+      }
+    } else {
+      // Otherwise, test all properties.
+      if (term.negated) {
+        // TODO: Should probably abstract these matchPropertyValue if-blocks
+        // into a matchAnyPropertyValue function.
+        if (matchPropertyValue(item[Pathname], term.value) ||
+            matchPropertyValue(item[Album], term.value) ||
+            matchPropertyValue(item[Artist], term.value) ||
+            matchPropertyValue(item[Name], term.value) ||
+            matchPropertyValue(item[Disc], term.value) ||
+            matchPropertyValue(item[Track], term.value) ||
+            matchPropertyValue(item[Year], term.value) ||
+            matchPropertyValue(item[Genre], term.value) ||
+            matchPropertyValue(item[Mtime], term.value)) {
+          return false
+        }
+      } else {
+        if (!matchPropertyValue(item[Pathname], term.value) &&
+            !matchPropertyValue(item[Album], term.value) &&
+            !matchPropertyValue(item[Artist], term.value) &&
+            !matchPropertyValue(item[Name], term.value) &&
+            !matchPropertyValue(item[Disc], term.value) &&
+            !matchPropertyValue(item[Track], term.value) &&
+            !matchPropertyValue(item[Year], term.value) &&
+            !matchPropertyValue(item[Genre], term.value) &&
+            !matchPropertyValue(item[Mtime], term.value)) {
+          return false
+        }
+      }
+    }
+  }
+
+  return true
+}
+
+const matchItems = function(terms, items) {
+  const matches = []
+  for (let i = 0; i < items.length; ++i) {
+    if (matchItem(terms, items[i])) {
+      matches.push(i)
+    }
+  }
+  return matches
 }

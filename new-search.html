@@ -1,5 +1,6 @@
 <h1>Lexer: <span id="lexerResult"></span></h1>
 <h1>Parser: <span id="parserResult"></span></h1>
+<h1>Searching: <span id="searchingResult"></span></h1>
 
 <script src="util.js"></script>
 
@@ -32,27 +33,68 @@ const arraysEqual = function(a, b, comparator) {
 
 const testLexer = function(string, expectedTokens) {
   const tokens = getTokens(string)
-  console.log(string, tokens)
   return arraysEqual(expectedTokens, getTokens(string), primitiveEqual)
 }
 
-const string = 'hello:test "very \\"good\\"" "yes":wow "scrunch pumpkin":"goat leg" -goat:no -"short pants"'
-const expectedTokens = ['hello:', 'test', 'very "good"', 'yes:', 'wow', 'scrunch pumpkin:', 'goat leg', '-goat:', 'no', '-short pants']
+const testMatcher = function() {
+  const items = [
+    [ "pathname", "album", "artist", "name", Disc, Track, Year, "genre", Mtime ],
+    [ "", "Testing Album", "", "", 1, 2, 1980, "leg music", 1234567890 ],
+    [ "", "Testing Album", "", "", 1, 2, 1980, "wowsongs", 1234567890 ],
+    [ "", "Short Pants Songs", "", "", 1, 2, 1980, "Skiffle", 1234567890 ],
+  ]
 
-setSingleTextChild(lexerResult, testLexer(string, expectedTokens) ? "Success" : "Failure")
+  const expectations = [
+    { terms: [{property: "", value: "artist", negated: false}],
+      results: [0] },
+    { terms: [{property: "", value: "artist", negated: true}],
+      results: [1, 2, 3] },
+    { terms: [{property: "", value: "test", negated: false}],
+      results: [1, 2] },
+    { terms: [{property: "album", value: "test", negated: false}],
+      results: [1, 2] },
+    { terms: [{property: "", value: "yagborgle", negated: false}],
+      results: [] },
+    { terms: [{property: "", value: "wow", negated: false}],
+      results: [2] },
+    { terms: [{property: "genre", value: "skiffle", negated: true}],
+      results: [0, 1, 2] },
+  ]
 
-const expectedTerms = [
-  { property: 'hello', value: 'test', negated: false },
-  { property: '', value: 'very "good"', negated: false },
-  { property: 'yes', value: 'wow', negated: false },
-  { property: 'scrunch pumpkin', value: 'goat leg', negated: false },
-  { property: 'goat', value: 'no', negated: true },
-  { property: '', value: 'short pants', negated: true },
-]
+  for (let e of expectations) {
+    const matched = matchItems(e.terms, items)
+    if (!arraysEqual(e.results, matched, primitiveEqual)) {
+      console.log("terms", e.terms)
+      console.log("expected results", e.results)
+      console.log("matched", matched)
+      return false
+    }
+  }
+  return true
+}
 
-const lexedTokens = getTokens(string)
-const parsedTerms = getTerms(lexedTokens)
-console.log(parsedTerms)
+const main = function() {
+  const string = 'album:test "very \\"good\\"" "genre":wow "scrunch pumpkin":"goat leg" -goat:no -"short pants"'
+  const expectedTokens = ['album:', 'test', 'very "good"', 'genre:', 'wow', 'scrunch pumpkin:', 'goat leg', '-goat:', 'no', '-short pants']
 
-setSingleTextChild(parserResult, arraysEqual(parsedTerms, expectedTerms, termsEqual) ? "Success" : "Failure")
+  setSingleTextChild(lexerResult, testLexer(string, expectedTokens) ? "Success" : "Failure")
+
+  const expectedTerms = [
+    { property: 'album', value: 'test', negated: false },
+    { property: '', value: 'very "good"', negated: false },
+    { property: 'genre', value: 'wow', negated: false },
+    { property: 'scrunch pumpkin', value: 'goat leg', negated: false },
+    { property: 'goat', value: 'no', negated: true },
+    { property: '', value: 'short pants', negated: true },
+  ]
+
+  const lexedTokens = getTokens(string)
+  const parsedTerms = getTerms(lexedTokens)
+
+  setSingleTextChild(parserResult, arraysEqual(parsedTerms, expectedTerms, termsEqual) ? "Success" : "Failure")
+
+  setSingleTextChild(searchingResult, testMatcher() ? "Success" : "Failure")
+}
+
+main()
 </script>
