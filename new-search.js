@@ -96,8 +96,7 @@ const getTerms = function(tokens) {
         continue
       }
       token = token.substring(0, token.length - 1)
-      // TODO: Use normalizeStringForSearch here.
-      term.property = token.toLocaleLowerCase()
+      term.property = normalizeStringForSearch(token)
       token = next
       ++i
     }
@@ -150,8 +149,7 @@ const matchPropertyValue = function(itemPropertyValue, termValue) {
   if ("number" === typeof(itemPropertyValue)) {
     return itemPropertyValue == Number(termValue)
   } else {
-    // TODO: Use normalizeStringForSearch here.
-    const normalized = itemPropertyValue.toString().toLocaleLowerCase()
+    const normalized = normalizeStringForSearch(itemPropertyValue)
     return normalized.startsWith(termValue)
   }
 }
