@@ -213,3 +213,22 @@ const constructQueryString = function(object) {
 const idOrLast = function(x) {
   return Array.isArray(x) ? x[x.length - 1] : x
 }
+
+// Borrowed from
+// https://github.com/mathiasbynens/strip-combining-marks/blob/master/strip-combining-marks.js
+// by Mathias Bynens <https://mathiasbynens.be/>.
+//
+// "héllo".normalize("NFD").replace(regexSymbolWithCombiningMarks, '$1') -> "hello"
+
+const regexSymbolWithCombiningMarks = new RegExp(/([\0-\u02FF\u0370-\u1AAF\u1B00-\u1DBF\u1E00-\u20CF\u2100-\uD7FF\uE000-\uFE1F\uFE30-\uFFFF]|[\uD800-\uDBFF][\uDC00-\uDFFF]|[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?:[^\uD800-\uDBFF]|^)[\uDC00-\uDFFF])([\u0300-\u036F\u1AB0-\u1AFF\u1DC0-\u1DFF\u20D0-\u20FF\uFE20-\uFE2F]+)/g)
+
+// TODO: Should just make a generic memoize function.
+let normalizeStringForSearchCache = {}
+
+const normalizeStringForSearch = function(string) {
+  string = string.toString().normalize("NFD")
+  if (!(string in normalizeStringForSearchCache)) {
+    normalizeStringForSearchCache[string] = string.replace(regexSymbolWithCombiningMarks, '$1').toLocaleLowerCase()
+  }
+  return normalizeStringForSearchCache[string]
+}
