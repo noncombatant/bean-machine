@@ -226,7 +226,7 @@ const doSearchCatalog = function(query) {
   const start = performance.now()
 
   if ("" === query) {
-    searchHits = resetSearchHits()
+    searchHits = resetSearchHits(catalog)
   } else {
     const ast = parse(searchInput.value)
     const context = new Context(searchFilters)
@@ -369,7 +369,7 @@ const applyState = function(serialized) {
     displayNowPlaying(item, nowPlayingTitle)
   }
 
-  searchHits = resetSearchHits()
+  searchHits = resetSearchHits(catalog)
   searchCatalog(state.query, true)
 }
 

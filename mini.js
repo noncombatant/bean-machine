@@ -111,7 +111,7 @@ const itemMatchesQuery = interpret
 
 const doSearchCatalog = function(query) {
   if ("" === query) {
-    searchHits = resetSearchHits()
+    searchHits = resetSearchHits(catalog)
   } else {
     const ast = parse(searchInput.value)
     const context = new Context(searchFilters)
@@ -215,6 +215,6 @@ const addEventListeners = function() {
 const main = function() {
   getFormatExtensions()
   addEventListeners()
-  searchHits = resetSearchHits()
+  searchHits = resetSearchHits(catalog)
 }
 main()
