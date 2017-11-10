@@ -32,7 +32,8 @@ const (
 
 var (
 	frontEndFiles = []string{"login.html", "index.html", "help.html", formatsJsonBasename, "bean-machine.css", "bean-machine.js", "util.js", "favicon.ico", "levenshtein.js", "search.js",
-		"clef-192.png", "clef-144.png", "clef-96.png", "clef-64.png", "manifest.json", "mini.html", "mini.js"}
+		"clef-192.png", "clef-144.png", "clef-96.png", "clef-64.png",
+		"manifest.json", "mini.html", "mini.js", "core.js"}
 	homePathname          = os.Getenv("HOME")
 	configurationPathname = path.Join(homePathname, configurationBasename)
 	bindToIPv4            = true

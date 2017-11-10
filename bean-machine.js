@@ -18,14 +18,6 @@ const sortingProperties = [ Album, Disc, Track, Pathname, Name ]
 
 // C O R E   F U N C T I O N A L I T Y
 
-const resetSearchHits = function() {
-  const hits = new Array(catalog.length)
-  for (let i = 0; i < catalog.length; ++i) {
-    hits[i] = i
-  }
-  return hits
-}
-
 const setAudioVideoControls = function(itemID) {
   const pathname = catalog[itemID][Pathname]
   const volume = player.volume

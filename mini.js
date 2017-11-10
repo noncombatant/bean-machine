@@ -14,15 +14,6 @@ const sortingProperties = [ Album, Disc, Track, Pathname, Name ]
 
 // C O R E   F U N C T I O N A L I T Y
 
-// TODO: Put this in util.js, and use it here and in bean-machine.js.
-const resetSearchHits = function() {
-  const hits = new Array(catalog.length)
-  for (let i = 0; i < catalog.length; ++i) {
-    hits[i] = i
-  }
-  return hits
-}
-
 const displayNowPlaying = function(item, element) {
   removeAllChildren(element)
 
