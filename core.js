@@ -43,3 +43,21 @@ const itemComparator = function(a, b) {
   }
   return 0
 }
+
+const leadingJunk = new RegExp("^(the\\s+|a\\s+|an\\s+|les?\\s+|las?\\s+|\"|'|\\.+\\s*)", "i")
+const normalizeTitle = function(title) {
+  const match = title.match(leadingJunk)
+  return match ? title.substr(match[0].length) : title
+}
+
+const compareNormalizedStrings = function(a, b) {
+  const aa = normalizeTitle(a)
+  const bb = normalizeTitle(b)
+  if (aa === bb) {
+    return 0
+  }
+  if (aa < bb) {
+    return -1
+  }
+  return 1
+}

@@ -14,24 +14,6 @@ const sortingProperties = [ Album, Disc, Track, Pathname, Name ]
 
 // C O R E   F U N C T I O N A L I T Y
 
-const leadingJunk = new RegExp("^(the\\s+|a\\s+|an\\s+|les?\\s+|las?\\s+|\"|'|\\.+\\s*)", "i")
-const normalizeTitle = function(title) {
-  const match = title.match(leadingJunk)
-  return match ? title.substr(match[0].length) : title
-}
-
-const compareNormalizedStrings = function(a, b) {
-  const aa = normalizeTitle(a)
-  const bb = normalizeTitle(b)
-  if (aa === bb) {
-    return 0
-  }
-  if (aa < bb) {
-    return -1
-  }
-  return 1
-}
-
 const deserializeState = function(string) {
   return parseQueryString(string)
 }
