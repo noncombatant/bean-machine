@@ -61,3 +61,9 @@ const compareNormalizedStrings = function(a, b) {
   }
   return 1
 }
+
+const setLocationHash = function() {
+  const state = { "itemID": player.itemID, "query": searchInput.value }
+  assertStateDefaults(state)
+  document.location.hash = constructQueryString(state)
+}

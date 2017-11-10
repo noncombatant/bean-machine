@@ -43,12 +43,6 @@ const deserializeState = function(string) {
   return state
 }
 
-const setLocationHash = function() {
-  const state = { "itemID": player.itemID, "query": searchInput.value }
-  assertStateDefaults(state)
-  document.location.hash = constructQueryString(state)
-}
-
 const updateShareLink = function() {
   shareLink.href = ""
   setSingleTextChild(shareLink, "")

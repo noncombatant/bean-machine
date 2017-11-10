@@ -18,11 +18,6 @@ const deserializeState = function(string) {
   return parseQueryString(string)
 }
 
-const setLocationHash = function() {
-  const state = { "itemID": player.itemID, "query": searchInput.value }
-  document.location.hash = constructQueryString(state)
-}
-
 const doPlay = function(itemID) {
   player.pause()
   // TODO: Potentially not necessary.
