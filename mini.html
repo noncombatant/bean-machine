@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Bean Machine</title>
+<link rel="manifest" href="manifest.json">
+
+<noscript><strong>Bean Machine requires JavaScript to work.</strong></noscript>
+
+<div id="nowPlayingTitle">Click on any track or album to play.</div>
+
+<div>
+<audio id="player" preload="auto"></audio>
+<button id="playButton">Play</button>
+<button id="nextButton">Next</button>
+<button id="randomToggle">Sequential</button>
+</div>
+
+<div>
+<input type="text" id="searchInput"/>
+<button id="searchButton">Search</button>
+</div>
+
+<script src="catalog.js"></script>
+<script src="util.js"></script>
+<script src="search.js"></script>
+<script src="mini.js"></script>
