@@ -28,3 +28,18 @@ const displayNowPlaying = function(item, element) {
   //const icon = dirname(player.src) + "/cover.jpg"
   //showNotification(document.title, { silent: true, icon: icon, badge: icon })
 }
+
+const itemComparator = function(a, b) {
+  a = catalog[a]
+  b = catalog[b]
+  for (let p of sortingProperties) {
+    const c =
+      (Disc == p || Track == p || Year == p)
+        ? parseIntOr(a[p], 1) - parseIntOr(b[p], 1)
+        : compareNormalizedStrings(a[p], b[p])
+    if (0 !== c) {
+      return c
+    }
+  }
+  return 0
+}

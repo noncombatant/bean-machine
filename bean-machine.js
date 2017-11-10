@@ -50,21 +50,6 @@ const compareNormalizedStrings = function(a, b) {
   return 1
 }
 
-const itemComparator = function(a, b) {
-  a = catalog[a]
-  b = catalog[b]
-  for (let p of sortingProperties) {
-    const c =
-      (Disc == p || Track == p || Year == p)
-        ? parseIntOr(a[p], 1) - parseIntOr(b[p], 1)
-        : compareNormalizedStrings(a[p], b[p])
-    if (0 !== c) {
-      return c
-    }
-  }
-  return 0
-}
-
 const assertStateDefaults = function(state) {
   state.itemID = parseIntOr(idOrLast(state.itemID), 0)
   state.query = idOrLast(state.query) || ""
