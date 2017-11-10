@@ -91,22 +91,6 @@ const playNext = function(e) {
   }
 }
 
-const buildItemDiv = function(itemID) {
-  const item = catalog[itemID]
-  const div = createElement("div", "itemDiv")
-  div.itemID = itemID
-  div.addEventListener("dblclick", itemDivOnClick)
-  div.addEventListener("click", itemDivOnClick)
-
-  const trackSpan = createElement("span", "itemDivCell trackNumber", (item[Disc] || "1") + "-" + (item[Track] || "1"))
-  div.appendChild(trackSpan)
-
-  const nameSpan = createElement("span", "itemDivCell", item[Name])
-  div.appendChild(nameSpan)
-
-  return div
-}
-
 const itemMatchesQuery = interpret
 
 const doSearchCatalog = function(query) {
