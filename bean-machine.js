@@ -184,8 +184,6 @@ const extendCatalog = function() {
 const itemMatchesQuery = interpret
 
 const doSearchCatalog = function(query) {
-  const start = performance.now()
-
   if ("" === query) {
     searchHits = resetSearchHits(catalog)
   } else {
@@ -199,8 +197,6 @@ const doSearchCatalog = function(query) {
       }
     }
   }
-
-  const end = performance.now()
 
   setLocationHash()
   searchHits.sort(itemComparator)
