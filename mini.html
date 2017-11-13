@@ -9,18 +9,16 @@ body {
   font-family: "Helvetica Neue", Helvetica, Arial, sans;
 }
 
-input {
+input[type="text"] {
   font-size: 32px;
   padding: 8px;
+  border: 1px solid grey;
+  border-radius: 8px;
 }
 
-button, input {
+input[type="image"] {
+  border: 1px solid grey;
   border-radius: 8px;
-  border: solid gray 1px;
-  background-color: white;
-  float: left;
-  margin: 4px;
-  vertical-align: bottom;
 }
 </style>
 
@@ -30,18 +28,21 @@ button, input {
 
 <audio id="player" preload="auto"></audio>
 
-<button id="playButton" title="Play"><img src="play.png" id="playIcon"
-width="48" height="48" alt="Play"/></button>
+<input type="image" title="Play" src="play.png" id="playButton" width="48"
+height="48" />
 
-<button id="skipButton" title="Skip"><img src="skip.png" width="48" height="48"
-alt="Skip"/></button>
+<input type="image" title="Skip" id="skipButton" src="skip.png" width="48"
+height="48" />
 
-<button id="shuffleButton" title="Repeat"><img src="repeat.png" id="shuffleIcon"
-width="48" height="48" alt="Repeat"/></button>
+<input type="image" title="Repeat" id="shuffleButton" src="repeat.png"
+width="48" height="48" />
+
+<br/>
 
 <input type="text" id="searchInput"/>
-<button id="searchButton" title="Search"><img src="search.png" width="48"
-height="48" alt="Search"/></button>
+
+<input type="image" title="Search" id="searchButton" src="search.png" width="48"
+height="48" />
 
 <script src="catalog.js"></script>
 <script src="util.js"></script>

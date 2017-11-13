@@ -29,15 +29,15 @@ const doPlay = function(itemID) {
   player.play()
 
   // TODO: Refactor playButtonOnClicked so that we can reuse it here.
-  playIcon.src = "pause.png"
-  playIcon.alt = playButton.title = "Pause"
+  playButton.src = "pause.png"
+  playButton.title = "Pause"
 
   displayNowPlaying(item, nowPlayingTitle)
   setLocationHash()
 }
 
 const playNext = function(e) {
-  if ("Repeat" === shuffleIcon.alt) {
+  if ("Repeat" === shuffleButton.title) {
     let i
     while (true) {
       i = getRandomIndex(searchHits)
@@ -126,27 +126,27 @@ const executeSearch = function(e) {
 }
 
 const shuffleButtonOnClick = function(e) {
-  if ("Repeat" === shuffleIcon.alt) {
-    shuffleIcon.src = "shuffle.png"
-    shuffleIcon.alt = shuffleButton.title = "Shuffle"
+  if ("Repeat" === shuffleButton.title) {
+    shuffleButton.src = "shuffle.png"
+    shuffleButton.title = "Shuffle"
   } else {
-    shuffleIcon.src = "repeat.png"
-    shuffleIcon.alt = shuffleButton.title = "Repeat"
+    shuffleButton.src = "repeat.png"
+    shuffleButton.title = "Repeat"
   }
 }
 
 const playButtonOnClicked = function(e) {
-  if ("Play" === playIcon.alt) {
+  if ("Play" === playButton.title) {
     if (undefined === player.itemID) {
       playNext(e)
     } else {
       doPlay(player.itemID)
     }
-    playIcon.src = "pause.png"
-    playIcon.alt = playButton.title = "Pause"
+    playButton.src = "pause.png"
+    playButton.title = "Pause"
   } else {
-    playIcon.src = "play.png"
-    playIcon.alt = playButton.title = "Play"
+    playButton.src = "play.png"
+    playButton.title = "Play"
     player.pause()
   }
 }
