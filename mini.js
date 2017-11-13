@@ -14,26 +14,30 @@ const sortingProperties = [ Album, Disc, Track, Pathname, Name ]
 
 // C O R E   F U N C T I O N A L I T Y
 
+// TODO: Get rid of this.
+const assertStateDefaults = function() {}
+
 const deserializeState = function(string) {
   return parseQueryString(string)
 }
 
 const doPlay = function(itemID) {
   player.pause()
-  // TODO: Potentially not necessary.
-  setSingleTextChild(playButton, "Play")
   const item = catalog[itemID]
   player.src = item[Pathname]
   player.itemID = itemID
   player.play()
-  setSingleTextChild(playButton, "Pause")
+
+  // TODO: Refactor playButtonOnClicked so that we can reuse it here.
+  playIcon.src = "pause.png"
+  playIcon.alt = playButton.title = "Pause"
 
   displayNowPlaying(item, nowPlayingTitle)
   setLocationHash()
 }
 
 const playNext = function(e) {
-  if ("Sequential" === randomToggle.innerText) {
+  if ("Repeat" === shuffleIcon.alt) {
     let i
     while (true) {
       i = getRandomIndex(searchHits)
@@ -121,24 +125,28 @@ const executeSearch = function(e) {
   searchCatalog(searchInput.value, false)
 }
 
-const randomToggleOnClick = function(e) {
-  if ("Sequential" === randomToggle.innerText) {
-    setSingleTextChild(randomToggle, "Random")
+const shuffleButtonOnClick = function(e) {
+  if ("Repeat" === shuffleIcon.alt) {
+    shuffleIcon.src = "shuffle.png"
+    shuffleIcon.alt = shuffleButton.title = "Shuffle"
   } else {
-    setSingleTextChild(randomToggle, "Sequential")
+    shuffleIcon.src = "repeat.png"
+    shuffleIcon.alt = shuffleButton.title = "Repeat"
   }
 }
 
 const playButtonOnClicked = function(e) {
-  if ("Play" === playButton.innerText) {
+  if ("Play" === playIcon.alt) {
     if (undefined === player.itemID) {
       playNext(e)
     } else {
       doPlay(player.itemID)
     }
-    setSingleTextChild(playButton, "Pause")
+    playIcon.src = "pause.png"
+    playIcon.alt = playButton.title = "Pause"
   } else {
-    setSingleTextChild(playButton, "Play")
+    playIcon.src = "play.png"
+    playIcon.alt = playButton.title = "Play"
     player.pause()
   }
 }
@@ -147,11 +155,11 @@ const playButtonOnClicked = function(e) {
 
 const addEventListeners = function() {
   playButton.addEventListener("click", playButtonOnClicked)
-  nextButton.addEventListener("click", playNext)
+  skipButton.addEventListener("click", playNext)
   player.addEventListener("ended", playNext)
   player.addEventListener("error", playerOnError)
   player.addEventListener("loadedmetadata", playerLoadedMetadata)
-  randomToggle.addEventListener("click", randomToggleOnClick)
+  shuffleButton.addEventListener("click", shuffleButtonOnClick)
   searchInput.addEventListener("blur", executeSearch)
   searchInput.addEventListener("keyup", searchInputOnKeyUp)
   searchButton.addEventListener("click", executeSearch)

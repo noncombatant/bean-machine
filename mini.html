@@ -4,21 +4,44 @@
 <title>Bean Machine</title>
 <link rel="manifest" href="manifest.json">
 
+<style>
+body {
+  font-family: "Helvetica Neue", Helvetica, Arial, sans;
+}
+
+input {
+  font-size: 32px;
+  padding: 8px;
+}
+
+button, input {
+  border-radius: 8px;
+  border: solid gray 1px;
+  background-color: white;
+  float: left;
+  margin: 4px;
+  vertical-align: bottom;
+}
+</style>
+
 <noscript><strong>Bean Machine requires JavaScript to work.</strong></noscript>
 
-<div id="nowPlayingTitle">Click on any track or album to play.</div>
+<p id="nowPlayingTitle">Click on any track or album to play.</p>
 
-<div>
 <audio id="player" preload="auto"></audio>
-<button id="playButton">Play</button>
-<button id="nextButton">Next</button>
-<button id="randomToggle">Sequential</button>
-</div>
 
-<div>
+<button id="playButton" title="Play"><img src="play.png" id="playIcon"
+width="48" height="48" alt="Play"/></button>
+
+<button id="skipButton" title="Skip"><img src="skip.png" width="48" height="48"
+alt="Skip"/></button>
+
+<button id="shuffleButton" title="Repeat"><img src="repeat.png" id="shuffleIcon"
+width="48" height="48" alt="Repeat"/></button>
+
 <input type="text" id="searchInput"/>
-<button id="searchButton">Search</button>
-</div>
+<button id="searchButton" title="Search"><img src="search.png" width="48"
+height="48" alt="Search"/></button>
 
 <script src="catalog.js"></script>
 <script src="util.js"></script>
