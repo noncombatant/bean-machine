@@ -1,0 +1,15 @@
+body {
+  font-family: "Helvetica Neue", Helvetica, Arial, sans;
+}
+
+input[type="text"] {
+  font-size: 32px;
+  padding: 8px;
+  border: 1px solid grey;
+  border-radius: 8px;
+}
+
+input[type="image"] {
+  border: 1px solid grey;
+  border-radius: 8px;
+}

@@ -37,7 +37,7 @@ var (
 		"clef-192.png", "clef-144.png", "clef-96.png", "clef-64.png",
 		"manifest.json", "mini.html", "mini.js", "core.js",
 		"play.png", "pause.png", "search.png", "skip.png", "shuffle.png",
-		"repeat.png"}
+		"repeat.png", "mini.css"}
 	homePathname          = os.Getenv("HOME")
 	configurationPathname = path.Join(homePathname, configurationBasename)
 	bindToIPv4            = true
