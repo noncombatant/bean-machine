@@ -5,11 +5,20 @@ body {
 input[type="text"] {
   font-size: 32px;
   padding: 8px;
-  border: 1px solid grey;
+  border: 1px solid #ba55da;
+  margin: 2px;
   border-radius: 8px;
+  outline: none;
 }
 
 input[type="image"] {
-  border: 1px solid grey;
+  border: 1px solid #ba55da;
+  margin: 2px;
   border-radius: 8px;
+  outline: none;
+}
+
+input[type="text"]:focus, input[type="image"]:focus {
+  margin: 0px;
+  border: 3px solid #ba55da;
 }
