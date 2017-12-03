@@ -199,6 +199,10 @@ const constructQueryString = function(object) {
     }
 
     const value = object[key]
+    if (!value) {
+      continue
+    }
+
     if (Array !== value.constructor) {
       result.push(encodeURIComponent(key.toString()) + "=" + encodeURIComponent(value.toString()))
     } else {
