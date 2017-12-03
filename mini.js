@@ -21,6 +21,10 @@ const deserializeState = function(string) {
   return parseQueryString(string)
 }
 
+const sizeCover = function(event) {
+  cover.height = cover.width = document.body.clientWidth - 10
+}
+
 const doPlay = function(itemID) {
   player.pause()
   const item = catalog[itemID]
@@ -34,6 +38,9 @@ const doPlay = function(itemID) {
 
   displayNowPlaying(item, nowPlayingTitle)
   setLocationHash()
+  cover.style.visibility = "visible"
+  cover.src = dirname(item[Pathname]) + "/cover.jpg"
+  sizeCover()
 }
 
 const playNext = function(e) {
@@ -151,6 +158,14 @@ const playButtonOnClicked = function(e) {
   }
 }
 
+var windowOnResize = function() {
+  window.requestAnimationFrame(sizeCover);
+}
+
+var coverOnError = function() {
+  cover.style.visibility = "hidden"
+}
+
 // M A I N
 
 const addEventListeners = function() {
@@ -164,6 +179,8 @@ const addEventListeners = function() {
   searchInput.addEventListener("keyup", searchInputOnKeyUp)
   searchButton.addEventListener("click", executeSearch)
   document.body.addEventListener("keyup", togglePlayback)
+  window.addEventListener("resize", windowOnResize)
+  cover.addEventListener("error", coverOnError)
 }
 
 const main = function() {
