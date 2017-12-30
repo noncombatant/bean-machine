@@ -4,10 +4,7 @@
 package main
 
 import (
-	"crypto/hmac"
-	"crypto/sha256"
 	"encoding/hex"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -19,50 +16,12 @@ import (
 
 const (
 	hmacKeyLength             = 32
-	capabilityBytesLength     = 16
 	authenticationTokenLength = 16
 )
 
 var (
 	anonymousFiles = []string{"manifest.json", "bean-machine.css", "readme.html", "help.html"}
 )
-
-func generateCapabilityKey() []byte {
-	keyPathname := path.Join(configurationPathname, capabilityKeyBasename)
-	bytes, err := ioutil.ReadFile(keyPathname)
-	if err == nil && len(bytes) == hmacKeyLength {
-		return bytes
-	}
-
-	capabilityKey := make([]byte, hmacKeyLength)
-	getRandomBytes(capabilityKey)
-
-	if err := ioutil.WriteFile(keyPathname, capabilityKey, 0600); err != nil {
-		log.Fatalf("Failed to save capability key in %q: %s", keyPathname, err)
-	}
-
-	return capabilityKey
-}
-
-func generateCapabilityBytes(name string) []byte {
-	mac := hmac.New(sha256.New, generateCapabilityKey())
-	mac.Write([]byte(name))
-	return mac.Sum(nil)
-}
-
-func generateCapabilityString(name string) string {
-	return hex.EncodeToString(generateCapabilityBytes(name))[:2*capabilityBytesLength]
-}
-
-func checkCapability(name, capability string) bool {
-	bytes, err := hex.DecodeString(capability)
-	if err != nil {
-		return false
-	}
-
-	expected := generateCapabilityBytes(name)[:capabilityBytesLength]
-	return hmac.Equal(expected, bytes)
-}
 
 func generateToken() string {
 	token := make([]byte, authenticationTokenLength)
@@ -76,11 +35,6 @@ type AuthenticatingFileHandler struct {
 }
 
 func (h AuthenticatingFileHandler) isRequestAuthenticated(r *http.Request) bool {
-	caps := r.URL.Query()["cap"]
-	if len(caps) == 1 {
-		return checkCapability(h.normalizePathname(r.URL.Path)[len(h.Root):], caps[0])
-	}
-
 	cookie, e := r.Cookie("token")
 	if e == nil && len(cookie.Value) == 2*authenticationTokenLength {
 		if _, e := hex.DecodeString(cookie.Value); e != nil {
@@ -116,26 +70,6 @@ func (h AuthenticatingFileHandler) redirectToLogin(w http.ResponseWriter, r *htt
 	}
 	defer file.Close()
 	http.ServeContent(w, r, "login.html", time.Now(), file)
-}
-
-func (h AuthenticatingFileHandler) handleGetCap(w http.ResponseWriter, r *http.Request) {
-	pathnames, ok := r.URL.Query()["n"]
-	if !ok || len(pathnames) != 1 {
-		http.NotFound(w, r)
-		return
-	}
-
-	pathname := h.Root + "/" + pathnames[0]
-
-	file, info := openFileIfPublic(pathname)
-	if file == nil || info == nil {
-		http.NotFound(w, r)
-		return
-	}
-	defer file.Close()
-
-	cap := generateCapabilityString(pathnames[0])
-	http.ServeContent(w, r, r.URL.Path+"?n="+pathname, info.ModTime(), strings.NewReader(cap))
 }
 
 func openFileIfPublic(pathname string) (*os.File, os.FileInfo) {
@@ -199,11 +133,6 @@ func shouldServeFileToAnonymousClients(pathname string) bool {
 func (h AuthenticatingFileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path == "/login.html" && r.Method == http.MethodPost {
 		h.handleLogIn(w, r)
-		return
-	}
-
-	if r.URL.Path == "/get-cap" {
-		h.handleGetCap(w, r)
 		return
 	}
 

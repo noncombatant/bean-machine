@@ -43,29 +43,6 @@ const deserializeState = function(string) {
   return state
 }
 
-const updateShareLink = function() {
-  shareLink.href = ""
-  setSingleTextChild(shareLink, "")
-  const item = catalog[player.itemID]
-  if (!item) {
-    return
-  }
-  const pathname = item[Pathname]
-
-  const xhr = new XMLHttpRequest()
-  xhr.open("GET", "/get-cap?n=" + pathname)
-  xhr.addEventListener("load", function() {
-    const l = document.location
-    const link = l.protocol + "//" + l.host + "/" + pathname + "?cap=" + this.responseText
-    shareLink.href = link
-    setSingleTextChild(shareLink, "Shareable Link")
-  })
-  xhr.addEventListener("error", function() {
-    console.log("Could not get cap for " + pathname, this.statusText)
-  })
-  xhr.send()
-}
-
 const doPlay = function(itemID) {
   player.pause()
   setAudioVideoControls(itemID)
@@ -80,8 +57,6 @@ const doPlay = function(itemID) {
 
   displayNowPlaying(item, nowPlayingTitle)
   setLocationHash()
-  // TODO: Re-enable this when we've deployed the Go server in 'production'.
-  //updateShareLink()
 }
 
 const playNext = function(e) {

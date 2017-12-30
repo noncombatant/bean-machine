@@ -25,7 +25,6 @@ const (
 	configurationBasename     = ".bean-machine"
 	serverKeyBasename         = "server-key.pem"
 	serverCertificateBasename = "server-certificate.pem"
-	capabilityKeyBasename     = "capability-key"
 	passwordsBasename         = "passwords"
 	formatsJsonBasename       = "formats.json"
 )
@@ -370,8 +369,6 @@ func assertConfiguration() {
 	if e := os.MkdirAll(configurationPathname, 0755); e != nil {
 		log.Fatalf("Could not create %q: %v", configurationPathname, e)
 	}
-
-	generateCapabilityKey()
 }
 
 func Serve(root string) {
