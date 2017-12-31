@@ -13,20 +13,12 @@ const resetSearchHits = function(catalog) {
 
 const displayNowPlaying = function(item, element) {
   removeAllChildren(element)
-
   const trackName = item[Name] || basename(item[Pathname])
   element.appendChild(createElement("span", "", item[Disc] + "-" + item[Track] + " “" + trackName + "”\u200A—\u200A"))
   element.appendChild(createElement("strong", "", item[Artist]))
   element.appendChild(createElement("span", "", "\u200A—\u200A"))
   element.appendChild(createElement("em", "", item[Album]))
-
   document.title = element.textContent
-
-  // TODO: Re-enable this when fully supported. As of December 2016, Firefox
-  // ignores `silent`, and Chrome for Android throws an "illegal constructor"
-  // exception.
-  //const icon = dirname(player.src) + "/cover.jpg"
-  //showNotification(document.title, { silent: true, icon: icon, badge: icon })
 }
 
 const itemComparator = function(a, b) {
@@ -62,6 +54,7 @@ const compareNormalizedStrings = function(a, b) {
   return 1
 }
 
+// TODO: Get rid of this.
 const setLocationHash = function() {
   const state = { "itemID": player.itemID, "query": searchInput.value }
   assertStateDefaults(state)
