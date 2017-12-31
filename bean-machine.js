@@ -156,35 +156,15 @@ const extendCatalog = function() {
   extendCatalogRequested = false
 }
 
-const itemMatchesQuery = interpret
-
-const doSearchCatalog = function(query) {
-  if ("" === query) {
-    searchHits = resetSearchHits(catalog)
-  } else {
-    const ast = parse(searchInput.value)
-    const context = new Context(searchFilters)
-    searchHits = []
-    for (let i = 0; i < catalog.length; ++i) {
-      context.scope.item = catalog[i]
-      if (itemMatchesQuery(ast, context)) {
-        searchHits.push(i)
-      }
-    }
-  }
-
-  setLocationHash()
-  searchHits.sort(itemComparator)
-  previousLastItem = buildCatalog(0)
-}
-
 const searchCatalog = function(query, forceSearch) {
   query = query.trim()
   const previousQuery = deserializeState(document.location.hash).query
   if (!forceSearch && previousQuery === query) {
     return
   }
-  doSearchCatalog(query)
+  searchHits = getMatchingItems(catalog, query)
+  setLocationHash()
+  previousLastItem = buildCatalog(0)
   randomHistory = {}
 }
 
@@ -271,7 +251,7 @@ const windowOnScroll = function(e) {
 
 const hashChange = function(event) {
   searchInput.value = deserializeState(document.location.hash).query
-  doSearchCatalog(searchInput.value)
+  searchCatalog(searchInput.value, false)
 }
 
 // M A I N

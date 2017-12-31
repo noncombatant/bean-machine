@@ -32,7 +32,7 @@ const (
 var (
 	frontEndFiles = []string{"login.html", "index.html", "help.html",
 		formatsJsonBasename, "bean-machine.css", "bean-machine.js",
-		"util.js", "favicon.ico", "levenshtein.js", "search.js",
+		"util.js", "favicon.ico", "simple-search.js",
 		"clef-192.png", "clef-144.png", "clef-96.png", "clef-64.png",
 		"manifest.json", "mini.html", "mini.js", "core.js",
 		"play.png", "pause.png", "search.png", "skip.png", "shuffle.png",
