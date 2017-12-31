@@ -289,5 +289,6 @@ const main = function() {
   getFormatExtensions()
   addEventListeners()
   applyState(document.location.hash.substring(1))
+  player.volume = 0.5
 }
 main()
