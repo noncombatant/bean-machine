@@ -64,37 +64,6 @@ const playNext = function(e) {
   }
 }
 
-const itemMatchesQuery = interpret
-
-const doSearchCatalog = function(query) {
-  if ("" === query) {
-    searchHits = resetSearchHits(catalog)
-  } else {
-    const ast = parse(searchInput.value)
-    const context = new Context(searchFilters)
-    searchHits = []
-    for (let i = 0; i < catalog.length; ++i) {
-      context.scope.item = catalog[i]
-      if (itemMatchesQuery(ast, context)) {
-        searchHits.push(i)
-      }
-    }
-  }
-
-  setLocationHash()
-  // TODO: Is this necessary (here or in bean-machine.js)?
-  searchHits.sort(itemComparator)
-}
-
-const searchCatalog = function(query, forceSearch) {
-  query = query.trim()
-  const previousQuery = deserializeState(document.location.hash).query
-  if (!forceSearch && previousQuery === query) {
-    return
-  }
-  doSearchCatalog(query)
-}
-
 // E V E N T   H A N D L E R S
 
 const togglePlayback = function(e) {
@@ -128,6 +97,7 @@ const searchInputOnKeyUp = function(e) {
   enterKeyCode == e.keyCode && searchCatalog(this.value, false)
 }
 
+// TODO lots of duplicated code in this area.
 const executeSearch = function(e) {
   searchCatalog(searchInput.value, false)
 }

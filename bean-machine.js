@@ -11,6 +11,7 @@
 let player = audioPlayer
 let searchHits
 let playHistory = []
+// TODO: This shouldn't really be necessary. Get rid of it.
 let randomHistory = {}
 
 const buildCatalogLimit = 50
@@ -154,18 +155,6 @@ const extendCatalog = function() {
     previousLastItem = buildCatalog(previousLastItem)
   }
   extendCatalogRequested = false
-}
-
-const searchCatalog = function(query, forceSearch) {
-  query = query.trim()
-  const previousQuery = deserializeState(document.location.hash).query
-  if (!forceSearch && previousQuery === query) {
-    return
-  }
-  searchHits = getMatchingItems(catalog, query)
-  setLocationHash()
-  previousLastItem = buildCatalog(0)
-  randomHistory = {}
 }
 
 const showPlayHistory = function() {

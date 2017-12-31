@@ -210,11 +210,13 @@ const constructQueryString = function(object) {
     }
 
     const value = object[key]
-    if (Array !== value.constructor) {
-      result.push(encodeURIComponent(key.toString()) + "=" + encodeURIComponent(value.toString()))
-    } else {
-      for (let v of value) {
-        result.push(encodeURIComponent(key.toString()) + "=" + encodeURIComponent(v.toString()))
+    if (undefined !== value) {
+      if (Array !== value.constructor) {
+        result.push(encodeURIComponent(key.toString()) + "=" + encodeURIComponent(value.toString()))
+      } else {
+        for (let v of value) {
+          result.push(encodeURIComponent(key.toString()) + "=" + encodeURIComponent(v.toString()))
+        }
       }
     }
   }

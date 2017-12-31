@@ -25,3 +25,20 @@ const getMatchingItems = function(catalog, query) {
   }
   return hits
 }
+
+const searchCatalog = function(query, forceSearch) {
+  query = query.trim()
+  const previousQuery = deserializeState(document.location.hash).query
+  if (!forceSearch && previousQuery === query) {
+    return
+  }
+  searchHits = getMatchingItems(catalog, query)
+  setLocationHash()
+  if (typeof(buildCatalog) !== "undefined") {
+    // TODO: BUG: The presence of buildCatalog is a symptom of this code running
+    // in the context of index.html, not mini.html. But it's not a direct
+    // indicator; it would be better to parameterize this function.
+    previousLastItem = buildCatalog(0)
+    randomHistory = {}
+  }
+}
