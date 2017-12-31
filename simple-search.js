@@ -39,6 +39,5 @@ const searchCatalog = function(query, forceSearch) {
     // in the context of index.html, not mini.html. But it's not a direct
     // indicator; it would be better to parameterize this function.
     previousLastItem = buildCatalog(0)
-    randomHistory = {}
   }
 }

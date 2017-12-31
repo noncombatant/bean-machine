@@ -11,8 +11,6 @@
 let player = audioPlayer
 let searchHits
 let playHistory = []
-// TODO: This shouldn't really be necessary. Get rid of it.
-let randomHistory = {}
 
 const buildCatalogLimit = 50
 const sortingProperties = [ Album, Disc, Track, Pathname, Name ]
@@ -52,9 +50,6 @@ const doPlay = function(itemID) {
   player.itemID = itemID
   player.play()
   playHistory.unshift(itemID)
-  if (randomCheckbox.checked) {
-    randomHistory[itemID] = true
-  }
 
   displayNowPlaying(item, nowPlayingTitle)
   setLocationHash()
@@ -64,11 +59,10 @@ const playNext = function(e) {
   if (randomCheckbox.checked) {
     let i
     while (true) {
-      i = getRandomIndexWithoutRepeating(searchHits, randomHistory)
+      i = getRandomIndex(searchHits)
       if (i !== undefined) {
         break
       }
-      randomHistory = {}
     }
     doPlay(searchHits[i])
   } else {
@@ -227,10 +221,6 @@ const executeSearch = function(e) {
   searchCatalog(searchInput.value, false)
 }
 
-const randomCheckboxOnClick = function(e) {
-  randomHistory = {}
-}
-
 const windowOnScroll = function(e) {
   if (!extendCatalogRequested) {
     window.requestAnimationFrame(extendCatalog)
@@ -250,7 +240,6 @@ const addEventListeners = function() {
   player.addEventListener("ended", playNext)
   player.addEventListener("error", playerOnError)
   player.addEventListener("loadedmetadata", playerLoadedMetadata)
-  randomCheckbox.addEventListener("click", randomCheckboxOnClick)
   searchInput.addEventListener("blur", executeSearch)
   searchInput.addEventListener("keyup", searchInputOnKeyUp)
   searchButton.addEventListener("click", executeSearch)

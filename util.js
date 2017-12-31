@@ -132,17 +132,6 @@ const getRandomIndex = function(array) {
   return Math.floor(Math.random() * array.length)
 }
 
-const getRandomIndexWithoutRepeating = function(array, historyObject) {
-  if (countProperties(historyObject) === array.length) {
-    return undefined
-  }
-  let i
-  do {
-    i = getRandomIndex(array)
-  } while (historyObject.hasOwnProperty(i))
-  return i
-}
-
 const get2MonthsAgo = function() {
   const now = (new Date()).getTime() / 1000
   return now - (2 * 30 * 24 * 60 * 60)
