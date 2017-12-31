@@ -54,9 +54,9 @@ const compareNormalizedStrings = function(a, b) {
   return 1
 }
 
-// TODO: Get rid of this.
-const setLocationHash = function() {
-  const state = { "itemID": player.itemID, "query": searchInput.value }
-  assertStateDefaults(state)
-  document.location.hash = constructQueryString(state)
+const main = function() {
+  getFormatExtensions()
+  addEventListeners()
+  searchHits = resetSearchHits(catalog)
+  player.volume = 0.5
 }

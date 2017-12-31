@@ -31,17 +31,6 @@ const setAudioVideoControls = function(itemID) {
   player.volume = volume
 }
 
-const assertStateDefaults = function(state) {
-  state.itemID = parseIntOr(idOrLast(state.itemID), 0)
-  state.query = idOrLast(state.query) || ""
-}
-
-const deserializeState = function(string) {
-  const state = parseQueryString(string)
-  assertStateDefaults(state)
-  return state
-}
-
 const doPlay = function(itemID) {
   player.pause()
   setAudioVideoControls(itemID)
@@ -52,7 +41,6 @@ const doPlay = function(itemID) {
   playHistory.unshift(itemID)
 
   displayNowPlaying(item, nowPlayingTitle)
-  setLocationHash()
 }
 
 const playNext = function(e) {
@@ -169,7 +157,6 @@ const closeVideo = function(e) {
 const albumTitleDivOnClick = function(e) {
   const itemID = this.itemID
   randomCheckbox.checked = false
-  setLocationHash()
   if (player.paused || player.itemID != itemID) {
     if (undefined !== itemID) {
       if (itemID == player.itemID) {
@@ -211,26 +198,11 @@ const playerOnError = function(e) {
   ++errorCount
 }
 
-const searchInputOnKeyUp = function(e) {
-  e.stopPropagation()
-  const enterKeyCode = 13
-  enterKeyCode == e.keyCode && searchCatalog(this.value, false)
-}
-
-const executeSearch = function(e) {
-  searchCatalog(searchInput.value, false)
-}
-
 const windowOnScroll = function(e) {
   if (!extendCatalogRequested) {
     window.requestAnimationFrame(extendCatalog)
   }
   extendCatalogRequested = true
-}
-
-const hashChange = function(event) {
-  searchInput.value = deserializeState(document.location.hash).query
-  searchCatalog(searchInput.value, false)
 }
 
 // M A I N
@@ -246,27 +218,7 @@ const addEventListeners = function() {
   videoCloseButton.addEventListener("click", closeVideo)
   window.addEventListener("scroll", windowOnScroll)
   document.body.addEventListener("keyup", togglePlayback)
-  window.addEventListener("hashchange", hashChange, false);
 }
 
-const applyState = function(serialized) {
-  const state = deserializeState(serialized)
-  searchInput.value = state.query
-  const item = catalog[state.itemID]
-  if (item) {
-    player.itemID = state.itemID
-    player.src = item[Pathname]
-    displayNowPlaying(item, nowPlayingTitle)
-  }
-
-  searchHits = resetSearchHits(catalog)
-  searchCatalog(state.query, true)
-}
-
-const main = function() {
-  getFormatExtensions()
-  addEventListeners()
-  applyState(document.location.hash.substring(1))
-  player.volume = 0.5
-}
 main()
+previousLastItem = buildCatalog(0)

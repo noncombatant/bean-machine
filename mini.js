@@ -14,13 +14,6 @@ const sortingProperties = [ Album, Disc, Track, Pathname, Name ]
 
 // C O R E   F U N C T I O N A L I T Y
 
-// TODO: Get rid of this.
-const assertStateDefaults = function() {}
-
-const deserializeState = function(string) {
-  return parseQueryString(string)
-}
-
 const sizeCover = function(event) {
   cover.height = cover.width = document.body.clientWidth - 10
 }
@@ -37,7 +30,6 @@ const doPlay = function(itemID) {
   playButton.title = "Pause"
 
   displayNowPlaying(item, nowPlayingTitle)
-  setLocationHash()
   cover.style.visibility = "visible"
   cover.src = dirname(item[Pathname]) + "/cover.jpg"
   sizeCover()
@@ -91,17 +83,6 @@ const playerOnError = function(e) {
   ++errorCount
 }
 
-const searchInputOnKeyUp = function(e) {
-  e.stopPropagation()
-  const enterKeyCode = 13
-  enterKeyCode == e.keyCode && searchCatalog(this.value, false)
-}
-
-// TODO lots of duplicated code in this area.
-const executeSearch = function(e) {
-  searchCatalog(searchInput.value, false)
-}
-
 const shuffleButtonOnClick = function(e) {
   if ("Repeat" === shuffleButton.title) {
     shuffleButton.src = "shuffle.png"
@@ -153,10 +134,4 @@ const addEventListeners = function() {
   cover.addEventListener("error", coverOnError)
 }
 
-const main = function() {
-  getFormatExtensions()
-  addEventListeners()
-  searchHits = resetSearchHits(catalog)
-  player.volume = 0.5
-}
 main()
