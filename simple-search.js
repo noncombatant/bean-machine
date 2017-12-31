@@ -1,14 +1,8 @@
 "use strict";
 
-const splitIntoWordSetMemo = new Set()
-const splitIntoWordSet = function(string) {
-  if (splitIntoWordSetMemo.has(string)) {
-    return splitIntoWordSetMemo[string]
-  }
-  const words = new Set(string.split(/\W+/))
-  splitIntoWordSetMemo[string] = words
-  return words
-}
+const splitIntoWordSet = memoize(function(string) {
+  return new Set(string.split(/\W+/))
+})
 
 const itemMatches = function(terms, item) {
   const all = normalizeStringForSearch(item[Pathname] + item[Artist] + item[Album] + item[Name] + item[Genre])
