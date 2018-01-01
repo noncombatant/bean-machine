@@ -15,7 +15,7 @@ const sortingProperties = [ Album, Disc, Track, Pathname, Name ]
 // C O R E   F U N C T I O N A L I T Y
 
 const sizeCover = function(event) {
-  cover.height = cover.width = document.body.clientWidth - 10
+  cover.width = Math.min(document.body.clientWidth, document.body.clientHeight) - 10
 }
 
 const doPlay = function(itemID) {
@@ -29,10 +29,10 @@ const doPlay = function(itemID) {
   playButton.src = "pause.png"
   playButton.title = "Pause"
 
-  displayNowPlaying(item, nowPlayingTitle)
-  cover.style.visibility = "visible"
-  cover.src = dirname(item[Pathname]) + "/cover.jpg"
   sizeCover()
+  displayNowPlaying(item, nowPlayingTitle)
+  cover.style.background = "url(" + dirname(item[Pathname]) + "/cover.jpg" + ")"
+  cover.style.backgroundRepeat = "no-repeat"
 }
 
 const playNext = function(e) {
@@ -128,7 +128,6 @@ const addEventListeners = function() {
   shuffleButton.addEventListener("click", shuffleButtonOnClick)
   searchInput.addEventListener("blur", executeSearch)
   searchInput.addEventListener("keyup", searchInputOnKeyUp)
-  searchButton.addEventListener("click", executeSearch)
   document.body.addEventListener("keyup", togglePlayback)
   window.addEventListener("resize", windowOnResize)
   cover.addEventListener("error", coverOnError)

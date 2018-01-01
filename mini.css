@@ -1,5 +1,6 @@
-body {
+html, body {
   font-family: system-ui;
+  height: 100%;
 }
 
 input[type="text"] {
@@ -21,4 +22,17 @@ input[type="image"] {
 input[type="text"]:focus, input[type="image"]:focus {
   margin: 0px;
   border: 3px solid #ba55da;
+}
+
+#cover, #controls {
+  height: 100%;
+}
+
+input {
+  background-color: rgba(255, 255, 255, 0.3);
+  vertical-align: bottom;
+}
+
+#nowPlayingTitle {
+  background-color: rgba(255, 255, 255, 0.8);
 }
