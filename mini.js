@@ -16,6 +16,7 @@ const sortingProperties = [ Album, Disc, Track, Pathname, Name ]
 
 const sizeCover = function(event) {
   cover.width = Math.min(document.body.clientWidth, document.body.clientHeight) - 10
+  cover.style.backgroundSize = cover.width + " " + cover.width
 }
 
 const doPlay = function(itemID) {
@@ -33,6 +34,7 @@ const doPlay = function(itemID) {
   displayNowPlaying(item, nowPlayingTitle)
   cover.style.background = "url(" + dirname(item[Pathname]) + "/cover.jpg" + ")"
   cover.style.backgroundRepeat = "no-repeat"
+  cover.style.backgroundSize = cover.width + " " + cover.width
 }
 
 const playNext = function(e) {
@@ -113,10 +115,6 @@ var windowOnResize = function() {
   window.requestAnimationFrame(sizeCover);
 }
 
-var coverOnError = function() {
-  cover.style.visibility = "hidden"
-}
-
 // M A I N
 
 const addEventListeners = function() {
@@ -130,7 +128,6 @@ const addEventListeners = function() {
   searchInput.addEventListener("keyup", searchInputOnKeyUp)
   document.body.addEventListener("keyup", togglePlayback)
   window.addEventListener("resize", windowOnResize)
-  cover.addEventListener("error", coverOnError)
 }
 
 main()
