@@ -77,6 +77,18 @@ const playNext = function(e) {
   }
 }
 
+const togglePlayback = function(e) {
+  e.stopPropagation()
+  if ("p" !== e.key) {
+    return
+  }
+  if (player.paused) {
+    player.play()
+  } else {
+    player.pause()
+  }
+}
+
 const main = function() {
   getFormatExtensions()
   addEventListeners()

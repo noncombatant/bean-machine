@@ -151,18 +151,6 @@ const albumTitleDivOnClick = function(e) {
 }
 const itemDivOnClick = albumTitleDivOnClick
 
-const togglePlayback = function(e) {
-  e.stopPropagation()
-  if ("p" !== e.key) {
-    return
-  }
-  if (player.paused) {
-    player.play()
-  } else {
-    player.pause()
-  }
-}
-
 let errorCount = 0
 const playerLoadedMetadata = function(e) {
   errorCount = 0
