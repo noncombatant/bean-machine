@@ -32,7 +32,7 @@ const doPlay = function(itemID) {
 
   sizeCover()
   displayNowPlaying(item, nowPlayingTitle)
-  cover.style.background = "url(" + dirname(item[Pathname]) + "/cover.jpg" + ")"
+  cover.style.background = "url(" + dirname(item[Pathname]) + "/cover.jpg" + ") white"
   cover.style.backgroundRepeat = "no-repeat"
   cover.style.backgroundSize = cover.width + " " + cover.width
 }
