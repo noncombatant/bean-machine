@@ -3,6 +3,8 @@
 
 "use strict";
 
+let searchHits
+
 const resetSearchHits = function(catalog) {
   const hits = new Array(catalog.length)
   for (let i = 0; i < catalog.length; ++i) {

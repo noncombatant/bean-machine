@@ -3,15 +3,6 @@
 
 "use strict";
 
-// G L O B A L   V A R I A B L E S
-//
-// TODO: Move globals to inside `main`. This requires explicitly passing and
-// returning them to and from functions.
-
-let searchHits
-
-// C O R E   F U N C T I O N A L I T Y
-
 const sizeCover = function(event) {
   cover.width = Math.min(document.body.clientWidth, document.body.clientHeight) - 10
   cover.style.backgroundSize = cover.width + " " + cover.width
@@ -34,8 +25,6 @@ const doPlay = function(itemID) {
   cover.style.backgroundRepeat = "no-repeat"
   cover.style.backgroundSize = cover.width + " " + cover.width
 }
-
-// E V E N T   H A N D L E R S
 
 const shuffleButtonOnClick = function(e) {
   if ("Repeat" === shuffleButton.title) {
@@ -66,8 +55,6 @@ const playButtonOnClicked = function(e) {
 var windowOnResize = function() {
   window.requestAnimationFrame(sizeCover);
 }
-
-// M A I N
 
 const addEventListeners = function() {
   playButton.addEventListener("click", playButtonOnClicked)

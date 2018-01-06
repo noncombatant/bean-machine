@@ -9,7 +9,6 @@
 // returning them to and from functions.
 
 let player = audioPlayer
-let searchHits
 let playHistory = []
 
 const buildCatalogLimit = 50
