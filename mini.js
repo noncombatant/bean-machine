@@ -37,19 +37,6 @@ const doPlay = function(itemID) {
 
 // E V E N T   H A N D L E R S
 
-let errorCount = 0
-const playerLoadedMetadata = function(e) {
-  errorCount = 0
-}
-
-const playerOnError = function(e) {
-  console.log("Could not load", catalog[player.itemID][Pathname], e)
-  if (errorCount < 10) {
-    this.dispatchEvent(new Event("ended"))
-  }
-  ++errorCount
-}
-
 const shuffleButtonOnClick = function(e) {
   if ("Repeat" === shuffleButton.title) {
     shuffleButton.src = "shuffle.png"

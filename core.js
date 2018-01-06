@@ -89,6 +89,19 @@ const togglePlayback = function(e) {
   }
 }
 
+let errorCount = 0
+const playerLoadedMetadata = function(e) {
+  errorCount = 0
+}
+
+const playerOnError = function(e) {
+  console.log("Could not load", catalog[player.itemID][Pathname], e)
+  if (errorCount < 10) {
+    this.dispatchEvent(new Event("ended"))
+  }
+  ++errorCount
+}
+
 const main = function() {
   getFormatExtensions()
   addEventListeners()
