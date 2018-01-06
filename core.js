@@ -54,6 +54,29 @@ const compareNormalizedStrings = function(a, b) {
   return 1
 }
 
+const playNext = function(e) {
+  const random = (typeof(randomCheckbox) !== "undefined" && randomCheckbox.checked) ||
+                 (typeof(shuffleButton) !== "undefined" && "Repeat" === shuffleButton.title)
+  if (random) {
+    let i
+    while (true) {
+      i = getRandomIndex(searchHits)
+      if (i !== undefined) {
+        break
+      }
+    }
+    doPlay(searchHits[i])
+  } else {
+    for (let i = 0; i < searchHits.length; ++i) {
+      if (player.itemID === searchHits[i]) {
+        doPlay(searchHits[(i + 1) % searchHits.length])
+        return
+      }
+    }
+    doPlay(searchHits[0])
+  }
+}
+
 const main = function() {
   getFormatExtensions()
   addEventListeners()

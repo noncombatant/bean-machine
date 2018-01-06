@@ -1,4 +1,4 @@
-// Copyright 2016 by Chris Palmer (https://noncombatant.org), and released under
+// Copyright 2017 by Chris Palmer (https://noncombatant.org), and released under
 // the terms of the GNU GPL3. See help.html for more information.
 
 "use strict";
@@ -9,8 +9,6 @@
 // returning them to and from functions.
 
 let searchHits
-
-const sortingProperties = [ Album, Disc, Track, Pathname, Name ]
 
 // C O R E   F U N C T I O N A L I T Y
 
@@ -30,32 +28,11 @@ const doPlay = function(itemID) {
   playButton.src = "pause.png"
   playButton.title = "Pause"
 
-  sizeCover()
   displayNowPlaying(item, nowPlayingTitle)
+  sizeCover()
   cover.style.background = "url(" + dirname(item[Pathname]) + "/cover.jpg" + ") white"
   cover.style.backgroundRepeat = "no-repeat"
   cover.style.backgroundSize = cover.width + " " + cover.width
-}
-
-const playNext = function(e) {
-  if ("Repeat" === shuffleButton.title) {
-    let i
-    while (true) {
-      i = getRandomIndex(searchHits)
-      if (i !== undefined) {
-        break
-      }
-    }
-    doPlay(searchHits[i])
-  } else {
-    for (let i = 0; i < searchHits.length; ++i) {
-      if (player.itemID === searchHits[i]) {
-        doPlay(searchHits[(i + 1) % searchHits.length])
-        return
-      }
-    }
-    doPlay(searchHits[0])
-  }
 }
 
 // E V E N T   H A N D L E R S

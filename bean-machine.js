@@ -13,7 +13,6 @@ let searchHits
 let playHistory = []
 
 const buildCatalogLimit = 50
-const sortingProperties = [ Album, Disc, Track, Pathname, Name ]
 
 // C O R E   F U N C T I O N A L I T Y
 
@@ -41,27 +40,6 @@ const doPlay = function(itemID) {
   playHistory.unshift(itemID)
 
   displayNowPlaying(item, nowPlayingTitle)
-}
-
-const playNext = function(e) {
-  if (randomCheckbox.checked) {
-    let i
-    while (true) {
-      i = getRandomIndex(searchHits)
-      if (i !== undefined) {
-        break
-      }
-    }
-    doPlay(searchHits[i])
-  } else {
-    for (let i = 0; i < searchHits.length; ++i) {
-      if (player.itemID === searchHits[i]) {
-        doPlay(searchHits[(i + 1) % searchHits.length])
-        return
-      }
-    }
-    doPlay(searchHits[0])
-  }
 }
 
 const buildItemDiv = function(itemID) {
