@@ -109,4 +109,13 @@ const main = function() {
   addEventListeners()
   searchHits = resetSearchHits(catalog)
   player.volume = 0.5
+  const itemID = localStorage.getItem("itemID")
+  if (itemID) {
+    player.itemID = itemID
+  }
+  const query = localStorage.getItem("query")
+  if (query) {
+    searchInput.value = query
+    searchCatalog(query, true)
+  }
 }

@@ -14,6 +14,7 @@ const doPlay = function(itemID) {
   player.src = item[Pathname]
   player.itemID = itemID
   player.play()
+  localStorage.setItem("itemID", itemID)
 
   // TODO: Refactor playButtonOnClicked so that we can reuse it here.
   playButton.src = "pause.png"
@@ -34,6 +35,7 @@ const shuffleButtonOnClick = function(e) {
     shuffleButton.src = "repeat.png"
     shuffleButton.title = "Repeat"
   }
+  localStorage.setItem("random", "Repeat" === shuffleButton.title)
 }
 
 const playButtonOnClicked = function(e) {

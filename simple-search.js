@@ -26,13 +26,13 @@ const getMatchingItems = function(catalog, query) {
   return hits
 }
 
-let previousQuery = ""
 const searchCatalog = function(query, forceSearch) {
   query = query.trim()
+  const previousQuery = localStorage.getItem("query")
   if (!forceSearch && previousQuery === query) {
     return
   }
-  previousQuery = query
+  localStorage.setItem("query", query)
   searchHits = getMatchingItems(catalog, query)
   if (typeof(buildCatalog) !== "undefined") {
     // TODO: BUG: The presence of buildCatalog is a symptom of this code running
