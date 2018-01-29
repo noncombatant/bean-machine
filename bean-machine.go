@@ -189,7 +189,16 @@ func (s *ItemInfo) ToJSON() string {
 	disc = normalizeNumericString(disc)
 	track = normalizeNumericString(track)
 	year = normalizeNumericString(year)
-	return fmt.Sprintf("[%q,%q,%q,%q,%s,%s,%s,%q,%d]", escapePathname(s.pathname), album, artist, name, maybeQuote(disc), maybeQuote(track), maybeQuote(year), genre, s.mtime.Unix())
+	return fmt.Sprintf("[%q,%q,%q,%q,%s,%s,%s,%q,%d]",
+		escapePathname(s.pathname),
+		album,
+		artist,
+		name,
+		maybeQuote(disc),
+		maybeQuote(track),
+		maybeQuote(year),
+		genre,
+		s.mtime.Unix())
 }
 
 func assertRoot(root string) {
