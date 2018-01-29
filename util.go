@@ -10,6 +10,7 @@ import (
 	"log"
 	"os"
 	"path"
+	"regexp"
 	"strings"
 )
 
@@ -102,12 +103,11 @@ func isStringInStrings(needle string, haystack []string) bool {
 }
 
 func isStringAllDigits(s string) bool {
-	for _, r := range s {
-		if -1 == strings.IndexRune("0123456789", r) {
-			return false
-		}
+	matched, e := regexp.MatchString("^\\d+$", s)
+	if e != nil {
+		log.Fatal(e)
 	}
-	return true
+	return matched
 }
 
 func maybeQuote(s string) string {
