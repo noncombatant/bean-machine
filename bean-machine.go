@@ -509,7 +509,7 @@ func main() {
 		case "check-password":
 			username, password := promptForCredentials()
 			ok := CheckPassword(username, password)
-			log.Println(ok)
+			log.Printf("Password check for %q: %v\n", username, ok)
 			if !ok {
 				status = 1
 			}
@@ -531,6 +531,7 @@ func main() {
 			SetPassword()
 		default:
 			Help()
+			status = 1
 		}
 	}
 	os.Exit(status)
