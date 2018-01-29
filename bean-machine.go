@@ -30,13 +30,37 @@ const (
 )
 
 var (
-	frontEndFiles = []string{"login.html", "index.html", "help.html",
-		formatsJsonBasename, "bean-machine.css", "bean-machine.js",
-		"util.js", "favicon.ico", "simple-search.js",
-		"clef-192.png", "clef-144.png", "clef-96.png", "clef-64.png",
-		"manifest.json", "mini.html", "mini.js", "core.js",
-		"play.png", "pause.png", "search.png", "skip.png", "shuffle.png",
-		"repeat.png", "mini.css"}
+	frontEndFiles = []string{
+		"login.html",
+		"help.html",
+
+		formatsJsonBasename,
+		"manifest.json",
+
+		"bean-machine.css",
+		"index.html",
+		"bean-machine.js",
+
+		"mini.css",
+		"mini.html",
+		"mini.js",
+
+		"core.js",
+		"util.js",
+		"simple-search.js",
+
+		"favicon.ico",
+		"clef-192.png",
+		"clef-144.png",
+		"clef-96.png",
+		"clef-64.png",
+		"pause.png",
+		"play.png",
+		"repeat.png",
+		"search.png",
+		"shuffle.png",
+		"skip.png",
+	}
 	homePathname          = os.Getenv("HOME")
 	configurationPathname = path.Join(homePathname, configurationBasename)
 	bindToIPv4            = true
