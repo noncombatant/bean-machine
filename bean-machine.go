@@ -78,12 +78,12 @@ func loadFormatExtensions() {
 		log.Fatal(e)
 	}
 
-	dec := json.NewDecoder(file)
+	decoder := json.NewDecoder(file)
 	for {
-		if err := dec.Decode(&formatExtensions); err == io.EOF {
+		if e = decoder.Decode(&formatExtensions); io.EOF == e {
 			break
-		} else if err != nil {
-			log.Fatal(err)
+		} else if e != nil {
+			log.Fatal(e)
 		}
 	}
 }
