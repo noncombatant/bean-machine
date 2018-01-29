@@ -100,3 +100,19 @@ func isStringInStrings(needle string, haystack []string) bool {
 	}
 	return false
 }
+
+func isStringAllDigits(s string) bool {
+	for _, r := range s {
+		if -1 == strings.IndexRune("0123456789", r) {
+			return false
+		}
+	}
+	return true
+}
+
+func maybeQuote(s string) string {
+	if isStringAllDigits(s) {
+		return s
+	}
+	return fmt.Sprintf("%q", s)
+}
