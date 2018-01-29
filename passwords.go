@@ -4,7 +4,6 @@
 package main
 
 import (
-	"crypto/rand"
 	"crypto/subtle"
 	"encoding/hex"
 	"fmt"
@@ -63,16 +62,8 @@ func obfuscatePassword(password, salt []byte) []byte {
 	return obfuscated
 }
 
-func getRandomBytes(bytes []byte) {
-	_, e := rand.Read(bytes)
-	if e != nil {
-		log.Fatalf("Could not get random bytes: %v", e)
-	}
-}
-
 func SetPassword() {
-	salt := make([]byte, saltSize)
-	getRandomBytes(salt)
+	salt := makeRandomBytes(saltSize)
 
 	pathname := path.Join(configurationPathname, passwordsBasename)
 	passwords := readPasswordDatabase(pathname)
@@ -95,22 +86,24 @@ func SetPassword() {
 	}
 }
 
-func CheckPassword(username, password string) bool {
-	pathname := path.Join(configurationPathname, passwordsBasename)
-	passwords := readPasswordDatabase(pathname)
-
-	storedCredential, present := passwords[strings.ToLower(username)]
-	if !present {
-		return false
-	}
-
+func getSaltAndScrypted(storedCredential string) ([]byte, []byte) {
 	decodedCredential, e := hex.DecodeString(storedCredential)
 	if e != nil {
 		log.Fatalf("Could not decode stored credential: %v", e)
 	}
+	return decodedCredential[:saltSize], decodedCredential[saltSize:]
+}
 
-	salt := decodedCredential[:saltSize]
-	scrypted := decodedCredential[saltSize:]
+func CheckPassword(username, password string) bool {
+	pathname := path.Join(configurationPathname, passwordsBasename)
+	passwords := readPasswordDatabase(pathname)
+
+	storedCredential, ok := passwords[strings.ToLower(username)]
+	if !ok {
+		return false
+	}
+
+	salt, scrypted := getSaltAndScrypted(storedCredential)
 	obfuscated := obfuscatePassword([]byte(password), salt)
 
 	return 1 == subtle.ConstantTimeEq(1, int32(subtle.ConstantTimeCompare(obfuscated, scrypted)))

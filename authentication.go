@@ -4,7 +4,10 @@
 package main
 
 import (
+	"crypto/hmac"
+	"crypto/sha256"
 	"encoding/hex"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -16,7 +19,8 @@ import (
 
 const (
 	hmacKeyLength             = 32
-	authenticationTokenLength = 16
+	hmacBasename              = "hmac.key"
+	authenticationTokenLength = 32
 )
 
 var (
@@ -28,35 +32,97 @@ var (
 	}
 )
 
-func generateToken() string {
-	token := make([]byte, authenticationTokenLength)
-	getRandomBytes(token)
-	return hex.EncodeToString(token)
+func generateAndSaveHmacKey(pathname string) {
+	key := makeRandomBytes(hmacKeyLength)
+	if e := ioutil.WriteFile(pathname, key, 0600); e != nil {
+		log.Fatalf("Could not save HMAC key to %q: %v", pathname, e)
+	}
+	log.Print("Generated and saved new HMAC key")
+}
+
+func getHmacKey() []byte {
+	pathname := path.Join(configurationPathname, hmacBasename)
+
+	if _, e := os.Stat(pathname); os.IsNotExist(e) {
+		generateAndSaveHmacKey(pathname)
+	}
+
+	key, e := ioutil.ReadFile(pathname)
+	if e != nil {
+		log.Fatalf("Could not open %q: %v", pathname, e)
+	}
+
+	if len(key) != hmacKeyLength {
+		log.Fatalf("No valid key in %q: %v", pathname, e)
+	}
+	return key
+}
+
+// The token is the HMAC_SHA256 of the credential as stored in the password
+// database (salt and scrypted password). This means that a token is valid as
+// long as the HMAC key and the stored credential remain constant. No additional
+// session state storage (beyond the password database and the HMAC key) is
+// necessary.
+func generateToken(username string, storedCredential string) []byte {
+	mac := hmac.New(sha256.New, getHmacKey())
+	mac.Write([]byte(username))
+	mac.Write([]byte("\x00"))
+	mac.Write([]byte(storedCredential))
+	return mac.Sum(nil)
+}
+
+func checkToken(username string, receivedToken []byte) bool {
+	passwords := readPasswordDatabase(path.Join(configurationPathname, passwordsBasename))
+	storedCredential, ok := passwords[username]
+	if !ok {
+		log.Printf("checkToken: No such username: %q", username)
+		return false
+	}
+
+	expected := generateToken(username, storedCredential)
+	return hmac.Equal(receivedToken, expected)
 }
 
 type AuthenticatingFileHandler struct {
-	Root     string
-	Sessions map[string]bool
+	Root string
 }
 
 func (h AuthenticatingFileHandler) isRequestAuthenticated(r *http.Request) bool {
 	cookie, e := r.Cookie("token")
-	if e == nil && len(cookie.Value) == 2*authenticationTokenLength {
-		if _, e := hex.DecodeString(cookie.Value); e != nil {
-			return false
-		}
-		if _, ok := h.Sessions[cookie.Value]; ok {
-			return true
-		}
+	if e != nil {
+		return false
 	}
 
-	return false
+	parts := strings.Split(cookie.Value, ":")
+	if len(parts) != 2 {
+		log.Printf("Invalid cookie format")
+		return false
+	}
+	username := parts[0]
+	token := parts[1]
+
+	decodedToken, e := hex.DecodeString(token)
+	if e != nil {
+		log.Printf("Invalid cookie format: %v", e)
+		return false
+	}
+
+	if len(decodedToken) != authenticationTokenLength {
+		log.Printf("Invalid cookie format: length %d", len(decodedToken))
+		return false
+	}
+
+	return checkToken(username, decodedToken)
 }
 
 func (h AuthenticatingFileHandler) handleLogIn(w http.ResponseWriter, r *http.Request) {
-	if CheckPassword(r.FormValue("name"), r.FormValue("password")) {
-		token := generateToken()
-		h.Sessions[token] = true
+	username := r.FormValue("name")
+	password := r.FormValue("password")
+	if CheckPassword(username, password) {
+		// TODO: This is inefficient; results in reading the DB twice. Make the DB a
+		// parameter of CheckPassword.
+		passwords := readPasswordDatabase(path.Join(configurationPathname, passwordsBasename))
+		token := username + ":" + hex.EncodeToString(generateToken(username, passwords[username]))
 		cookie := &http.Cookie{Name: "token", Value: token, Secure: true, HttpOnly: true}
 		http.SetCookie(w, cookie)
 		http.Redirect(w, r, "/index.html", http.StatusFound)

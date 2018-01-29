@@ -5,6 +5,7 @@ package main
 
 import (
 	"crypto/md5"
+	"crypto/rand"
 	"fmt"
 	"io"
 	"log"
@@ -115,4 +116,13 @@ func maybeQuote(s string) string {
 		return s
 	}
 	return fmt.Sprintf("%q", s)
+}
+
+func makeRandomBytes(length int) []byte {
+	bytes := make([]byte, length)
+	_, e := rand.Read(bytes)
+	if e != nil {
+		log.Fatalf("Could not get random bytes: %v", e)
+	}
+	return bytes
 }

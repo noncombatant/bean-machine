@@ -421,7 +421,7 @@ func Serve(root string) {
 	}
 
 	certificatePathname, keyPathname := generateCertificate(hosts)
-	handler := AuthenticatingFileHandler{Root: root, Sessions: make(map[string]bool)}
+	handler := AuthenticatingFileHandler{Root: root}
 	log.Fatal(http.ListenAndServeTLS(":8443", certificatePathname, keyPathname, handler))
 }
 
