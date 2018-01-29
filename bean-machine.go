@@ -192,11 +192,18 @@ func (s *ItemInfo) ToJSON() string {
 	return fmt.Sprintf("[%q,%q,%q,%q,%s,%s,%s,%q,%d]", escapePathname(s.pathname), album, artist, name, maybeQuote(disc), maybeQuote(track), maybeQuote(year), genre, s.mtime.Unix())
 }
 
+func assertRoot(root string) {
+	if "" == root {
+		log.Fatal("Cannot continue without a valid music-directory.")
+	}
+}
+
 // TODO: Find a way to shrink catalog.js (e.g. by coalescing pathnames, or
 // creating an array of just pathnames and referring to them by reference in the
 // catalog array). (The latter allows us to also include a list of
 // *.{jpg,png,etc} for each directory.)
 func Catalog(root string) {
+	assertRoot(root)
 	loadFormatExtensions()
 	log.Printf("Building catalog of audio files in %q. This might take a while.\n", root)
 
@@ -268,6 +275,7 @@ func Catalog(root string) {
 }
 
 func PrintDuplicates(root string) error {
+	assertRoot(root)
 	for size, pathnames := range fileSizesToPathnames(root) {
 		if len(pathnames) < 2 {
 			continue
@@ -298,6 +306,7 @@ func PrintDuplicates(root string) error {
 }
 
 func PrintEmpties(root string) error {
+	assertRoot(root)
 	e := filepath.Walk(root, func(pathname string, info os.FileInfo, e error) error {
 		if e != nil {
 			log.Printf("%q: %v\n", pathname, e)
@@ -321,6 +330,7 @@ func PrintEmpties(root string) error {
 }
 
 func Install(root string) {
+	assertRoot(root)
 	for _, f := range frontEndFiles {
 		copyFile(f, root+string(os.PathSeparator)+f)
 	}
@@ -366,6 +376,7 @@ func assertConfiguration() {
 }
 
 func Serve(root string) {
+	assertRoot(root)
 	addresses, e := net.InterfaceAddrs()
 	if e != nil || 0 == len(addresses) {
 		log.Println("Hmm, I can't find any network interfaces to run the web server on. I have to give up.")
@@ -406,39 +417,47 @@ func Serve(root string) {
 }
 
 func Help() {
-	fmt.Println(`
-Help:
+	fmt.Println(`Usage:
 
-Invoking bean-machine with no command, like so:
+  bean-machine -m music-directory
+  bean-machine [-m music-directory] command [command...]
 
-	bean-machine /path/to/music
+Invoking bean-machine with no command is equivalent to invoking it with the
+"run" command (see below). The commands are:
 
-is equivalent to "bean-machine /path/to/music serve".
+  catalog
+    Scans music-directory for music files, and creates a database of their
+    metadata in music-directory/catalog.js.
 
-	bean-machine /path/to/music serve
+  duplicate
+    Scans music-directory for duplicate files, and prints out a list of any
+    definitely- (by hash) and maybe-duplicates (by size).
 
-Starts a web server rooted at /path/to/music, and prints out the URL(s) you
-can point a browser to to play music.
+  empty
+    Scans music-directory for empty files and directories, and prints out a
+    list of any found.
 
-	bean-machine /path/to/music duplicate
+  install
+    Installs the web front-end files in music-directory.
 
-Prints out a list of definitely- (by hash) and maybe-duplicates (by size).
+  run
+    Equivalent to "bean-machine music-directory catalog install serve".
 
-	bean-machine /path/to/music empty
+  serve
+    Starts a web server rooted at music-directory, and prints out the URL(s)
+    of the Bean Machine web app.
 
-Prints out a list of empty files and directories.
+There are 2 additional commands for managing the password authentication for the
+web app:
 
-	bean-machine set-password
+  set-password
+    Prompts for a username and password, and sets the password for the given
+    username.
 
-Prompts for a username and password, and sets the password for the given
-username.
-
-	bean-machine check-password
-
-Prompts for a username and password, and checks the password for the given
-username. Exits with status 0 if the username is in the database and the
-password is correct; 1 otherwise.
-`)
+  check-password
+    Prompts for a username and password, and checks the password for the given
+    username. Exits with status 0 if the username is in the database and the
+    password is correct; 1 otherwise.`)
 	os.Exit(1)
 }
 
@@ -451,46 +470,59 @@ func main() {
 		bindToIPv6 = true
 	}
 
+	needs_help1 := flag.Bool("help", false, "Print the help message.")
+	needs_help2 := flag.Bool("h", false, "Print the help message.")
+	root := flag.String("m", "", "Set the music directory.")
 	flag.Parse()
-	root := flag.Arg(0)
-	if "set-password" == root {
-		SetPassword()
-		os.Exit(0)
-	}
-	if "check-password" == root {
-		username, password := promptForCredentials()
-		ok := CheckPassword(username, password)
-		log.Println(ok)
-		if ok {
-			os.Exit(0)
-		}
+
+	if *needs_help1 || *needs_help2 {
+		Help()
 		os.Exit(1)
 	}
 
-	if flag.NArg() == 1 {
-		Catalog(root)
-		Install(root)
-		Serve(root)
-		os.Exit(0)
+	if flag.NArg() == 0 {
+		if "" != *root {
+			Catalog(*root)
+			Install(*root)
+			Serve(*root)
+		} else {
+			Help()
+			os.Exit(1)
+		}
 	}
 
-	for i := 1; i < flag.NArg(); i++ {
+	status := 0
+	for i := 0; i < flag.NArg(); i++ {
 		command := flag.Arg(i)
 		switch command {
 		case "catalog":
-			Catalog(root)
+			Catalog(*root)
+		case "check-password":
+			username, password := promptForCredentials()
+			ok := CheckPassword(username, password)
+			log.Println(ok)
+			if !ok {
+				status = 1
+			}
 		case "duplicate":
-			PrintDuplicates(root)
+			PrintDuplicates(*root)
 		case "empty":
-			PrintEmpties(root)
+			PrintEmpties(*root)
+		case "help":
+			Help()
 		case "install":
-			Install(root)
+			Install(*root)
+		case "run":
+			Catalog(*root)
+			Install(*root)
+			Serve(*root)
 		case "serve":
-			Catalog(root)
-			Install(root)
-			Serve(root)
+			Serve(*root)
+		case "set-password":
+			SetPassword()
 		default:
 			Help()
 		}
 	}
+	os.Exit(status)
 }
