@@ -83,3 +83,20 @@ func shouldSkipFile(pathname string, info os.FileInfo) bool {
 	basename := path.Base(pathname)
 	return "" == basename || '.' == basename[0] || 0 == info.Size()
 }
+
+func getFileExtension(pathname string) string {
+	dot := strings.LastIndex(pathname, ".")
+	if -1 == dot {
+		return ""
+	}
+	return strings.ToLower(pathname[dot:])
+}
+
+func isStringInStrings(needle string, haystack []string) bool {
+	for _, s := range haystack {
+		if needle == s {
+			return true
+		}
+	}
+	return false
+}

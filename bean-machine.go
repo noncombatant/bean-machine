@@ -88,26 +88,12 @@ func loadFormatExtensions() {
 	}
 }
 
-func isPathnameInExtensions(pathname string, extensions []string) bool {
-	dot := strings.LastIndex(pathname, ".")
-	if -1 == dot {
-		return false
-	}
-	extension := strings.ToLower(pathname[dot:])
-	for _, s := range extensions {
-		if extension == s {
-			return true
-		}
-	}
-	return false
-}
-
 func isAudioPathname(pathname string) bool {
-	return isPathnameInExtensions(pathname, formatExtensions.Audio)
+	return isStringInStrings(getFileExtension(pathname), formatExtensions.Audio)
 }
 
 func isVideoPathname(pathname string) bool {
-	return isPathnameInExtensions(pathname, formatExtensions.Video)
+	return isStringInStrings(getFileExtension(pathname), formatExtensions.Video)
 }
 
 func fileSizesToPathnames(root string) map[int64][]string {
