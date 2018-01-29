@@ -47,7 +47,7 @@ var (
 
 		"core.js",
 		"util.js",
-		"simple-search.js",
+		"search.js",
 
 		"favicon.ico",
 		"clef-192.png",
