@@ -20,7 +20,12 @@ const (
 )
 
 var (
-	anonymousFiles = []string{"manifest.json", "bean-machine.css", "readme.html", "help.html"}
+	anonymousFiles = []string{
+		"bean-machine.css",
+		"help.html",
+		"manifest.json",
+		"readme.html",
+	}
 )
 
 func generateToken() string {
@@ -117,17 +122,8 @@ func (h AuthenticatingFileHandler) normalizePathname(pathname string) string {
 	return pathname
 }
 
-func stringInSlice(a string, slice []string) bool {
-	for _, b := range slice {
-		if b == a {
-			return true
-		}
-	}
-	return false
-}
-
 func shouldServeFileToAnonymousClients(pathname string) bool {
-	return stringInSlice(path.Base(pathname), anonymousFiles)
+	return isStringInStrings(path.Base(pathname), anonymousFiles)
 }
 
 func (h AuthenticatingFileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
