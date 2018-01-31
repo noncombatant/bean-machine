@@ -63,6 +63,19 @@ func getHmacKey() []byte {
 // long as the HMAC key and the stored credential remain constant. No additional
 // session state storage (beyond the password database and the HMAC key) is
 // necessary.
+//
+// The security implications of this are:
+//
+//   * If the storedCredential changes (new scrypt parameters, new salt, new
+//     password), existing sessions are invalidated.
+//   * The token for all live sessions for the same (username, storedCredential)
+//     pair is the same.
+//   * Deducing the storedCredential from the token is as hard as 'reversing'
+//     HMAC_SHA256 with a `hmacKeyLength`-length key.
+//   * Users with with the same password will still get different token values,
+//     both because the username is an input, and because each storedCredential
+//     is created with a different random salt.
+//
 func generateToken(username string, storedCredential string) []byte {
 	mac := hmac.New(sha256.New, getHmacKey())
 	mac.Write([]byte(username))

@@ -22,6 +22,8 @@ const (
 	scryptR      = 8
 )
 
+// TODO: Add a `getStoredCredential` method that stores the passwords in memory,
+// and only re-reads the whole database if it has changed since last read.
 func readPasswordDatabase(pathname string) map[string]string {
 	passwords := make(map[string]string)
 
@@ -78,6 +80,7 @@ func SetPassword() {
 	obfuscated := obfuscatePassword([]byte(password), salt)
 	passwords[strings.ToLower(username)] = hex.EncodeToString(salt) + hex.EncodeToString(obfuscated)
 
+  // TODO: Separate this out into a separate `writePasswordDatabase` function.
 	for key, value := range passwords {
 		file.WriteString(key)
 		file.WriteString(" ")
