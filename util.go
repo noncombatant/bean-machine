@@ -17,16 +17,16 @@ import (
 
 func copyFile(source, destination string) {
 	s, e := os.Open(source)
-	defer s.Close()
 	if e != nil {
 		log.Fatalf("Could not read %q: %s\n", source, e)
 	}
+	defer s.Close()
 
 	d, e := os.Create(destination)
-	defer d.Close()
 	if e != nil {
 		log.Fatalf("Could not write %q: %s\n", destination, e)
 	}
+	defer d.Close()
 
 	_, e = io.Copy(d, s)
 	if e != nil {
