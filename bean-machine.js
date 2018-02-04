@@ -9,7 +9,6 @@
 // returning them to and from functions.
 
 let player = audioPlayer
-let playHistory = []
 
 const buildCatalogLimit = 50
 
@@ -36,7 +35,6 @@ const doPlay = function(itemID) {
   player.src = item[Pathname]
   player.itemID = itemID
   player.play()
-  playHistory.unshift(itemID)
 
   displayNowPlaying(item, nowPlayingTitle)
 }
@@ -114,14 +112,6 @@ const extendCatalog = function() {
     previousLastItem = buildCatalog(previousLastItem)
   }
   extendCatalogRequested = false
-}
-
-const showPlayHistory = function() {
-  searchHits = []
-  for (let i = 0; i < playHistory.length; ++i) {
-    searchHits.push(playHistory[i])
-  }
-  previousLastItem = buildCatalog(0)
 }
 
 // E V E N T   H A N D L E R S
