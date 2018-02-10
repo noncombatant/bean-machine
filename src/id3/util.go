@@ -98,6 +98,10 @@ func parseSize(data []byte) int32 {
 //
 // Refer to section 4 of http://id3.org/id3v2.4.0-structure
 func parseString(data []byte) string {
+	if len(data) < 2 {
+		return ""
+	}
+
 	var s string
 	switch data[0] {
 	case 0: // ISO-8859-1 text.
@@ -107,7 +111,10 @@ func parseString(data []byte) string {
 		s = string(utf16.Decode(toUTF16(data[1:])))
 		break
 	case 2: // UTF-16BE without BOM.
-		panic("Unsupported text encoding UTF-16BE.")
+		// Hope for the best:
+		s = string(utf16.Decode(toUTF16(data[1:])))
+		break
+		//panic("Unsupported text encoding UTF-16BE.")
 	case 3: // UTF-8 text.
 		s = string(data[1:])
 		break
