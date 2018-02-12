@@ -80,14 +80,14 @@ func SetPassword() {
 	obfuscated := obfuscatePassword([]byte(password), salt)
 	passwords[strings.ToLower(username)] = hex.EncodeToString(salt) + hex.EncodeToString(obfuscated)
 
-  writePasswordDatabase(file, passwords)
+	writePasswordDatabase(file, passwords)
 }
 
 func mustWriteString(file *os.File, s string) {
-  _, e := file.WriteString(s)
-  if e != nil {
-    log.Fatal("Could not write string to file: %v", e)
-  }
+	_, e := file.WriteString(s)
+	if e != nil {
+		log.Fatal("Could not write string to file: %v", e)
+	}
 }
 
 func writePasswordDatabase(file *os.File, passwords map[string]string) {

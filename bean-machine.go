@@ -27,6 +27,7 @@ const (
 	serverCertificateBasename = "server-certificate.pem"
 	passwordsBasename         = "passwords"
 	formatsJsonBasename       = "formats.json"
+	httpPort                  = ":1234"
 )
 
 var (
@@ -407,13 +408,11 @@ func Serve(root string) {
 			}
 			names, e := net.LookupAddr(a.IP.String())
 			if e != nil || 0 == len(names) {
-				//log.Printf("    http://%s:8080/\n", a.IP)
-				log.Printf("    https://%s:8443/\n", a.IP)
+				log.Printf("    https://%s%s/\n", a.IP, httpPort)
 				hosts = append(hosts, fmt.Sprintf("%s", a.IP))
 			} else {
 				for _, name := range names {
-					//log.Printf("    http://%s:8080/\n", name)
-					log.Printf("    https://%s:8443/\n", name)
+					log.Printf("    https://%s%s/\n", name, httpPort)
 					hosts = append(hosts, fmt.Sprintf("%s", name))
 				}
 			}
@@ -422,7 +421,7 @@ func Serve(root string) {
 
 	certificatePathname, keyPathname := generateCertificate(hosts)
 	handler := AuthenticatingFileHandler{Root: root}
-	log.Fatal(http.ListenAndServeTLS(":8443", certificatePathname, keyPathname, handler))
+	log.Fatal(http.ListenAndServeTLS(httpPort, certificatePathname, keyPathname, handler))
 }
 
 func Help() {
