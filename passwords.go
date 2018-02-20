@@ -66,8 +66,7 @@ func obfuscatePassword(password, salt []byte) []byte {
 	return obfuscated
 }
 
-// TODO: lowerCase all identifiers. Pretty sure nothing needs to be public.
-func SetPassword() {
+func setPassword() {
 	salt := makeRandomBytes(saltSize)
 
 	pathname := path.Join(configurationPathname, passwordsBasename)

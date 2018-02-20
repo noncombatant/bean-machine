@@ -28,7 +28,7 @@ func pemBlockForKey(priv *ecdsa.PrivateKey) *pem.Block {
 	return &pem.Block{Type: "EC PRIVATE KEY", Bytes: b}
 }
 
-func GenerateCertificate(hosts []string, isCA bool, key, certificate io.Writer) {
+func generateCertificate(hosts []string, isCA bool, key, certificate io.Writer) {
 	priv, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 	if err != nil {
 		log.Fatalf("Failed to generate private key: %s", err)

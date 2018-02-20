@@ -212,7 +212,7 @@ func assertRoot(root string) {
 // creating an array of just pathnames and referring to them by reference in the
 // catalog array). (The latter allows us to also include a list of
 // *.{jpg,png,etc} for each directory.)
-func Catalog(root string) {
+func buildCatalog(root string) {
 	assertRoot(root)
 	loadFormatExtensions()
 	log.Printf("Building catalog of audio files in %q. This might take a while.\n", root)
@@ -284,7 +284,7 @@ func Catalog(root string) {
 	log.Println("Finished building catalog.")
 }
 
-func PrintDuplicates(root string) error {
+func printDuplicates(root string) error {
 	assertRoot(root)
 	for size, pathnames := range fileSizesToPathnames(root) {
 		if len(pathnames) < 2 {
@@ -315,7 +315,7 @@ func PrintDuplicates(root string) error {
 	return nil
 }
 
-func PrintEmpties(root string) error {
+func printEmpties(root string) error {
 	assertRoot(root)
 	e := filepath.Walk(root, func(pathname string, info os.FileInfo, e error) error {
 		if e != nil {
@@ -339,7 +339,7 @@ func PrintEmpties(root string) error {
 	return e
 }
 
-func Install(root string) {
+func installFrontEndFiles(root string) {
 	assertRoot(root)
 	for _, f := range frontEndFiles {
 		copyFile(f, root+string(os.PathSeparator)+f)
@@ -347,7 +347,7 @@ func Install(root string) {
 	log.Printf("Installed web front-end files in %q.\n", root)
 }
 
-func generateCertificate(hosts []string) (string, string) {
+func generateServerCredentials(hosts []string) (string, string) {
 	certificatePathname := path.Join(configurationPathname, serverCertificateBasename)
 	keyPathname := path.Join(configurationPathname, serverKeyBasename)
 
@@ -367,7 +367,7 @@ func generateCertificate(hosts []string) (string, string) {
 		log.Fatalf("Failed to open %q for writing: %s", keyPathname, err)
 	}
 
-	GenerateCertificate(hosts, false, keyFile, certificateFile)
+	generateCertificate(hosts, false, keyFile, certificateFile)
 	certificateFile.Close()
 	keyFile.Close()
 	log.Printf("Generated key for X.509 certificate. %q", keyPathname)
@@ -385,7 +385,7 @@ func assertConfiguration() {
 	}
 }
 
-func Serve(root string) {
+func serveApp(root string) {
 	assertRoot(root)
 	addresses, e := net.InterfaceAddrs()
 	if e != nil || 0 == len(addresses) {
@@ -419,12 +419,12 @@ func Serve(root string) {
 		}
 	}
 
-	certificatePathname, keyPathname := generateCertificate(hosts)
+	certificatePathname, keyPathname := generateServerCredentials(hosts)
 	handler := AuthenticatingFileHandler{Root: root}
 	log.Fatal(http.ListenAndServeTLS(httpPort, certificatePathname, keyPathname, handler))
 }
 
-func Help() {
+func printHelp() {
 	fmt.Println(`Usage:
 
   bean-machine -m music-directory
@@ -484,17 +484,17 @@ func main() {
 	flag.Parse()
 
 	if *needs_help1 || *needs_help2 {
-		Help()
+		printHelp()
 		os.Exit(1)
 	}
 
 	if flag.NArg() == 0 {
 		if "" != *root {
-			Catalog(*root)
-			Install(*root)
-			Serve(*root)
+			buildCatalog(*root)
+			installFrontEndFiles(*root)
+			serveApp(*root)
 		} else {
-			Help()
+			printHelp()
 			os.Exit(1)
 		}
 	}
@@ -504,7 +504,7 @@ func main() {
 		command := flag.Arg(i)
 		switch command {
 		case "catalog":
-			Catalog(*root)
+			buildCatalog(*root)
 		case "check-password":
 			username, password := promptForCredentials()
 			stored := readPasswordDatabase(path.Join(configurationPathname, passwordsBasename))
@@ -514,23 +514,23 @@ func main() {
 				status = 1
 			}
 		case "duplicate":
-			PrintDuplicates(*root)
+			printDuplicates(*root)
 		case "empty":
-			PrintEmpties(*root)
+			printEmpties(*root)
 		case "help":
-			Help()
+			printHelp()
 		case "install":
-			Install(*root)
+			installFrontEndFiles(*root)
 		case "run":
-			Catalog(*root)
-			Install(*root)
-			Serve(*root)
+			buildCatalog(*root)
+			installFrontEndFiles(*root)
+			serveApp(*root)
 		case "serve":
-			Serve(*root)
+			serveApp(*root)
 		case "set-password":
-			SetPassword()
+			setPassword()
 		default:
-			Help()
+			printHelp()
 			status = 1
 		}
 	}
