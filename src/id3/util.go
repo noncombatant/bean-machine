@@ -53,7 +53,9 @@ func toUTF16(data []byte) []uint16 {
 		shift1 = 0
 		//panic("UTF-16 BE found!")
 	} else {
-		panic(fmt.Sprintf("Unrecognized UTF-16 BOM: 0x%02X%02X", data[0], data[1]))
+		shift0 = 8
+		shift1 = 0
+		//panic(fmt.Sprintf("Unrecognized UTF-16 BOM: 0x%02X%02X", data[0], data[1]))
 	}
 
 	s := make([]uint16, 0, len(data)/2)
