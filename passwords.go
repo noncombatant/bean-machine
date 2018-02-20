@@ -22,9 +22,11 @@ const (
 	scryptR      = 8
 )
 
+type Credentials map[string]string
+
 // TODO: Add a `getStoredCredential` method that stores the passwords in memory,
 // and only re-reads the whole database if it has changed since last read.
-func readPasswordDatabase(pathname string) map[string]string {
+func readPasswordDatabase(pathname string) Credentials {
 	passwords := make(map[string]string)
 
 	file, e := os.OpenFile(pathname, os.O_RDONLY, 0600)
@@ -64,11 +66,12 @@ func obfuscatePassword(password, salt []byte) []byte {
 	return obfuscated
 }
 
+// TODO: lowerCase all identifiers. Pretty sure nothing needs to be public.
 func SetPassword() {
 	salt := makeRandomBytes(saltSize)
 
 	pathname := path.Join(configurationPathname, passwordsBasename)
-	passwords := readPasswordDatabase(pathname)
+	stored := readPasswordDatabase(pathname)
 
 	file, e := os.OpenFile(pathname, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0600)
 	if e != nil {
@@ -78,15 +81,15 @@ func SetPassword() {
 
 	username, password := promptForCredentials()
 	obfuscated := obfuscatePassword([]byte(password), salt)
-	passwords[strings.ToLower(username)] = hex.EncodeToString(salt) + hex.EncodeToString(obfuscated)
+	stored[strings.ToLower(username)] = hex.EncodeToString(salt) + hex.EncodeToString(obfuscated)
 
-	writePasswordDatabase(file, passwords)
+	writePasswordDatabase(file, stored)
 }
 
 func mustWriteString(file *os.File, s string) {
 	_, e := file.WriteString(s)
 	if e != nil {
-		log.Fatal("Could not write string to file: %v", e)
+		log.Fatalf("Could not write string to file: %v", e)
 	}
 }
 
@@ -107,11 +110,8 @@ func getSaltAndScrypted(storedCredential string) ([]byte, []byte) {
 	return decodedCredential[:saltSize], decodedCredential[saltSize:]
 }
 
-func CheckPassword(username, password string) bool {
-	pathname := path.Join(configurationPathname, passwordsBasename)
-	passwords := readPasswordDatabase(pathname)
-
-	storedCredential, ok := passwords[strings.ToLower(username)]
+func checkPassword(stored Credentials, username, password string) bool {
+	storedCredential, ok := stored[strings.ToLower(username)]
 	if !ok {
 		return false
 	}

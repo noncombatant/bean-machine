@@ -507,7 +507,8 @@ func main() {
 			Catalog(*root)
 		case "check-password":
 			username, password := promptForCredentials()
-			ok := CheckPassword(username, password)
+			stored := readPasswordDatabase(path.Join(configurationPathname, passwordsBasename))
+			ok := checkPassword(stored, username, password)
 			log.Printf("Password check for %q: %v\n", username, ok)
 			if !ok {
 				status = 1

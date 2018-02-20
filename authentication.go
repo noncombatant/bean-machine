@@ -131,11 +131,10 @@ func (h AuthenticatingFileHandler) isRequestAuthenticated(r *http.Request) bool 
 func (h AuthenticatingFileHandler) handleLogIn(w http.ResponseWriter, r *http.Request) {
 	username := r.FormValue("name")
 	password := r.FormValue("password")
-	if CheckPassword(username, password) {
-		// TODO: This is inefficient; results in reading the DB twice. Make the DB a
-		// parameter of CheckPassword.
-		passwords := readPasswordDatabase(path.Join(configurationPathname, passwordsBasename))
-		token := username + ":" + hex.EncodeToString(generateToken(username, passwords[username]))
+	stored := readPasswordDatabase(path.Join(configurationPathname, passwordsBasename))
+
+	if checkPassword(stored, username, password) {
+		token := username + ":" + hex.EncodeToString(generateToken(username, stored[username]))
 		cookie := &http.Cookie{Name: "token", Value: token, Secure: true, HttpOnly: true}
 		http.SetCookie(w, cookie)
 		http.Redirect(w, r, "/index.html", http.StatusFound)
