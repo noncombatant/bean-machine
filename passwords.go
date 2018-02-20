@@ -27,7 +27,7 @@ type Credentials map[string]string
 // TODO: Add a `getStoredCredential` method that stores the passwords in memory,
 // and only re-reads the whole database if it has changed since last read.
 func readPasswordDatabase(pathname string) Credentials {
-	passwords := make(map[string]string)
+	passwords := make(Credentials)
 
 	file, e := os.OpenFile(pathname, os.O_RDONLY, 0600)
 	if e != nil {
@@ -92,8 +92,8 @@ func mustWriteString(file *os.File, s string) {
 	}
 }
 
-func writePasswordDatabase(file *os.File, passwords map[string]string) {
-	for key, value := range passwords {
+func writePasswordDatabase(file *os.File, toBeStored Credentials) {
+	for key, value := range toBeStored {
 		mustWriteString(file, key)
 		mustWriteString(file, " ")
 		mustWriteString(file, value)
