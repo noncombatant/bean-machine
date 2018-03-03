@@ -7,6 +7,8 @@ import (
 	"crypto/hmac"
 	"crypto/sha256"
 	"encoding/hex"
+	"errors"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -26,6 +28,7 @@ const (
 var (
 	anonymousFiles = []string{
 		"bean-machine.css",
+		"favicon.ico",
 		"help.html",
 		"manifest.json",
 		"readme.html",
@@ -96,36 +99,29 @@ func checkToken(username string, receivedToken []byte) bool {
 	return hmac.Equal(receivedToken, expected)
 }
 
-type AuthenticatingFileHandler struct {
-	Root string
-}
-
-func (h AuthenticatingFileHandler) isRequestAuthenticated(r *http.Request) bool {
-	cookie, e := r.Cookie("token")
-	if e != nil {
-		return false
-	}
-
-	parts := strings.Split(cookie.Value, ":")
+func splitCookie(cookie string) (string, []byte, error) {
+	parts := strings.Split(cookie, ":")
 	if len(parts) != 2 {
-		log.Printf("Invalid cookie format")
-		return false
+		return "", nil, errors.New(fmt.Sprintf("Too many cookie parts %q", cookie))
 	}
+
 	username := parts[0]
 	token := parts[1]
 
 	decodedToken, e := hex.DecodeString(token)
 	if e != nil {
-		log.Printf("Invalid cookie format: %v", e)
-		return false
+		return "", nil, errors.New(fmt.Sprintf("Invalid token %q (%v)", cookie, e))
 	}
 
 	if len(decodedToken) != authenticationTokenLength {
-		log.Printf("Invalid cookie format: length %d", len(decodedToken))
-		return false
+		return "", nil, errors.New(fmt.Sprintf("Invalid token length %q", cookie))
 	}
 
-	return checkToken(username, decodedToken)
+	return username, decodedToken, nil
+}
+
+type AuthenticatingFileHandler struct {
+	Root string
 }
 
 func (h AuthenticatingFileHandler) handleLogIn(w http.ResponseWriter, r *http.Request) {
@@ -134,11 +130,13 @@ func (h AuthenticatingFileHandler) handleLogIn(w http.ResponseWriter, r *http.Re
 	stored := readPasswordDatabase(path.Join(configurationPathname, passwordsBasename))
 
 	if checkPassword(stored, username, password) {
+		log.Printf("Successful authentication for user %q", username)
 		token := username + ":" + hex.EncodeToString(generateToken(username, stored[username]))
 		cookie := &http.Cookie{Name: "token", Value: token, Secure: true, HttpOnly: true}
 		http.SetCookie(w, cookie)
 		http.Redirect(w, r, "/index.html", http.StatusFound)
 	} else {
+		log.Printf("Failed authentication for user %q", username)
 		cookie := &http.Cookie{Name: "token", Value: "", Secure: true, HttpOnly: true}
 		http.SetCookie(w, cookie)
 		h.redirectToLogin(w, r)
@@ -210,10 +208,25 @@ func (h AuthenticatingFileHandler) ServeHTTP(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	if !shouldServeFileToAnonymousClients(r.URL.Path) && !h.isRequestAuthenticated(r) {
+	var username string
+	var decodedToken []byte
+
+	cookie, e := r.Cookie("token")
+	if e == nil {
+		username, decodedToken, e = splitCookie(cookie.Value)
+		if e != nil {
+			log.Printf("Refusing %q to client with invalid cookie (%v)", r.URL.Path, e)
+			h.redirectToLogin(w, r)
+			return
+		}
+	}
+
+	if !shouldServeFileToAnonymousClients(r.URL.Path) && !checkToken(username, decodedToken) {
+		log.Printf("Refusing %q to %q with invalid token", r.URL.Path, username)
 		h.redirectToLogin(w, r)
 		return
 	}
 
+	log.Printf("Serving %q to %q", r.URL.Path, username)
 	h.serveFile(w, r)
 }
