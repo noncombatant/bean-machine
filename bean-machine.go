@@ -286,13 +286,10 @@ func buildCatalog(root string) {
 
 func printDuplicates(root string) error {
 	assertRoot(root)
-	for size, pathnames := range fileSizesToPathnames(root) {
+	for _, pathnames := range fileSizesToPathnames(root) {
 		if len(pathnames) < 2 {
 			continue
 		}
-
-		fmt.Printf("same size (%v):", size)
-		printStringArray(pathnames)
 
 		hashes := make(map[string][]string)
 		for _, pathname := range pathnames {
@@ -307,8 +304,8 @@ func printDuplicates(root string) error {
 			if len(pathnames) < 2 {
 				continue
 			}
-			fmt.Printf("same size and hash:")
 			printStringArray(pathnames)
+			fmt.Println()
 		}
 	}
 
@@ -438,8 +435,7 @@ Invoking bean-machine with no command is equivalent to invoking it with the
     metadata in music-directory/catalog.js.
 
   duplicate
-    Scans music-directory for duplicate files, and prints out a list of any
-    definitely- (by hash) and maybe-duplicates (by size).
+    Scans music-directory for duplicate files, and prints out a list of any.
 
   empty
     Scans music-directory for empty files and directories, and prints out a

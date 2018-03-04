@@ -67,11 +67,9 @@ func normalizeNumericString(numeric string) string {
 }
 
 func printStringArray(strings []string) {
-	fmt.Println()
 	for _, s := range strings {
-		fmt.Printf("    %q\n", s)
+		fmt.Printf("%q\n", s)
 	}
-	fmt.Println()
 }
 
 func escapePathname(pathname string) string {
