@@ -16,7 +16,6 @@ import (
 	"path"
 	"path/filepath"
 	"strings"
-	"time"
 )
 
 const (
@@ -30,6 +29,7 @@ var (
 		"bean-machine.css",
 		"favicon.ico",
 		"help.html",
+		"login.html",
 		"manifest.json",
 		"readme.html",
 	}
@@ -139,18 +139,12 @@ func (h AuthenticatingFileHandler) handleLogIn(w http.ResponseWriter, r *http.Re
 		log.Printf("Failed authentication for user %q", username)
 		cookie := &http.Cookie{Name: "token", Value: "", Secure: true, HttpOnly: true}
 		http.SetCookie(w, cookie)
-		h.redirectToLogin(w, r)
+		redirectToLogin(w, r)
 	}
 }
 
-func (h AuthenticatingFileHandler) redirectToLogin(w http.ResponseWriter, r *http.Request) {
-	path := h.Root + "/login.html"
-	file, e := os.Open(path)
-	if e != nil {
-		log.Fatalf("Could not open %q: %v", path, e)
-	}
-	defer file.Close()
-	http.ServeContent(w, r, "login.html", time.Now(), file)
+func redirectToLogin(w http.ResponseWriter, r *http.Request) {
+	http.Redirect(w, r, "/login.html", http.StatusFound)
 }
 
 func openFileIfPublic(pathname string) (*os.File, os.FileInfo) {
@@ -216,14 +210,14 @@ func (h AuthenticatingFileHandler) ServeHTTP(w http.ResponseWriter, r *http.Requ
 		username, decodedToken, e = splitCookie(cookie.Value)
 		if e != nil {
 			log.Printf("Refusing %q to client with invalid cookie (%v)", r.URL.Path, e)
-			h.redirectToLogin(w, r)
+			redirectToLogin(w, r)
 			return
 		}
 	}
 
 	if !shouldServeFileToAnonymousClients(r.URL.Path) && !checkToken(username, decodedToken) {
 		log.Printf("Refusing %q to %q with invalid token", r.URL.Path, username)
-		h.redirectToLogin(w, r)
+		redirectToLogin(w, r)
 		return
 	}
 
