@@ -33,6 +33,15 @@ var (
 		"manifest.json",
 		"readme.html",
 	}
+
+	gzippableExtensions = map[string]bool{
+		".css":  true,
+		".html": true,
+		".js":   true,
+		".json": true,
+		".svg":  true,
+		".txt":  true,
+	}
 )
 
 func generateAndSaveHmacKey(pathname string) {
@@ -102,7 +111,7 @@ func checkToken(username string, receivedToken []byte) bool {
 func splitCookie(cookie string) (string, []byte, error) {
 	parts := strings.Split(cookie, ":")
 	if len(parts) != 2 {
-		return "", nil, errors.New(fmt.Sprintf("Too many cookie parts %q", cookie))
+		return "", nil, errors.New(fmt.Sprintf("Could not parse cookie %q", cookie))
 	}
 
 	username := parts[0]
@@ -171,14 +180,44 @@ func openFileIfPublic(pathname string) (*os.File, os.FileInfo) {
 }
 
 func (h AuthenticatingFileHandler) serveFile(w http.ResponseWriter, r *http.Request) {
-	path := h.normalizePathname(r.URL.Path)
-	file, info := openFileIfPublic(path)
+	pathname := h.normalizePathname(r.URL.Path)
+	acceptsGzip := strings.Contains(r.Header.Get("Accept-Encoding"), "gzip")
+	_, gzippable := gzippableExtensions[path.Ext(pathname)]
+
+	var file *os.File
+	var info os.FileInfo
+
+	if gzippable && acceptsGzip {
+		gzPathname := pathname + ".gz"
+		gzFile, gzFileInfo := openFileIfPublic(gzPathname)
+		if gzFile != nil && gzFileInfo != nil {
+			file = gzFile
+			info = gzFileInfo
+			w.Header().Set("Content-Encoding", "gzip")
+		} else {
+			f, _ := openFileIfPublic(pathname)
+			if f != nil {
+				e := compressFile(gzPathname, f)
+				defer f.Close()
+				if e != nil {
+					log.Printf("Could not create %q: %v", gzPathname, e)
+				}
+			}
+			file, info = openFileIfPublic(gzPathname)
+			if file != nil {
+				w.Header().Set("Content-Encoding", "gzip")
+			}
+		}
+	} else {
+		file, info = openFileIfPublic(pathname)
+	}
+
 	if file == nil || info == nil {
 		http.NotFound(w, r)
 		return
 	}
 	defer file.Close()
-	http.ServeContent(w, r, path, info.ModTime(), file)
+	http.ServeContent(w, r, pathname, info.ModTime(), file)
 }
 
 func (h AuthenticatingFileHandler) normalizePathname(pathname string) string {

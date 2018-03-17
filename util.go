@@ -4,10 +4,13 @@
 package main
 
 import (
+	"bufio"
+	"compress/gzip"
 	"crypto/md5"
 	"crypto/rand"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"log"
 	"os"
 	"path"
@@ -123,4 +126,29 @@ func makeRandomBytes(length int) []byte {
 		log.Fatalf("Could not get random bytes: %v", e)
 	}
 	return bytes
+}
+
+func compressFile(gzPathname string, file io.Reader) error {
+	bytes, e := ioutil.ReadAll(file)
+	if e != nil {
+		return e
+	}
+
+	gzFile, e := os.OpenFile(gzPathname, os.O_WRONLY|os.O_CREATE, 0666)
+	if e != nil {
+		return e
+	}
+	defer gzFile.Close()
+
+	gzWriter := gzip.NewWriter(gzFile)
+	defer gzWriter.Close()
+
+	bufferedWriter := bufio.NewWriter(gzWriter)
+	defer bufferedWriter.Flush()
+
+	_, e = bufferedWriter.Write(bytes)
+	if e != nil {
+		os.Remove(gzPathname)
+	}
+	return e
 }
