@@ -58,8 +58,8 @@ th, td {
 }
 
 .itemDiv:hover, .albumTitleDiv:hover {
-  background: #cce;
-  color: #000;
+  background: #333;
+  color: #eee;
 }
 
 .albumTitleDiv {
