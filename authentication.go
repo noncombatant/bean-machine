@@ -187,8 +187,21 @@ func (h AuthenticatingFileHandler) serveFile(w http.ResponseWriter, r *http.Requ
 	var file *os.File
 	var info os.FileInfo
 
+	// TODO: This is too complex. Abstract the gzip logic into its own
+	// function(s).
 	if gzippable && acceptsGzip {
 		gzPathname := pathname + ".gz"
+		gzIsOlder, e := isFileOlderByPathname(gzPathname, pathname)
+		if e != nil {
+			log.Fatalf("Could not stat %q[.gz]: %v", pathname, e)
+		}
+		if gzIsOlder {
+			e := os.Remove(gzPathname)
+			if e != nil {
+				log.Fatalf("Could not delete %q: %v", gzPathname, e)
+			}
+		}
+
 		gzFile, gzFileInfo := openFileIfPublic(gzPathname)
 		if gzFile != nil && gzFileInfo != nil {
 			file = gzFile

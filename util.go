@@ -152,3 +152,27 @@ func compressFile(gzPathname string, file io.Reader) error {
 	}
 	return e
 }
+
+func isFileOlder(a, b *os.File) (bool, error) {
+	aInfo, e := a.Stat()
+	if e != nil {
+		return false, e
+	}
+	bInfo, e := b.Stat()
+	if e != nil {
+		return false, e
+	}
+	return bInfo.ModTime().After(aInfo.ModTime()), nil
+}
+
+func isFileOlderByPathname(a, b string) (bool, error) {
+	aFile, e := os.Open(a)
+	if e != nil {
+		return false, e
+	}
+	bFile, e := os.Open(b)
+	if e != nil {
+		return false, e
+	}
+	return isFileOlder(aFile, bFile)
+}
