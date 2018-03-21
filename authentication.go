@@ -193,7 +193,7 @@ func (h AuthenticatingFileHandler) serveFile(w http.ResponseWriter, r *http.Requ
 		gzPathname := pathname + ".gz"
 		gzIsOlder, e := isFileOlderByPathname(gzPathname, pathname)
 		if e != nil {
-			log.Fatalf("Could not stat %q[.gz]: %v", pathname, e)
+			log.Printf("Could not stat %q[.gz]: %v", pathname, e)
 		}
 		if gzIsOlder {
 			e := os.Remove(gzPathname)
