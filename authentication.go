@@ -16,6 +16,7 @@ import (
 	"path"
 	"path/filepath"
 	"strings"
+	"time"
 )
 
 const (
@@ -42,7 +43,13 @@ var (
 		".svg":  true,
 		".txt":  true,
 	}
+
+	cookieLifetime, _ = time.ParseDuration("2400h")
 )
+
+func getCookieLifetime() time.Time {
+	return (time.Now()).Add(cookieLifetime)
+}
 
 func generateAndSaveHmacKey(pathname string) {
 	key := makeRandomBytes(hmacKeyLength)
@@ -141,7 +148,7 @@ func (h AuthenticatingFileHandler) handleLogIn(w http.ResponseWriter, r *http.Re
 	if checkPassword(stored, username, password) {
 		log.Printf("Successful authentication for user %q", username)
 		token := username + ":" + hex.EncodeToString(generateToken(username, stored[username]))
-		cookie := &http.Cookie{Name: "token", Value: token, Secure: true, HttpOnly: true}
+		cookie := &http.Cookie{Name: "token", Value: token, Secure: true, HttpOnly: true, Expires: getCookieLifetime()}
 		http.SetCookie(w, cookie)
 		http.Redirect(w, r, "/index.html", http.StatusFound)
 	} else {
@@ -272,6 +279,9 @@ func (h AuthenticatingFileHandler) ServeHTTP(w http.ResponseWriter, r *http.Requ
 		redirectToLogin(w, r)
 		return
 	}
+
+	cookie.Expires = getCookieLifetime()
+	http.SetCookie(w, cookie)
 
 	log.Printf("Serving %q to %q", r.URL.Path, username)
 	h.serveFile(w, r)
