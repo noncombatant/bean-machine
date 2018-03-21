@@ -160,6 +160,7 @@ const addEventListeners = function() {
   videoCloseButton.addEventListener("click", closeVideo)
   window.addEventListener("scroll", windowOnScroll)
   document.body.addEventListener("keyup", togglePlayback)
+  randomCheckbox.addEventListener("click", randomCheckboxOnClick)
 }
 
 main()

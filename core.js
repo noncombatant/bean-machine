@@ -104,18 +104,32 @@ const playerOnError = function(e) {
   ++errorCount
 }
 
-const main = function() {
-  getFormatExtensions()
-  addEventListeners()
-  searchHits = resetSearchHits(catalog)
-  player.volume = 0.5
+const randomCheckboxOnClick = function(e) {
+  localStorage.setItem("random", randomCheckbox.checked)
+}
+
+const restoreState = function() {
   const itemID = localStorage.getItem("itemID")
   if (itemID) {
-    player.itemID = itemID
+    player.itemID = Number(itemID)
   }
   const query = localStorage.getItem("query")
   if (query) {
     searchInput.value = query
     searchCatalog(query, true)
   }
+  searchInput.focus()
+  searchInput.select()
+  if ('undefined' !== typeof(randomCheckbox)) {
+    const random = localStorage.getItem("random")
+    randomCheckbox.checked = "true" === random ? true : false
+  }
+}
+
+const main = function() {
+  getFormatExtensions()
+  addEventListeners()
+  searchHits = resetSearchHits(catalog)
+  player.volume = 0.5
+  restoreState()
 }
