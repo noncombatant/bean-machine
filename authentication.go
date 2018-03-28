@@ -280,8 +280,10 @@ func (h AuthenticatingFileHandler) ServeHTTP(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	cookie.Expires = getCookieLifetime()
-	http.SetCookie(w, cookie)
+	if cookie != nil {
+		cookie.Expires = getCookieLifetime()
+		http.SetCookie(w, cookie)
+	}
 
 	log.Printf("Serving %q to %q", r.URL.Path, username)
 	h.serveFile(w, r)
