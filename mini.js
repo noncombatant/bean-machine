@@ -8,12 +8,14 @@ const sizeCover = function(event) {
   cover.style.backgroundSize = cover.width + " " + cover.width
 }
 
-const doPlay = function(itemID) {
+const doPlay = function(itemID, shouldStartPlaying) {
   player.pause()
   const item = catalog[itemID]
   player.src = item[Pathname]
   player.itemID = itemID
-  player.play()
+  if (shouldStartPlaying) {
+    player.play()
+  }
   localStorage.setItem("itemID", itemID)
 
   // TODO: Refactor playButtonOnClicked so that we can reuse it here.
@@ -43,7 +45,7 @@ const playButtonOnClicked = function(e) {
     if (undefined === player.itemID) {
       playNext(e)
     } else {
-      doPlay(player.itemID)
+      doPlay(player.itemID, true)
     }
     playButton.src = "pause.png"
     playButton.title = "Pause"

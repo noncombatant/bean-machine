@@ -28,13 +28,16 @@ const setAudioVideoControls = function(itemID) {
   player.volume = volume
 }
 
-const doPlay = function(itemID) {
+const doPlay = function(itemID, shouldStartPlaying) {
   player.pause()
   setAudioVideoControls(itemID)
   const item = catalog[itemID]
   player.src = item[Pathname]
   player.itemID = itemID
-  player.play()
+  if (shouldStartPlaying) {
+    player.play()
+  }
+  localStorage.setItem("itemID", itemID)
 
   displayNowPlaying(item, nowPlayingTitle)
 }
@@ -129,7 +132,7 @@ const albumTitleDivOnClick = function(e) {
       if (itemID == player.itemID) {
         player.play()
       } else {
-        doPlay(itemID)
+        doPlay(itemID, true)
       }
     } else {
       playNext()

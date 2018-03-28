@@ -67,15 +67,15 @@ const playNext = function(e) {
         break
       }
     }
-    doPlay(searchHits[i])
+    doPlay(searchHits[i], true)
   } else {
     for (let i = 0; i < searchHits.length; ++i) {
       if (player.itemID === searchHits[i]) {
-        doPlay(searchHits[(i + 1) % searchHits.length])
+        doPlay(searchHits[(i + 1) % searchHits.length], true)
         return
       }
     }
-    doPlay(searchHits[0])
+    doPlay(searchHits[0], true)
   }
 }
 
@@ -110,8 +110,8 @@ const randomCheckboxOnClick = function(e) {
 
 const restoreState = function() {
   const itemID = localStorage.getItem("itemID")
-  if (itemID) {
-    player.itemID = Number(itemID)
+  if (undefined !== typeof(itemID) && null !== itemID) {
+    doPlay(itemID, false)
   }
   const query = localStorage.getItem("query")
   if (query) {
