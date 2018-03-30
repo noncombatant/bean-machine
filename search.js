@@ -5,7 +5,8 @@ const splitIntoWordSet = memoize(function(string) {
 })
 
 const itemMatches = function(terms, item) {
-  const all = normalizeStringForSearch(item[Pathname] + item[Artist] + item[Album] + item[Name] + item[Genre])
+  const delimiter = "\x00"
+  const all = normalizeStringForSearch(item[Pathname] + delimiter + item[Artist] + delimiter + item[Album] + delimiter + item[Name] + delimiter + item[Genre])
   for (let t = 0 ; t < terms.length; ++t) {
     if (-1 === all.indexOf(terms[t])) {
       return false
