@@ -12,6 +12,7 @@ import (
 	"os"
 	"path"
 	"strings"
+	"time"
 )
 
 const (
@@ -24,29 +25,35 @@ const (
 
 type Credentials map[string]string
 
-// TODO: Add a `getStoredCredential` method that stores the passwords in memory,
-// and only re-reads the whole database if it has changed since last read.
+var (
+	lastCredentialRead time.Time
+	credentials        = make(Credentials)
+)
+
 func readPasswordDatabase(pathname string) Credentials {
-	passwords := make(Credentials)
-
-	file, e := os.OpenFile(pathname, os.O_RDONLY, 0600)
-	if e != nil {
-		if os.IsNotExist(e) {
-			return passwords
+	result := openFileAndGetInfo(pathname)
+	if result.Error != nil {
+		if os.IsNotExist(result.Error) {
+			return credentials
 		}
-		log.Fatalf("Could not open %q: %v", pathname, e)
+		log.Fatalf("Could not open %q: %v", pathname, result.Error)
 	}
-	defer file.Close()
+	defer result.File.Close()
 
-	var username, password string
-	for {
-		_, e = fmt.Fscanf(file, "%s %s\n", &username, &password)
-		if e != nil {
-			break
+	if result.Info.ModTime().After(lastCredentialRead) {
+		credentials = make(Credentials)
+		var username, password string
+		for {
+			_, e := fmt.Fscanf(result.File, "%s %s\n", &username, &password)
+			if e != nil {
+				break
+			}
+			credentials[username] = password
 		}
-		passwords[username] = password
+		lastCredentialRead = result.Info.ModTime()
 	}
-	return passwords
+
+	return credentials
 }
 
 func promptForCredentials() (string, string) {
