@@ -163,27 +163,48 @@ func redirectToLogin(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/login.html", http.StatusFound)
 }
 
-func openFileIfPublic(pathname string) (*os.File, os.FileInfo) {
-	file, e := os.Open(pathname)
-	if e != nil {
-		log.Printf("Couldn't open %q: %v", pathname, e)
-		return nil, nil
+func openFileIfPublic(pathname string, shouldTryGzip bool) (FileAndInfoResult, bool) {
+	nonGzResult := openFileAndGetInfo(pathname)
+	if nonGzResult.Error != nil {
+		log.Printf("Could not open %q: %v", pathname, nonGzResult.Error)
+		return nonGzResult, false
 	}
 
-	info, e := file.Stat()
-	if e != nil {
-		log.Printf("Couldn't stat %q: %v", pathname, e)
-		file.Close()
-		return nil, nil
+	if nonGzResult.Info.Mode()&0004 == 0 {
+		nonGzResult.File.Close()
+		return FileAndInfoResult{File: nil, Error: errors.New(fmt.Sprintf("Couldn't open %q: not public", pathname))}, false
 	}
 
-	if info.Mode()&0004 == 0 {
-		log.Printf("Couldn't open %q: not public", pathname)
-		file.Close()
-		return nil, nil
+	if shouldTryGzip {
+		gzPathname := pathname + ".gz"
+		gzResult := openFileAndGetInfo(gzPathname)
+
+		// Handle the common case first.
+		if gzResult.Error == nil && gzResult.Info.ModTime().After(nonGzResult.Info.ModTime()) {
+			nonGzResult.File.Close()
+			return gzResult, true
+		}
+
+		// Clean up, remove the old gzPathname if it exists, create a new one, and
+		// return it.
+		if gzResult.File != nil {
+			gzResult.File.Close()
+		}
+		_ = os.Remove(gzPathname)
+
+		e := compressFile(gzPathname, nonGzResult.File)
+		if e != nil {
+			nonGzResult.File.Seek(0, os.SEEK_SET)
+			return nonGzResult, false
+		}
+
+		gzResult = openFileAndGetInfo(gzPathname)
+		if gzResult.Error == nil {
+			return gzResult, true
+		}
 	}
 
-	return file, info
+	return nonGzResult, false
 }
 
 func (h AuthenticatingFileHandler) serveFile(w http.ResponseWriter, r *http.Request) {
@@ -191,53 +212,19 @@ func (h AuthenticatingFileHandler) serveFile(w http.ResponseWriter, r *http.Requ
 	acceptsGzip := strings.Contains(r.Header.Get("Accept-Encoding"), "gzip")
 	_, gzippable := gzippableExtensions[path.Ext(pathname)]
 
-	var file *os.File
-	var info os.FileInfo
+	result, isGzipped := openFileIfPublic(pathname, gzippable && acceptsGzip)
 
-	// TODO: This is too complex. Abstract the gzip logic into its own
-	// function(s).
-	if gzippable && acceptsGzip {
-		gzPathname := pathname + ".gz"
-		gzIsOlder, e := isFileOlderByPathname(gzPathname, pathname)
-		if e != nil {
-			log.Printf("Could not stat %q[.gz]: %v", pathname, e)
-		}
-		if gzIsOlder {
-			e := os.Remove(gzPathname)
-			if e != nil {
-				log.Fatalf("Could not delete %q: %v", gzPathname, e)
-			}
-		}
-
-		gzFile, gzFileInfo := openFileIfPublic(gzPathname)
-		if gzFile != nil && gzFileInfo != nil {
-			file = gzFile
-			info = gzFileInfo
-			w.Header().Set("Content-Encoding", "gzip")
-		} else {
-			f, _ := openFileIfPublic(pathname)
-			if f != nil {
-				e := compressFile(gzPathname, f)
-				defer f.Close()
-				if e != nil {
-					log.Printf("Could not create %q: %v", gzPathname, e)
-				}
-			}
-			file, info = openFileIfPublic(gzPathname)
-			if file != nil {
-				w.Header().Set("Content-Encoding", "gzip")
-			}
-		}
-	} else {
-		file, info = openFileIfPublic(pathname)
-	}
-
-	if file == nil || info == nil {
+	if result.Error != nil || result.File == nil || result.Info == nil {
 		http.NotFound(w, r)
 		return
 	}
-	defer file.Close()
-	http.ServeContent(w, r, pathname, info.ModTime(), file)
+
+	if isGzipped {
+		w.Header().Set("Content-Encoding", "gzip")
+	}
+
+	defer result.File.Close()
+	http.ServeContent(w, r, pathname, result.Info.ModTime(), result.File)
 }
 
 func (h AuthenticatingFileHandler) normalizePathname(pathname string) string {
