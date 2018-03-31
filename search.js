@@ -49,6 +49,7 @@ const executeSearch = function(e) {
 
 const searchInputOnKeyUp = function(e) {
   e.stopPropagation()
-  const enterKeyCode = 13
-  enterKeyCode === e.keyCode && searchCatalog(this.value, false)
+  if ("Enter" === e.code) {
+    searchCatalog(this.value, false)
+  }
 }
