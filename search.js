@@ -17,9 +17,9 @@ const itemMatches = function(terms, item) {
 
 const getMatchingItems = function(catalog, query) {
   const hits = []
+  const terms = [...splitIntoWordSet(normalizeStringForSearch(query))]
   for (let i = 0; i < catalog.length; ++i) {
     const item = catalog[i]
-    const terms = [...splitIntoWordSet(normalizeStringForSearch(query))]
     if (itemMatches(terms, item)) {
       hits.push(i)
     }
