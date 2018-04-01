@@ -35,7 +35,7 @@ const searchCatalog = function(query, forceSearch) {
   }
   localStorage.setItem("query", query)
   searchHits = getMatchingItems(catalog, query)
-  if (typeof(buildCatalog) !== "undefined") {
+  if (typeof(buildCatalog) === "function") {
     // TODO: BUG: The presence of buildCatalog is a symptom of this code running
     // in the context of index.html, not mini.html. But it's not a direct
     // indicator; it would be better to parameterize this function.
