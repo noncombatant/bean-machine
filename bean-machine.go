@@ -244,7 +244,7 @@ func buildCatalog(root string) {
 		func(pathname string, info os.FileInfo, e error) error {
 			if e != nil {
 				log.Printf("%q: %s\n", pathname, e)
-				return nil
+				return e
 			}
 			if shouldSkipFile(pathname, info) {
 				log.Printf("Skipping %q\n", pathname)
