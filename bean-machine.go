@@ -113,8 +113,8 @@ func fileSizesToPathnames(root string) map[int64][]string {
 }
 
 type ItemInfo struct {
-	pathname string
-	mtime    time.Time
+	Pathname string
+	Mtime    time.Time
 	*id3.File
 }
 
@@ -154,10 +154,10 @@ func (s *ItemInfo) ToJSON() string {
 	// Get info from pathname, assuming format:
 	// "AC_DC/Back In Black/1-01 Hells Bells.m4a"
 	//     performer/album/disc#-track# name
-	parts := strings.Split(s.pathname, string(filepath.Separator))
+	parts := strings.Split(s.Pathname, string(filepath.Separator))
 	if len(parts) != 3 {
 		if name == "" {
-			name = s.pathname
+			name = s.Pathname
 		}
 	} else {
 		if artist == "" {
@@ -191,7 +191,7 @@ func (s *ItemInfo) ToJSON() string {
 	track = normalizeNumericString(track)
 	year = normalizeNumericString(year)
 	return fmt.Sprintf("[%q,%q,%q,%q,%s,%s,%s,%q,%d]",
-		escapePathname(s.pathname),
+		escapePathname(s.Pathname),
 		album,
 		artist,
 		name,
@@ -199,7 +199,7 @@ func (s *ItemInfo) ToJSON() string {
 		maybeQuote(track),
 		maybeQuote(year),
 		genre,
-		s.mtime.Unix())
+		s.Mtime.Unix())
 }
 
 func assertRoot(root string) {
@@ -255,24 +255,27 @@ func buildCatalog(root string) {
 			}
 
 			input, e := os.Open(pathname)
-			defer input.Close()
 			count++
-			if 0 == count%1000 {
-				log.Printf("%v items", count)
-			}
 			if e != nil {
 				log.Printf("\n%q: %s\n", pathname, e)
 				return nil
 			}
+			defer input.Close()
+
+			if 0 == count%1000 {
+				log.Printf("%v items", count)
+			}
 
 			webPathname := pathname[len(root)+1:]
-			if isAudioPathname(pathname) {
-				info := ItemInfo{pathname: webPathname, mtime: info.ModTime(), File: id3.Read(input)}
-				fmt.Fprintf(output, "%s,\n", info.ToJSON())
-			} else if isVideoPathname(pathname) {
-				info := ItemInfo{pathname: webPathname, mtime: info.ModTime()}
-				fmt.Fprintf(output, "%s,\n", info.ToJSON())
+			var itemInfo ItemInfo
+			if isAudioPathname(pathname) || isVideoPathname(pathname) {
+				itemInfo = ItemInfo{Pathname: webPathname, Mtime: info.ModTime()}
+				if isAudioPathname(pathname) {
+					itemInfo.File = id3.Read(input)
+				}
 			}
+			fmt.Fprintf(output, "%s,\n", itemInfo.ToJSON())
+
 			return nil
 		})
 	fmt.Fprintln(output, "]")
