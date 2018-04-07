@@ -4,6 +4,61 @@ const splitIntoWordSet = memoize(function(string) {
   return new Set(string.split(/\W+/))
 })
 
+const pushTerm = function(terms, term) {
+  if (term.match(/^\s+$/) || 0 === term.length) {
+    return
+  }
+  terms.push(normalizeStringForSearch(term))
+}
+
+const parseTerms = function(string) {
+  const terms = []
+  let in_quotes = false
+  let in_word = false
+  let word_start = 0
+
+  for (let i = 0; i < string.length; ++i) {
+    const c = string[i]
+    if ('"' === c) {
+      if (in_quotes) {
+        in_quotes = in_word = false
+        pushTerm(terms, string.substring(word_start, i))
+        word_start = i + 1
+      } else {
+        if (-1 !== word_start) {
+          pushTerm(terms, string.substring(word_start, i))
+        }
+        in_quotes = in_word = true
+        word_start = i + 1
+      }
+    } else if (c.match(/^\s/)) {
+      if (in_quotes) {
+        // do nothing
+      } else if (in_word) {
+        pushTerm(terms, string.substring(word_start, i))
+        in_word = in_quotes = false
+        word_start = i + 1
+      } else {
+        // do nothing
+      }
+    } else {
+      if (in_word || in_quotes) {
+        // do nothing
+      } else {
+        word_start = i
+        in_word = true
+      }
+    }
+  }
+  if (-1 !== word_start) {
+    const t = string.substring(word_start, string.length).trim()
+    if (t.length > 0) {
+      pushTerm(terms, t)
+    }
+  }
+  return terms
+}
+
 const itemMatches = function(terms, item) {
   const delimiter = "\x00"
   const all = normalizeStringForSearch(item[Pathname] + delimiter + item[Artist] + delimiter + item[Album] + delimiter + item[Name] + delimiter + item[Genre])
@@ -17,7 +72,7 @@ const itemMatches = function(terms, item) {
 
 const getMatchingItems = function(catalog, query) {
   const hits = []
-  const terms = [...splitIntoWordSet(normalizeStringForSearch(query))]
+  const terms = parseTerms(query)
   for (let i = 0; i < catalog.length; ++i) {
     const item = catalog[i]
     if (itemMatches(terms, item)) {
