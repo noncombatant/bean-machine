@@ -140,7 +140,10 @@ func compressFile(gzPathname string, file io.Reader) error {
 	}
 	defer gzFile.Close()
 
-	gzWriter := gzip.NewWriter(gzFile)
+	gzWriter, e := gzip.NewWriterLevel(gzFile, gzip.BestCompression)
+	if e != nil {
+		return e
+	}
 	defer gzWriter.Close()
 
 	bufferedWriter := bufio.NewWriter(gzWriter)
