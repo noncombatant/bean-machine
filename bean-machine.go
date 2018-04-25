@@ -273,8 +273,8 @@ func buildCatalog(root string) {
 				if isAudioPathname(pathname) {
 					itemInfo.File = id3.Read(input)
 				}
+				fmt.Fprintf(output, "%s,\n", itemInfo.ToJSON())
 			}
-			fmt.Fprintf(output, "%s,\n", itemInfo.ToJSON())
 
 			return nil
 		})
