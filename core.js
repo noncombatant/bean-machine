@@ -127,7 +127,6 @@ const restoreState = function() {
 }
 
 const main = function() {
-  getFormatExtensions()
   addEventListeners()
   searchHits = resetSearchHits(catalog)
   player.volume = 0.5

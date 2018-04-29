@@ -4,11 +4,9 @@
 package main
 
 import (
-	"encoding/json"
 	"flag"
 	"fmt"
 	"id3"
-	"io"
 	"io/ioutil"
 	"log"
 	"net"
@@ -26,7 +24,6 @@ const (
 	serverKeyBasename         = "server-key.pem"
 	serverCertificateBasename = "server-certificate.pem"
 	passwordsBasename         = "passwords"
-	formatsJsonBasename       = "formats.json"
 	httpPort                  = ":1234"
 )
 
@@ -35,7 +32,6 @@ var (
 		"login.html",
 		"help.html",
 
-		formatsJsonBasename,
 		"manifest.json",
 
 		"bean-machine.css",
@@ -62,39 +58,42 @@ var (
 		"shuffle.png",
 		"skip.png",
 	}
+
 	homePathname          = os.Getenv("HOME")
 	configurationPathname = path.Join(homePathname, configurationBasename)
 	bindToIPv4            = true
 	bindToIPv6            = false
+
+	// NOTE: These must be kept in sync with the format extensions arrays in the
+	// JS code.
+	audioFormatExtensions = []string{
+		".flac",
+		".m4a",
+		".mid",
+		".midi",
+		".mp3",
+		".ogg",
+		".wav",
+		".wave",
+	}
+	videoFormatExtensions = []string{
+		".avi",
+		".mkv",
+		".mov",
+		".mp4",
+		".mpeg",
+		".mpg",
+		".ogv",
+		".webm",
+	}
 )
 
-var formatExtensions struct {
-	Audio []string
-	Video []string
-}
-
-func loadFormatExtensions() {
-	file, e := os.Open(formatsJsonBasename)
-	if e != nil {
-		log.Fatal(e)
-	}
-
-	decoder := json.NewDecoder(file)
-	for {
-		if e = decoder.Decode(&formatExtensions); io.EOF == e {
-			break
-		} else if e != nil {
-			log.Fatal(e)
-		}
-	}
-}
-
 func isAudioPathname(pathname string) bool {
-	return isStringInStrings(getFileExtension(pathname), formatExtensions.Audio)
+	return isStringInStrings(getFileExtension(pathname), audioFormatExtensions)
 }
 
 func isVideoPathname(pathname string) bool {
-	return isStringInStrings(getFileExtension(pathname), formatExtensions.Video)
+	return isStringInStrings(getFileExtension(pathname), videoFormatExtensions)
 }
 
 func fileSizesToPathnames(root string) map[int64][]string {
@@ -214,7 +213,6 @@ func assertRoot(root string) {
 // *.{jpg,png,etc} for each directory.)
 func buildCatalog(root string) {
 	assertRoot(root)
-	loadFormatExtensions()
 	log.Printf("Building catalog of audio files in %q. This might take a while.\n", root)
 
 	if os.PathSeparator == root[len(root)-1] {

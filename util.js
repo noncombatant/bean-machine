@@ -102,30 +102,35 @@ const isPathnameInExtensions = function(pathname, extensions) {
   return any(extensions, function(extension) { return e == extension })
 }
 
-let formatExtensions = { "started": false }
-const getFormatExtensions = function() {
-  if (!formatExtensions.started) {
-    formatExtensions.started = true
-    const xhr = new XMLHttpRequest()
-    xhr.addEventListener("load", function() {
-      formatExtensions = JSON.parse(this.responseText)
-      formatExtensions.started = true
-    })
-    xhr.addEventListener("error", function() {
-      console.log("Could not load formats.json", this.statusText)
-    })
-    xhr.open("GET", "formats.json")
-    xhr.send()
-  }
-  return formatExtensions
-}
+// NOTE: These must be kept in sync with the format extensions arrays in the Go
+// code.
+const audioFormatExtensions = [
+  ".flac",
+  ".m4a",
+  ".mid",
+  ".midi",
+  ".mp3",
+  ".ogg",
+  ".wav",
+  ".wave",
+]
+const videoFormatExtensions = [
+  ".avi",
+  ".mkv",
+  ".mov",
+  ".mp4",
+  ".mpeg",
+  ".mpg",
+  ".ogv",
+  ".webm",
+]
 
 const isAudioPathname = function(pathname) {
-  return isPathnameInExtensions(pathname, getFormatExtensions().audio)
+  return isPathnameInExtensions(pathname, audioFormatExtensions)
 }
 
 const isVideoPathname = function(pathname) {
-  return isPathnameInExtensions(pathname, getFormatExtensions().video)
+  return isPathnameInExtensions(pathname, videoFormatExtensions)
 }
 
 const getRandomIndex = function(array) {
