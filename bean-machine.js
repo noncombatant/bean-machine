@@ -35,12 +35,18 @@ const doPlay = function(itemID, shouldStartPlaying) {
   displayNowPlaying(item, nowPlayingTitle)
 }
 
+const shouldRequireLongPress = isAndroidDevice()
+
 const buildItemDiv = function(itemID) {
   const item = catalog[itemID]
   const div = createElement("div", "itemDiv")
   div.itemID = itemID
-  div.addEventListener("dblclick", itemDivOnClick)
-  div.addEventListener("click", itemDivOnClick)
+  if (shouldRequireLongPress) {
+    div.addEventListener("contextmenu", itemDivOnClick)
+  } else {
+    div.addEventListener("dblclick", itemDivOnClick)
+    div.addEventListener("click", itemDivOnClick)
+  }
 
   const trackSpan = createElement("span", "itemDivCell trackNumber", (item[Disc] || "1") + "-" + (item[Track] || "1"))
   div.appendChild(trackSpan)
@@ -55,8 +61,12 @@ const buildAlbumTitleDiv = function(itemID) {
   const item = catalog[itemID]
   const div = createElement("div", "albumTitleDiv")
   div.itemID = itemID
-  div.addEventListener("dblclick", albumTitleDivOnClick)
-  div.addEventListener("click", albumTitleDivOnClick)
+  if (shouldRequireLongPress) {
+    div.addEventListener("contextmenu", itemDivOnClick)
+  } else {
+    div.addEventListener("dblclick", itemDivOnClick)
+    div.addEventListener("click", itemDivOnClick)
+  }
 
   const albumSpan = createElement("span", "itemDivCell albumTitle", item[Album])
   div.appendChild(albumSpan)

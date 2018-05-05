@@ -232,3 +232,8 @@ const regexSymbolWithCombiningMarks = new RegExp(/([\0-\u02FF\u0370-\u1AAF\u1B00
 const normalizeStringForSearch = memoize(function(string) {
   return string.toString().normalize("NFD").replace(regexSymbolWithCombiningMarks, '$1').toLocaleLowerCase()
 })
+
+const regexAndroidUserAgent = new RegExp(/Android/)
+const isAndroidDevice = function() {
+  return regexAndroidUserAgent.test(navigator.userAgent)
+}
