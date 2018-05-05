@@ -152,7 +152,6 @@ func (h AuthenticatingFileHandler) handleLogIn(w http.ResponseWriter, r *http.Re
 		http.SetCookie(w, cookie)
 		http.Redirect(w, r, "/index.html", http.StatusFound)
 	} else {
-		log.Printf("Failed authentication for user %q", username)
 		cookie := &http.Cookie{Name: "token", Value: "", Secure: true, HttpOnly: true}
 		http.SetCookie(w, cookie)
 		redirectToLogin(w, r)
@@ -248,6 +247,11 @@ func (h AuthenticatingFileHandler) ServeHTTP(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
+	if shouldServeFileToAnonymousClients(r.URL.Path) {
+		h.serveFile(w, r)
+		return
+	}
+
 	var username string
 	var decodedToken []byte
 
@@ -261,7 +265,7 @@ func (h AuthenticatingFileHandler) ServeHTTP(w http.ResponseWriter, r *http.Requ
 		}
 	}
 
-	if !shouldServeFileToAnonymousClients(r.URL.Path) && !checkToken(username, decodedToken) {
+	if !checkToken(username, decodedToken) {
 		log.Printf("Refusing %q to %q with invalid token", r.URL.Path, username)
 		redirectToLogin(w, r)
 		return
@@ -272,6 +276,5 @@ func (h AuthenticatingFileHandler) ServeHTTP(w http.ResponseWriter, r *http.Requ
 		http.SetCookie(w, cookie)
 	}
 
-	log.Printf("Serving %q to %q", r.URL.Path, username)
 	h.serveFile(w, r)
 }
