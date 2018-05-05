@@ -16,7 +16,6 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
-	"time"
 )
 
 const (
@@ -113,7 +112,6 @@ func fileSizesToPathnames(root string) map[int64][]string {
 
 type ItemInfo struct {
 	Pathname string
-	Mtime    time.Time
 	*id3.File
 }
 
@@ -189,7 +187,7 @@ func (s *ItemInfo) ToJSON() string {
 	disc = normalizeNumericString(disc)
 	track = normalizeNumericString(track)
 	year = normalizeNumericString(year)
-	return fmt.Sprintf("[%q,%q,%q,%q,%s,%s,%s,%q,%d]",
+	return fmt.Sprintf("[%q,%q,%q,%q,%s,%s,%s,%q]",
 		escapePathname(s.Pathname),
 		album,
 		artist,
@@ -197,8 +195,7 @@ func (s *ItemInfo) ToJSON() string {
 		maybeQuote(disc),
 		maybeQuote(track),
 		maybeQuote(year),
-		genre,
-		s.Mtime.Unix())
+		genre)
 }
 
 func assertRoot(root string) {
@@ -234,7 +231,6 @@ func buildCatalog(root string) {
 	fmt.Fprintln(output, "const Track = 5")
 	fmt.Fprintln(output, "const Year = 6")
 	fmt.Fprintln(output, "const Genre = 7")
-	fmt.Fprintln(output, "const Mtime = 8")
 
 	fmt.Fprintln(output, "const catalog = [")
 	count := 0
@@ -267,7 +263,7 @@ func buildCatalog(root string) {
 			webPathname := pathname[len(root)+1:]
 			var itemInfo ItemInfo
 			if isAudioPathname(pathname) || isVideoPathname(pathname) {
-				itemInfo = ItemInfo{Pathname: webPathname, Mtime: info.ModTime()}
+				itemInfo = ItemInfo{Pathname: webPathname }
 				if isAudioPathname(pathname) {
 					itemInfo.File = id3.Read(input)
 				}
