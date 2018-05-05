@@ -3,16 +3,9 @@
 
 "use strict";
 
-// G L O B A L   V A R I A B L E S
-//
-// TODO: Move globals to inside `main`. This requires explicitly passing and
-// returning them to and from functions.
-
 let player = audioPlayer
 
 const buildCatalogLimit = 50
-
-// C O R E   F U N C T I O N A L I T Y
 
 const setAudioVideoControls = function(itemID) {
   const pathname = catalog[itemID][Pathname]
@@ -117,8 +110,6 @@ const extendCatalog = function() {
   extendCatalogRequested = false
 }
 
-// E V E N T   H A N D L E R S
-
 const closeVideo = function(e) {
   videoPlayer.pause()
   videoPlayerDiv.style.display = videoPlayerBackground.style.display = "none"
@@ -149,8 +140,6 @@ const windowOnScroll = function(e) {
   }
   extendCatalogRequested = true
 }
-
-// M A I N
 
 const addEventListeners = function() {
   nextButton.addEventListener("click", playNext)
