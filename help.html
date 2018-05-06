@@ -11,9 +11,33 @@ body {
 
 <h1>Bean Machine Help</h1>
 
+<h2>Searching</h2>
+
+<p>Bean Machine’s search feature is fairly simple.</p>
+
+<ul>
+
+<li><code><strong>james brown</strong></code> will match all items that contain
+both “james” and “brown”, anywhere in their metadata. This includes substrings,
+so a hypothetical artist named Jameson Brownington will also match. This also
+means that a hypothetical record named <em>Brown</em> by the band James would
+match.</li>
+
+<li><code><strong>"james brown"</strong></code> will match all items that
+contain the phrase anywhere in their metadata. Jameson Brownington and
+<em>Brown</em> by James no longer match, although James Brownington still
+would.</li>
+
+<li>You can also prefix terms with <code><strong>-</strong></code> to negate
+them: <code><strong>"james brown" -popcorn</strong></code> matches all items
+that contain the phrase anywhere in their metadata, but will exclude items that
+match “popcorn”.</li>
+
+</ul>
+
 <h2>About Bean Machine</h2>
 
-<p>This is Bean Machine version 2017-12-30, written by <a
+<p>This is Bean Machine version 2018-05-06, written by <a
 href="https://noncombatant.org/">Chris Palmer</a>. The command line utility uses
 the <a href="https://github.com/ascherkus/go-id3"><code>id3</code> package by
 Andrew Scherkus</a>, and uses X.509 certificate generation code adapted from an
