@@ -21,6 +21,7 @@ package id3
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"io"
 )
@@ -53,11 +54,12 @@ type File struct {
 
 // Parse the input for ID3 information. Returns nil if parsing failed or the
 // input didn't contain ID3 information.
-func Read(reader io.Reader) *File {
+func Read(reader io.Reader) (*File, error) {
 	file := new(File)
 	bufReader := bufio.NewReader(reader)
-	if !isID3Tag(bufReader) {
-		return nil
+	err := isID3Tag(bufReader)
+	if err != nil {
+		return nil, err
 	}
 
 	parseID3v2Header(bufReader, file)
@@ -72,15 +74,21 @@ func Read(reader io.Reader) *File {
 		panic(fmt.Sprintf("Unrecognized ID3v2 version: %d", file.Header.Version))
 	}
 
-	return file
+	return file, nil
 }
 
-func isID3Tag(reader *bufio.Reader) bool {
+func isID3Tag(reader *bufio.Reader) error {
 	data, err := reader.Peek(3)
-	if len(data) < 3 || err != nil {
-		return false
+	if err != nil {
+		return err
 	}
-	return data[0] == 'I' && data[1] == 'D' && data[2] == '3'
+	if len(data) < 3 {
+		return errors.New("Insufficient data for an ID3 tag")
+	}
+	if data[0] == 'I' && data[1] == 'D' && data[2] == '3' {
+		return nil
+	}
+	return errors.New("Not an ID3 tag")
 }
 
 func parseID3v2Header(reader *bufio.Reader, file *File) {

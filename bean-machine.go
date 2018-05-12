@@ -263,9 +263,12 @@ func buildCatalog(root string) {
 			webPathname := pathname[len(root)+1:]
 			var itemInfo ItemInfo
 			if isAudioPathname(pathname) || isVideoPathname(pathname) {
-				itemInfo = ItemInfo{Pathname: webPathname }
+				itemInfo = ItemInfo{Pathname: webPathname}
 				if isAudioPathname(pathname) {
-					itemInfo.File = id3.Read(input)
+					itemInfo.File, e = id3.Read(input)
+					if e != nil {
+						log.Printf("%q: %v", pathname, e)
+					}
 				}
 				fmt.Fprintf(output, "%s,\n", itemInfo.ToJSON())
 			}
