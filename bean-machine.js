@@ -68,11 +68,10 @@ const buildAlbumTitleDiv = function(itemID) {
     div.addEventListener("click", itemDivOnClick)
   }
 
-  const albumSpan = createElement("span", "itemDivCell albumTitle", item[Album])
+  const albumSpan = createElement("span", "itemDivCell albumTitle", basename(dirname(item[Pathname])))
   div.appendChild(albumSpan)
 
-  const artist = item[Pathname].startsWith("Compilations/") ? "Various Artists" : item[Artist]
-  const artistSpan = createElement("span", "itemDivCell artistName", artist)
+  const artistSpan = createElement("span", "itemDivCell artistName", basename(dirname(dirname(item[Pathname]))))
   div.appendChild(artistSpan)
 
   if (item[Year]) {
