@@ -1,9 +1,5 @@
 "use strict";
 
-const splitIntoWordSet = memoize(function(string) {
-  return new Set(string.split(/\W+/))
-})
-
 const pushTerm = function(terms, term) {
   if (term.match(/^\s+$/) || 0 === term.length) {
     return
