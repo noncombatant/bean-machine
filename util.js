@@ -137,11 +137,6 @@ const getRandomIndex = function(array) {
   return Math.floor(Math.random() * array.length)
 }
 
-const get2MonthsAgo = function() {
-  const now = (new Date()).getTime() / 1000
-  return now - (2 * 30 * 24 * 60 * 60)
-}
-
 const showNotification = function(title, options) {
   if (!("Notification" in window) || "denied" === window.Notification.permission) {
     return
@@ -158,67 +153,6 @@ const showNotification = function(title, options) {
     })
   }
   setTimeout(function() { n.close() }, 5000)
-}
-
-const countProperties = function(object) {
-  // According to http://jsben.ch/#/oSt2p, this method is the fastest in Chrome,
-  // Safari, and Firefox — at least for objects with relatively few properties.
-  return Object.keys(object).length
-
-  // If that ceases to be true, there's always this:
-  //let i = 0
-  //for (let p in object) {
-  //  if (object.hasOwnProperty(p)) {
-  //    ++i
-  //  }
-  //}
-  //return i
-}
-
-const parseIntOr = function(string, fallback, base) {
-  const n = parseInt(string, base || 10)
-  if (Number.isNaN(n))
-    return undefined === fallback ? 0 : fallback
-  return n
-}
-
-const parseQueryString = function(string) {
-  const result = {}
-  for (let pair of string.split("&")) {
-    const kv = pair.split("=", 2).map(decodeURIComponent)
-    const key = kv[0], value = kv[1]
-    if (result[key]) {
-      result[key].push(value)
-    } else {
-      result[key] = [value]
-    }
-  }
-  return result
-}
-
-const constructQueryString = function(object) {
-  const result = []
-  for (let key in object) {
-    if (!object.hasOwnProperty(key)) {
-      continue
-    }
-
-    const value = object[key]
-    if (undefined !== value) {
-      if (Array !== value.constructor) {
-        result.push(encodeURIComponent(key.toString()) + "=" + encodeURIComponent(value.toString()))
-      } else {
-        for (let v of value) {
-          result.push(encodeURIComponent(key.toString()) + "=" + encodeURIComponent(v.toString()))
-        }
-      }
-    }
-  }
-  return result.join("&")
-}
-
-const idOrLast = function(x) {
-  return Array.isArray(x) ? x[x.length - 1] : x
 }
 
 // Borrowed from
