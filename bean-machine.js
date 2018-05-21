@@ -5,6 +5,15 @@
 
 let player = audioPlayer
 
+const Pathname = 0
+const Album = 1
+const Artist = 2
+const Name = 3
+const Disc = 4
+const Track = 5
+const Year = 6
+const Genre = 7
+
 const buildCatalogLimit = 50
 
 const setAudioVideoControls = function(itemID) {

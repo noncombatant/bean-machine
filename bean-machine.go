@@ -218,16 +218,6 @@ func buildCatalog(root string) {
 	}
 	defer output.Close()
 
-	fmt.Fprintln(output, "\"use strict\";")
-	fmt.Fprintln(output, "const Pathname = 0")
-	fmt.Fprintln(output, "const Album = 1")
-	fmt.Fprintln(output, "const Artist = 2")
-	fmt.Fprintln(output, "const Name = 3")
-	fmt.Fprintln(output, "const Disc = 4")
-	fmt.Fprintln(output, "const Track = 5")
-	fmt.Fprintln(output, "const Year = 6")
-	fmt.Fprintln(output, "const Genre = 7")
-
 	fmt.Fprintln(output, "const catalog = [")
 	count := 0
 	e = filepath.Walk(root,
