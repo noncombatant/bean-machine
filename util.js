@@ -36,13 +36,6 @@ const isElementInViewport = function(element) {
       (left + width) <= (window.pageXOffset + window.innerWidth)
 }
 
-const scrollElementIntoView = function(element) {
-  if (isElementInViewport(element)) {
-    return
-  }
-  element.scrollIntoView({behavior: "smooth"})
-}
-
 const createElement = function(type, className, text) {
   const e = document.createElement(type)
   if (className) {
@@ -135,24 +128,6 @@ const isVideoPathname = function(pathname) {
 
 const getRandomIndex = function(array) {
   return Math.floor(Math.random() * array.length)
-}
-
-const showNotification = function(title, options) {
-  if (!("Notification" in window) || "denied" === window.Notification.permission) {
-    return
-  }
-
-  let n
-  if ("granted" === window.Notification.permission) {
-    n = new window.Notification(title, options)
-  } else {
-    Notification.requestPermission(function (permission) {
-      if ("granted" === permission) {
-        n = new window.Notification(title, options)
-      }
-    })
-  }
-  setTimeout(function() { n.close() }, 5000)
 }
 
 // Borrowed from
