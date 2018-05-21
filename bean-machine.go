@@ -37,10 +37,6 @@ var (
 		"index.html",
 		"bean-machine.js",
 
-		"mini.css",
-		"mini.html",
-		"mini.js",
-
 		"core.js",
 		"util.js",
 		"search.js",
