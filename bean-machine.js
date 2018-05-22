@@ -188,7 +188,7 @@ const main = function() {
   .then(function(tsvs) {
     setSingleTextChild(statusDiv, "Parsing catalog...")
     parseTSVRecords(tsvs, catalog)
-  
+
     setSingleTextChild(statusDiv, "Restoring state...")
     restoreState()
 
