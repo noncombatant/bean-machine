@@ -93,9 +93,13 @@ const restoreState = function() {
   }
 }
 
-const main = function() {
-  addEventListeners()
-  searchHits = resetSearchHits(catalog)
-  player.volume = 0.5
-  restoreState()
+const parseTSVRecords = function(tsvs, array) {
+  let start = 0
+  for (let i = 0; i < tsvs.length; ++i) {
+    if ('\n' === tsvs[i]) {
+      const record = tsvs.substring(start, i)
+      array.push(record.split("\t"))
+      start = i + 1
+    }
+  }
 }

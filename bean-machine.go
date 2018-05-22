@@ -111,7 +111,7 @@ type ItemInfo struct {
 	*id3.File
 }
 
-func (s *ItemInfo) ToJSON() string {
+func (s *ItemInfo) ToTSV() string {
 	album := ""
 	artist := ""
 	name := ""
@@ -183,15 +183,15 @@ func (s *ItemInfo) ToJSON() string {
 	disc = normalizeNumericString(disc)
 	track = normalizeNumericString(track)
 	year = normalizeNumericString(year)
-	return fmt.Sprintf("[%q,%q,%q,%q,%s,%s,%s,%q]",
-		escapePathname(s.Pathname),
-		album,
-		artist,
-		name,
-		maybeQuote(disc),
-		maybeQuote(track),
-		maybeQuote(year),
-		genre)
+	return fmt.Sprintf("%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s",
+		replaceTSVMetacharacters(escapePathname(s.Pathname)),
+		replaceTSVMetacharacters(album),
+		replaceTSVMetacharacters(artist),
+		replaceTSVMetacharacters(name),
+		replaceTSVMetacharacters(disc),
+		replaceTSVMetacharacters(track),
+		replaceTSVMetacharacters(year),
+		replaceTSVMetacharacters(genre))
 }
 
 func assertRoot(root string) {
@@ -200,7 +200,7 @@ func assertRoot(root string) {
 	}
 }
 
-// TODO: Find a way to shrink catalog.js (e.g. by coalescing pathnames, or
+// TODO: Find a way to shrink catalog.tsv (e.g. by coalescing pathnames, or
 // creating an array of just pathnames and referring to them by reference in the
 // catalog array). (The latter allows us to also include a list of
 // *.{jpg,png,etc} for each directory.)
@@ -211,14 +211,13 @@ func buildCatalog(root string) {
 	if os.PathSeparator == root[len(root)-1] {
 		root = root[:len(root)-1]
 	}
-	pathname := root + string(os.PathSeparator) + "catalog.js"
+	pathname := root + string(os.PathSeparator) + "catalog.tsv"
 	output, e := os.Create(pathname)
 	if e != nil {
 		log.Fatalf("Could not create %q: %s\n", pathname, e)
 	}
 	defer output.Close()
 
-	fmt.Fprintln(output, "const catalog = [")
 	count := 0
 	e = filepath.Walk(root,
 		func(pathname string, info os.FileInfo, e error) error {
@@ -256,12 +255,11 @@ func buildCatalog(root string) {
 						log.Printf("%q: %v", pathname, e)
 					}
 				}
-				fmt.Fprintf(output, "%s,\n", itemInfo.ToJSON())
+				fmt.Fprintf(output, "%s\n", itemInfo.ToTSV())
 			}
 
 			return nil
 		})
-	fmt.Fprintln(output, "]")
 
 	if e != nil {
 		log.Printf("Problem walking %q: %s\n", root, e)
@@ -418,7 +416,7 @@ Invoking bean-machine with no command is equivalent to invoking it with the
 
   catalog
     Scans music-directory for music files, and creates a database of their
-    metadata in music-directory/catalog.js.
+    metadata in music-directory/catalog.tsv.
 
   duplicate
     Scans music-directory for duplicate files, and prints out a list of any.

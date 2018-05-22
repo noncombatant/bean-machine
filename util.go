@@ -14,7 +14,6 @@ import (
 	"log"
 	"os"
 	"path"
-	"regexp"
 	"strings"
 )
 
@@ -104,21 +103,6 @@ func isStringInStrings(needle string, haystack []string) bool {
 	return false
 }
 
-func isStringAllDigits(s string) bool {
-	matched, e := regexp.MatchString("^\\d+$", s)
-	if e != nil {
-		log.Fatal(e)
-	}
-	return matched
-}
-
-func maybeQuote(s string) string {
-	if isStringAllDigits(s) {
-		return s
-	}
-	return fmt.Sprintf("%q", s)
-}
-
 func makeRandomBytes(length int) []byte {
 	bytes := make([]byte, length)
 	_, e := rand.Read(bytes)
@@ -175,4 +159,18 @@ func openFileAndGetInfo(pathname string) FileAndInfoResult {
 	}
 
 	return FileAndInfoResult{File: file, Info: info, Error: nil}
+}
+
+func replaceStringAndLog(s, old, new, description string) string {
+	if -1 != strings.Index(s, old) {
+		log.Printf("%q contains a %s", s, description)
+		s = strings.Replace(s, old, new, -1)
+	}
+	return s
+}
+
+func replaceTSVMetacharacters(s string) string {
+	s = replaceStringAndLog(s, "\t", " ", "tab")
+	s = replaceStringAndLog(s, "\n", " ", "newline")
+	return s
 }

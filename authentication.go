@@ -41,6 +41,7 @@ var (
 		".js":   true,
 		".json": true,
 		".svg":  true,
+		".tsv":  true,
 		".txt":  true,
 	}
 
@@ -259,17 +260,10 @@ func (h AuthenticatingFileHandler) ServeHTTP(w http.ResponseWriter, r *http.Requ
 	// directory mtime). Also need to keep track of each item's unique ID, and
 	// these must stay stable across re-builds of the catalog.
 	//
-	// This will enable the client to not need to request all of catalog.js every
+	// This will enable the client to not need to request all of catalog.tsv every
 	// time starting the app. The client can cache metadata in `localStorage`.
 	// This should speed up loading (less data sent over the network) and parsing
 	// (don't need to parse a huge blob of JS).
-	//
-	// Another, completely different idea, is to make catalog.js not JS(ON) but
-	// some simpler format that is faster (?) to parse. (Records per line, fields
-	// separated by tabs?) Such a format might also be marginally smaller.
-	//
-	// Additionally, the catalog request should be with the Fetch API, not a
-	// blocking `<script src=...>` load.
 
 	if shouldServeFileToAnonymousClients(r.URL.Path) {
 		h.serveFile(w, r)

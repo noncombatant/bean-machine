@@ -13,6 +13,7 @@ const Disc = 4
 const Track = 5
 const Year = 6
 const Genre = 7
+const catalog = []
 
 const buildCatalogLimit = 50
 
@@ -173,5 +174,27 @@ const addEventListeners = function() {
   randomCheckbox.addEventListener("click", randomCheckboxOnClick)
 }
 
+const main = function() {
+  addEventListeners()
+  searchHits = resetSearchHits(catalog)
+  player.volume = 0.5
+
+  setSingleTextChild(statusDiv, "Fetching catalog...")
+  fetch("catalog.tsv", {"credentials": "include"})
+  .then(function(response) {
+    setSingleTextChild(statusDiv, "Reading catalog...")
+    return response.text();
+  })
+  .then(function(tsvs) {
+    setSingleTextChild(statusDiv, "Parsing catalog...")
+    parseTSVRecords(tsvs, catalog)
+  
+    setSingleTextChild(statusDiv, "Restoring state...")
+    restoreState()
+
+    setSingleTextChild(statusDiv, "Searching catalog...")
+    searchCatalog(searchInput.value, true)
+    setSingleTextChild(statusDiv, "Search complete.")
+  });
+}
 main()
-previousLastItem = buildCatalog(0)

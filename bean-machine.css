@@ -18,6 +18,11 @@ th, td {
   padding: 0.25em;
 }
 
+#statusDiv {
+  color: #444;
+  font-size: 80%;
+}
+
 #controlsDiv {
   position: -webkit-sticky;
   position: sticky;
