@@ -108,90 +108,109 @@ func fileSizesToPathnames(root string) map[int64][]string {
 
 type ItemInfo struct {
 	Pathname string
-	*id3.File
+	Album    string
+	Artist   string
+	Name     string
+	Disc     string
+	Track    string
+	Year     string
+	Genre    string
+	File     *id3.File
 }
 
-func (s *ItemInfo) ToTSV() string {
-	album := ""
-	artist := ""
-	name := ""
-	disc := ""
-	track := ""
-	year := ""
-	genre := ""
-
-	if s.File != nil {
-		if s.Album != "" {
-			album = s.Album
+func (i *ItemInfo) normalize() {
+	if i.File != nil {
+		if i.File.Album != "" {
+			i.Album = i.File.Album
 		}
-		if s.Artist != "" {
-			artist = s.Artist
+		if i.File.Artist != "" {
+			i.Artist = i.File.Artist
 		}
-		if s.Name != "" {
-			name = s.Name
+		if i.File.Name != "" {
+			i.Name = i.File.Name
 		}
-		if s.Disc != "" {
-			disc = s.Disc
+		if i.File.Disc != "" {
+			i.Disc = i.File.Disc
 		}
-		if s.Track != "" {
-			track = s.Track
+		if i.File.Track != "" {
+			i.Track = i.File.Track
 		}
-		if s.Year != "" {
-			year = s.Year
+		if i.File.Year != "" {
+			i.Year = i.File.Year
 		}
-		if s.Genre != "" {
-			genre = s.Genre
+		if i.File.Genre != "" {
+			i.Genre = i.File.Genre
 		}
 	}
 
-	// Get info from pathname, assuming format:
-	// "AC_DC/Back In Black/1-01 Hells Bells.m4a"
-	//     performer/album/disc#-track# name
-	parts := strings.Split(s.Pathname, string(filepath.Separator))
-	if len(parts) != 3 {
-		if name == "" {
-			name = s.Pathname
-		}
-	} else {
-		if artist == "" {
-			artist = parts[0]
-		}
-		if album == "" {
-			album = parts[1]
-		}
-		if name == "" {
-			name = parts[2]
+	if i.Artist == "" || i.Album == "" || i.Name == "" {
+		// Get info from pathname, assuming format:
+		// "AC_DC/Back In Black/1-01 Hells Bells.m4a"
+		//     performer/album/disc#-track# name
+		parts := strings.Split(i.Pathname, string(filepath.Separator))
+		if len(parts) != 3 {
+			if i.Name == "" {
+				i.Name = i.Pathname
+			}
+		} else {
+			if i.Artist == "" {
+				i.Artist = parts[0]
+			}
+			if i.Album == "" {
+				i.Album = parts[1]
+			}
+			if i.Name == "" {
+				// TODO: Split off file extension.
+				i.Name = parts[2]
+			}
 		}
 	}
 
-	if artist == "" {
-		artist = "Unknown Artist"
+	if i.Artist == "" {
+		i.Artist = "Unknown Artist"
 	}
-	if album == "" {
-		album = "Unknown Album"
+	if i.Album == "" {
+		i.Album = "Unknown Album"
 	}
-	if name == "" {
-		name = "Unknown Item"
+	if i.Name == "" {
+		i.Name = "Unknown Item"
 	}
-	if disc == "" {
-		disc = "1"
+	if i.Disc == "" {
+		i.Disc = "1"
 	}
-	if track == "" {
-		track = "1"
+	if i.Track == "" {
+		i.Track = "1"
 	}
 
-	disc = normalizeNumericString(disc)
-	track = normalizeNumericString(track)
-	year = normalizeNumericString(year)
+	i.Disc = normalizeNumericString(i.Disc)
+	i.Track = normalizeNumericString(i.Track)
+	i.Year = normalizeNumericString(i.Year)
+}
+
+func (i *ItemInfo) ToJSON() string {
+	i.normalize()
+	return fmt.Sprintf("%q,%q,%q,%q,%q,%q,%q,%q",
+		escapePathname(i.Pathname),
+		i.Album,
+		i.Artist,
+		i.Name,
+		i.Disc,
+		i.Track,
+		i.Year,
+		i.Genre)
+}
+
+func (i *ItemInfo) ToTSV() string {
+	i.normalize()
 	return fmt.Sprintf("%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s",
-		replaceTSVMetacharacters(escapePathname(s.Pathname)),
-		replaceTSVMetacharacters(album),
-		replaceTSVMetacharacters(artist),
-		replaceTSVMetacharacters(name),
-		replaceTSVMetacharacters(disc),
-		replaceTSVMetacharacters(track),
-		replaceTSVMetacharacters(year),
-		replaceTSVMetacharacters(genre))
+		replaceTSVMetacharacters(escapePathname(i.Pathname)),
+		replaceTSVMetacharacters(i.Album),
+		replaceTSVMetacharacters(i.Artist),
+		replaceTSVMetacharacters(i.Name),
+		replaceTSVMetacharacters(i.Disc),
+		replaceTSVMetacharacters(i.Track),
+		replaceTSVMetacharacters(i.Year),
+		replaceTSVMetacharacters(i.Genre))
 }
 
 func assertRoot(root string) {
