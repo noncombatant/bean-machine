@@ -191,10 +191,6 @@ const main = function() {
 
     setSingleTextChild(statusDiv, "Restoring state...")
     restoreState()
-
-    setSingleTextChild(statusDiv, "Searching catalog...")
-    searchCatalog(searchInput.value, true)
-    setSingleTextChild(statusDiv, "Search complete.")
   });
 }
 main()
