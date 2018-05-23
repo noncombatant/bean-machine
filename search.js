@@ -1,7 +1,8 @@
 "use strict";
 
+const zeroOrMoreSpaces = /^\s*$/
 const pushTerm = function(terms, term) {
-  if (term.match(/^\s+$/) || 0 === term.length) {
+  if (term.match(zeroOrMoreSpaces)) {
     return
   }
   terms.push(normalizeStringForSearch(term))
