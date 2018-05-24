@@ -179,17 +179,12 @@ const main = function() {
   searchHits = resetSearchHits(catalog)
   player.volume = 0.5
 
-  setSingleTextChild(statusDiv, "Fetching catalog...")
   fetch("catalog.tsv", {"credentials": "include"})
   .then(function(response) {
-    setSingleTextChild(statusDiv, "Reading catalog...")
     return response.text();
   })
   .then(function(tsvs) {
-    setSingleTextChild(statusDiv, "Parsing catalog...")
     parseTSVRecords(tsvs, catalog)
-
-    setSingleTextChild(statusDiv, "Restoring state...")
     restoreState()
   });
 }
