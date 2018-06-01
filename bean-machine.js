@@ -19,7 +19,6 @@ const buildCatalogLimit = 50
 
 const setAudioVideoControls = function(itemID) {
   const pathname = catalog[itemID][Pathname]
-  const volume = player.volume
   if (isAudioPathname(pathname)) {
     player = audioPlayer
     videoPlayerDiv.style.display = videoPlayerBackground.style.display = "none"
@@ -28,7 +27,6 @@ const setAudioVideoControls = function(itemID) {
     videoPlayerDiv.style.display = videoPlayerBackground.style.display = "block"
   }
   player.className = "normal"
-  player.volume = volume
 }
 
 const doPlay = function(itemID, shouldStartPlaying) {
@@ -177,7 +175,6 @@ const addEventListeners = function() {
 const main = function() {
   addEventListeners()
   searchHits = resetSearchHits(catalog)
-  player.volume = 0.5
 
   fetch("catalog.tsv", {"credentials": "include"})
   .then(function(response) {
