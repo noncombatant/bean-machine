@@ -21,10 +21,12 @@ const setAudioVideoControls = function(itemID) {
   const pathname = catalog[itemID][Pathname]
   if (isAudioPathname(pathname)) {
     player = audioPlayer
-    videoPlayerDiv.style.display = videoPlayerBackground.style.display = "none"
+    audioPlayer.style.display = "block"
+    videoPlayer.style.display = "none"
   } else if (isVideoPathname(pathname)) {
     player = videoPlayer
-    videoPlayerDiv.style.display = videoPlayerBackground.style.display = "block"
+    audioPlayer.style.display = "none"
+    videoPlayer.style.display = "block"
   }
   player.className = "normal"
 }
@@ -127,11 +129,6 @@ const extendCatalog = function() {
   extendCatalogRequested = false
 }
 
-const closeVideo = function(e) {
-  videoPlayer.pause()
-  videoPlayerDiv.style.display = videoPlayerBackground.style.display = "none"
-}
-
 const albumTitleDivOnClick = function(e) {
   const itemID = this.itemID
   randomCheckbox.checked = false
@@ -166,7 +163,6 @@ const addEventListeners = function() {
   searchInput.addEventListener("blur", executeSearch)
   searchInput.addEventListener("keyup", searchInputOnKeyUp)
   searchButton.addEventListener("click", executeSearch)
-  videoCloseButton.addEventListener("click", closeVideo)
   window.addEventListener("scroll", windowOnScroll)
   document.body.addEventListener("keyup", togglePlayback)
   randomCheckbox.addEventListener("click", randomCheckboxOnClick)

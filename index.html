@@ -15,7 +15,10 @@
   <tr>
 
   <tr>
-    <td><audio id="audioPlayer" controls preload="auto"></audio></td>
+    <td>
+      <audio id="audioPlayer" controls preload="auto"></audio>
+      <video id="videoPlayer" controls width="400" height="300"></video>
+    </td>
     <td class="narrow"><button id="nextButton">Next</button></td>
   </tr>
 
@@ -27,14 +30,6 @@
 </table></div>
 
 <div id="itemListDiv"></div>
-
-<div id="videoPlayerBackground">
-  <div id="videoPlayerDiv" class="hidden">
-    <video id="videoPlayer" controls width="400" height="300"></video>
-    <br/>
-    <button id="videoCloseButton">Close</button>
-  </div>
-</div>
 
 <script src="util.js"></script>
 <script src="core.js"></script>
