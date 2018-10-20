@@ -19,6 +19,10 @@ const $ = function(id) {
 }
 
 const isElementInViewport = function(element) {
+  if (!element) {
+    return false
+  }
+
   let top = element.offsetTop
   let left = element.offsetLeft
   const width = element.offsetWidth
