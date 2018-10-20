@@ -58,7 +58,7 @@ const parseTerms = function(string) {
 
 const itemMatches = function(terms, item) {
   const delimiter = "\x00"
-  const all = normalizeStringForSearch(item[Pathname] + delimiter + item[Artist] + delimiter + item[Album] + delimiter + item[Name] + delimiter + item[Genre])
+  const all = normalizeStringForSearch(item[Pathname] + delimiter + item[Artist] + delimiter + item[Album] + delimiter + item[Name] + delimiter + item[Genre] + delimiter + item[Year])
   for (let i = 0; i < terms.length; ++i) {
     let t = terms[i]
     const negated = "-" === t[0]
