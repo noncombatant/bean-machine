@@ -138,3 +138,7 @@ pre {
 .hidden {
   display: none;
 }
+
+video {
+  max-width: 100%;
+}
