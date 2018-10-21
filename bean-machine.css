@@ -135,31 +135,6 @@ pre {
   box-shadow: 0 0 3em #000;
 }
 
-#videoPlayerBackground {
-  display: none;
-  position: absolute;
-  top: 0%;
-  left: 0%;
-  width: 100%;
-  height: 100%;
-  background-color: black;
-  z-index:1001;
-  -moz-opacity: 0.9;
-  opacity: .90;
-  filter: alpha(opacity=90);
-}
-
-#videoPlayerDiv {
-  display: none;
-  position: absolute;
-  top: 25%;
-  left: 25%;
-  width: 50%;
-  height: 50%;
-  z-index:1002;
-  overflow: auto;
-}
-
 .hidden {
   display: none;
 }
