@@ -21,12 +21,12 @@ const setAudioVideoControls = function(itemID) {
   const pathname = catalog[itemID][Pathname]
   if (isAudioPathname(pathname)) {
     player = audioPlayer
-    audioPlayer.style.display = "block"
-    videoPlayer.style.display = "none"
+    audioPlayer.className = ""
+    videoPlayer.className = "hidden"
   } else if (isVideoPathname(pathname)) {
     player = videoPlayer
-    audioPlayer.style.display = "none"
-    videoPlayer.style.display = "block"
+    audioPlayer.className = "hidden"
+    videoPlayer.className = ""
   }
   player.className = "normal"
 }
