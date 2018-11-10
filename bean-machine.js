@@ -43,9 +43,30 @@ const doPlay = function(itemID, shouldStartPlaying) {
   localStorage.setItem("itemID", itemID)
 
   displayNowPlaying(item, nowPlayingTitle)
+  populateArt(artSpan, dirname(item[Pathname]))
+}
 
-  // TODO: Invoke /getArt (e.g. /getArt?d=Metallica%2fRide%20The%20Lightning)
-  // and populate the UI (`artSpan`).
+const populateArt = function(parentElement, directory) {
+  removeAllChildren(parentElement)
+
+  // TODO BUG: `encodeURI` isn't handling '&'.
+  fetch("/getArt?d=" + encodeURI(directory), {"credentials": "include"})
+  .then(function(response) {
+    return response.text()
+  })
+  .then(function(arts) {
+    arts = arts.split("\n")
+    for (let art of arts) {
+      if (0 == art.length) {
+        continue
+      }
+      const a = document.createElement("a")
+      a.href = directory + "/" + art
+      a.target = "_blank"
+      a.appendChild(document.createTextNode(art))
+      parentElement.appendChild(a)
+    }
+  })
 }
 
 const shouldRequireLongPress = isAndroidDevice()
@@ -177,11 +198,11 @@ const main = function() {
 
   fetch("catalog.tsv", {"credentials": "include"})
   .then(function(response) {
-    return response.text();
+    return response.text()
   })
   .then(function(tsvs) {
     parseTSVRecords(tsvs, catalog)
     restoreState()
-  });
+  })
 }
 main()
