@@ -56,6 +56,7 @@ const populateArt = function(parentElement, directory) {
   })
   .then(function(arts) {
     arts = arts.split("\n")
+    let haveDoneFirst = false
     for (let art of arts) {
       if (0 == art.length) {
         continue
@@ -63,8 +64,12 @@ const populateArt = function(parentElement, directory) {
       const a = document.createElement("a")
       a.href = directory + "/" + art
       a.target = "_blank"
-      a.appendChild(document.createTextNode(art))
+      a.appendChild(document.createTextNode(stripFileExtension(art)))
+      if (haveDoneFirst) {
+        parentElement.appendChild(document.createTextNode(" "))
+      }
       parentElement.appendChild(a)
+      haveDoneFirst = true
     }
   })
 }

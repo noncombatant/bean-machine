@@ -94,6 +94,11 @@ const fileExtension = function(pathname) {
   return -1 == i ? "" : pathname.substring(i)
 }
 
+const stripFileExtension = function(pathname) {
+  const i = pathname.lastIndexOf(".")
+  return -1 == i ? pathname : pathname.substring(0, i)
+}
+
 const isPathnameInExtensions = function(pathname, extensions) {
   const e = fileExtension(pathname)
   return any(extensions, function(extension) { return e == extension })
