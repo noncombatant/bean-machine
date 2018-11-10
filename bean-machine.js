@@ -43,6 +43,9 @@ const doPlay = function(itemID, shouldStartPlaying) {
   localStorage.setItem("itemID", itemID)
 
   displayNowPlaying(item, nowPlayingTitle)
+
+  // TODO: Invoke /getArt (e.g. /getArt?d=Metallica%2fRide%20The%20Lightning)
+  // and populate the UI (`artSpan`).
 }
 
 const shouldRequireLongPress = isAndroidDevice()
