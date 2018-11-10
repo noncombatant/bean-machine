@@ -59,6 +59,8 @@ var (
 	bindToIPv4            = true
 	bindToIPv6            = false
 
+	musicRoot = ""
+
 	// NOTE: These must be kept in sync with the format extensions arrays in the
 	// JS code.
 	audioFormatExtensions = []string{
@@ -493,21 +495,22 @@ func main() {
 		bindToIPv6 = true
 	}
 
-	needs_help1 := flag.Bool("help", false, "Print the help message.")
-	needs_help2 := flag.Bool("h", false, "Print the help message.")
+	needsHelp1 := flag.Bool("help", false, "Print the help message.")
+	needsHelp2 := flag.Bool("h", false, "Print the help message.")
 	root := flag.String("m", "", "Set the music directory.")
 	flag.Parse()
+	musicRoot = *root
 
-	if *needs_help1 || *needs_help2 {
+	if *needsHelp1 || *needsHelp2 {
 		printHelp()
 		os.Exit(1)
 	}
 
 	if flag.NArg() == 0 {
-		if "" != *root {
-			buildCatalog(*root)
-			installFrontEndFiles(*root)
-			serveApp(*root)
+		if "" != musicRoot {
+			buildCatalog(musicRoot)
+			installFrontEndFiles(musicRoot)
+			serveApp(musicRoot)
 		} else {
 			printHelp()
 			os.Exit(1)
@@ -519,7 +522,7 @@ func main() {
 		command := flag.Arg(i)
 		switch command {
 		case "catalog":
-			buildCatalog(*root)
+			buildCatalog(musicRoot)
 		case "check-password":
 			username, password := promptForCredentials()
 			stored := readPasswordDatabase(path.Join(configurationPathname, passwordsBasename))
@@ -529,19 +532,19 @@ func main() {
 				status = 1
 			}
 		case "duplicate":
-			printDuplicates(*root)
+			printDuplicates(musicRoot)
 		case "empty":
-			printEmpties(*root)
+			printEmpties(musicRoot)
 		case "help":
 			printHelp()
 		case "install":
-			installFrontEndFiles(*root)
+			installFrontEndFiles(musicRoot)
 		case "run":
-			buildCatalog(*root)
-			installFrontEndFiles(*root)
-			serveApp(*root)
+			buildCatalog(musicRoot)
+			installFrontEndFiles(musicRoot)
+			serveApp(musicRoot)
 		case "serve":
-			serveApp(*root)
+			serveApp(musicRoot)
 		case "set-password":
 			setPassword()
 		default:
