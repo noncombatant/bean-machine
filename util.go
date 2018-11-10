@@ -20,7 +20,7 @@ import (
 
 func copyFile(source, destination string) {
 	source = filepath.Clean(source)
-	destination = filepath.Clean(source)
+	destination = filepath.Clean(destination)
 	if source == destination {
 		return
 	}
