@@ -116,7 +116,7 @@ func checkToken(username string, receivedToken []byte) bool {
 	return hmac.Equal(receivedToken, expected)
 }
 
-func splitCookie(cookie string) (string, []byte, error) {
+func parseCookie(cookie string) (string, []byte, error) {
 	parts := strings.Split(cookie, ":")
 	if len(parts) != 2 {
 		return "", nil, errors.New(fmt.Sprintf("Could not parse cookie %q", cookie))
@@ -275,7 +275,7 @@ func (h AuthenticatingFileHandler) ServeHTTP(w http.ResponseWriter, r *http.Requ
 
 	cookie, e := r.Cookie("token")
 	if e == nil {
-		username, decodedToken, e = splitCookie(cookie.Value)
+		username, decodedToken, e = parseCookie(cookie.Value)
 		if e != nil {
 			log.Printf("Refusing %q to client with invalid cookie (%v)", r.URL.Path, e)
 			redirectToLogin(w, r)

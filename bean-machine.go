@@ -54,7 +54,7 @@ var (
 		"skip.png",
 	}
 
-	homePathname          = os.Getenv("HOME")
+	homePathname          = getHomePathname()
 	configurationPathname = path.Join(homePathname, configurationBasename)
 	bindToIPv4            = true
 	bindToIPv6            = false
@@ -374,7 +374,24 @@ func generateServerCredentials(hosts []string) (string, string) {
 	return certificatePathname, keyPathname
 }
 
-func assertConfiguration() {
+func getHomePathname() string {
+	homes := []string{
+		"HOME",
+		"USERPROFILE",
+	}
+
+	for _, home := range homes {
+		pathname := os.Getenv(home)
+		if "" != pathname {
+			return pathname
+		}
+	}
+
+	log.Fatal("No HOME environment variable is set.")
+	return ""
+}
+
+func establishConfiguration() {
 	if homePathname == "" {
 		log.Fatal("No HOME environment variable is set.")
 	}
@@ -470,7 +487,7 @@ web app:
 func main() {
 	runtime.GOMAXPROCS(runtime.NumCPU())
 
-	assertConfiguration()
+	establishConfiguration()
 
 	if os.Getenv("IPV6") != "" {
 		bindToIPv6 = true
