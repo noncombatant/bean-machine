@@ -263,7 +263,7 @@ func (h AuthenticatingFileHandler) normalizePathname(pathname string) string {
 	if "/" == pathname {
 		pathname = "/index.html"
 	}
-	pathname = filepath.Clean(h.Root + pathname)
+	pathname = path.Join(h.Root, filepath.Clean(pathname))
 	if !strings.HasPrefix(pathname, h.Root) {
 		return h.Root + "/404.html"
 	}
