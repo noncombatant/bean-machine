@@ -14,10 +14,17 @@ import (
 	"log"
 	"os"
 	"path"
+	"path/filepath"
 	"strings"
 )
 
 func copyFile(source, destination string) {
+	source = filepath.Clean(source)
+	destination = filepath.Clean(source)
+	if source == destination {
+		return
+	}
+
 	s, e := os.Open(source)
 	if e != nil {
 		log.Fatalf("Could not read %q: %s\n", source, e)

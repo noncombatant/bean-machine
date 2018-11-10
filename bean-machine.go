@@ -343,7 +343,7 @@ func printEmpties(root string) error {
 func installFrontEndFiles(root string) {
 	assertRoot(root)
 	for _, f := range frontEndFiles {
-		copyFile(f, root+string(os.PathSeparator)+f)
+		copyFile(f, path.Join(root, string(os.PathSeparator), f))
 	}
 	log.Printf("Installed web front-end files in %q.\n", root)
 }
