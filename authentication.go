@@ -45,6 +45,13 @@ var (
 		".txt":  true,
 	}
 
+	artExtensions = map[string]bool{
+		".jpeg": true,
+		".jpg":  true,
+		".pdf":  true,
+		".png":  true,
+	}
+
 	cookieLifetime, _ = time.ParseDuration("2400h")
 )
 
@@ -175,8 +182,12 @@ func (h AuthenticatingFileHandler) handleGetArt(w http.ResponseWriter, r *http.R
 	}
 
 	for _, info := range infos {
-		w.Write([]byte(info.Name()))
-		w.Write([]byte("\n"))
+		name := info.Name()
+		_, isArt := artExtensions[path.Ext(name)]
+		if isArt {
+			w.Write([]byte(info.Name()))
+			w.Write([]byte("\n"))
+		}
 	}
 }
 
