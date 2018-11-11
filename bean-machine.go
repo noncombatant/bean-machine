@@ -228,8 +228,7 @@ func assertRoot(root string) {
 
 // TODO: Find a way to shrink catalog.tsv (e.g. by coalescing pathnames, or
 // creating an array of just pathnames and referring to them by reference in the
-// catalog array). (The latter allows us to also include a list of
-// *.{jpg,png,etc} for each directory.)
+// catalog array).
 func buildCatalog(root string) {
 	assertRoot(root)
 	log.Printf("Building catalog of audio files in %q. This might take a while.\n", root)
@@ -237,7 +236,7 @@ func buildCatalog(root string) {
 	if os.PathSeparator == root[len(root)-1] {
 		root = root[:len(root)-1]
 	}
-	pathname := root + string(os.PathSeparator) + "catalog.tsv"
+	pathname := path.Join(root, "catalog.tsv")
 	output, e := os.Create(pathname)
 	if e != nil {
 		log.Fatalf("Could not create %q: %s\n", pathname, e)
