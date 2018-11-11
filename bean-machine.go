@@ -220,7 +220,7 @@ func (i *ItemInfo) ToTSV() string {
 		modTime)
 }
 
-func assertRoot(root string) {
+func assertValidRootPathname(root string) {
 	if "" == root {
 		log.Fatal("Cannot continue without a valid music-directory.")
 	}
@@ -230,7 +230,7 @@ func assertRoot(root string) {
 // creating an array of just pathnames and referring to them by reference in the
 // catalog array).
 func buildCatalog(root string) {
-	assertRoot(root)
+	assertValidRootPathname(root)
 	log.Printf("Building catalog in %q.\n", root)
 
 	if os.PathSeparator == root[len(root)-1] {
@@ -297,7 +297,7 @@ func buildCatalog(root string) {
 }
 
 func printDuplicates(root string) error {
-	assertRoot(root)
+	assertValidRootPathname(root)
 	for _, pathnames := range fileSizesToPathnames(root) {
 		if len(pathnames) < 2 {
 			continue
@@ -325,7 +325,7 @@ func printDuplicates(root string) error {
 }
 
 func printEmpties(root string) error {
-	assertRoot(root)
+	assertValidRootPathname(root)
 	e := filepath.Walk(root, func(pathname string, info os.FileInfo, e error) error {
 		if e != nil {
 			log.Printf("%q: %v\n", pathname, e)
@@ -349,7 +349,7 @@ func printEmpties(root string) error {
 }
 
 func installFrontEndFiles(root string) {
-	assertRoot(root)
+	assertValidRootPathname(root)
 	for _, f := range frontEndFiles {
 		copyFile(f, path.Join(root, string(os.PathSeparator), f))
 	}
@@ -412,7 +412,7 @@ func establishConfiguration() {
 }
 
 func serveApp(root string) {
-	assertRoot(root)
+	assertValidRootPathname(root)
 	addresses, e := net.InterfaceAddrs()
 	if e != nil || 0 == len(addresses) {
 		log.Println("Hmm, I can't find any network interfaces to run the web server on. I have to give up.")
