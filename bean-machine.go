@@ -231,7 +231,7 @@ func assertRoot(root string) {
 // catalog array).
 func buildCatalog(root string) {
 	assertRoot(root)
-	log.Printf("Building catalog of audio files in %q. This might take a while.\n", root)
+	log.Printf("Building catalog in %q.\n", root)
 
 	if os.PathSeparator == root[len(root)-1] {
 		root = root[:len(root)-1]
