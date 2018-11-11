@@ -16,6 +16,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
+	"time"
 )
 
 const (
@@ -117,6 +118,7 @@ type ItemInfo struct {
 	Track    string
 	Year     string
 	Genre    string
+	ModTime  time.Time
 	File     *id3.File
 }
 
@@ -204,7 +206,9 @@ func (i *ItemInfo) ToJSON() string {
 
 func (i *ItemInfo) ToTSV() string {
 	i.normalize()
-	return fmt.Sprintf("%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s",
+	year, month, day := i.ModTime.Date()
+	modTime := fmt.Sprintf("%04d-%02d-%02d", year, month, day)
+	return fmt.Sprintf("%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s",
 		replaceTSVMetacharacters(escapePathname(i.Pathname)),
 		replaceTSVMetacharacters(i.Album),
 		replaceTSVMetacharacters(i.Artist),
@@ -212,7 +216,8 @@ func (i *ItemInfo) ToTSV() string {
 		replaceTSVMetacharacters(i.Disc),
 		replaceTSVMetacharacters(i.Track),
 		replaceTSVMetacharacters(i.Year),
-		replaceTSVMetacharacters(i.Genre))
+		replaceTSVMetacharacters(i.Genre),
+		modTime)
 }
 
 func assertRoot(root string) {
@@ -274,6 +279,10 @@ func buildCatalog(root string) {
 					if e != nil {
 						log.Printf("%q: %v", pathname, e)
 					}
+				}
+				fileInfo, e := os.Stat(pathname)
+				if e == nil {
+					itemInfo.ModTime = fileInfo.ModTime()
 				}
 				fmt.Fprintf(output, "%s\n", itemInfo.ToTSV())
 			}
