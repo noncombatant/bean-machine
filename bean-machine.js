@@ -50,8 +50,7 @@ const doPlay = function(itemID, shouldStartPlaying) {
 const populateArt = function(parentElement, directory) {
   removeAllChildren(parentElement)
 
-  // TODO BUG: `encodeURI` isn't handling '&'.
-  fetch("/getArt?d=" + encodeURI(directory), {"credentials": "include"})
+  fetch("/getArt?d=" + encodeURIComponent(directory), {"credentials": "include"})
   .then(function(response) {
     return response.text()
   })
