@@ -47,12 +47,6 @@ var (
 		"clef-144.png",
 		"clef-96.png",
 		"clef-64.png",
-		"pause.png",
-		"play.png",
-		"repeat.png",
-		"search.png",
-		"shuffle.png",
-		"skip.png",
 	}
 
 	homePathname          = getHomePathname()
