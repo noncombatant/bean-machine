@@ -309,23 +309,6 @@ func (h AuthenticatingFileHandler) ServeHTTP(w http.ResponseWriter, r *http.Requ
 		http.SetCookie(w, cookie)
 	}
 
-	// TODO: Create /queryItems endpoint that lets clients get the metadata of 1
-	// or more items by their unique ID numbers and the time of the client's last
-	// view of the metadata. Should work by GET or POST (even though
-	// non-state-changing on the server side, requests for many items may be too
-	// large to fit into a URL query string). A call to /queryItems with no items
-	// means "get all items' metadata".
-	//
-	// This will require the server-side data model to change: Have to keep track
-	// of when the metadata last changed (most recent of: file mtime and parent
-	// directory mtime). Also need to keep track of each item's unique ID, and
-	// these must stay stable across re-builds of the catalog.
-	//
-	// This will enable the client to not need to request all of catalog.tsv every
-	// time starting the app. The client can cache metadata in `localStorage`.
-	// This should speed up loading (less data sent over the network) and parsing
-	// (don't need to parse a huge blob of TSV).
-
 	if r.URL.Path == "/getArt" {
 		h.handleGetArt(w, r)
 		return
