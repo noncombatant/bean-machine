@@ -225,9 +225,6 @@ func assertValidRootPathname(root string) {
 	}
 }
 
-// TODO: Find a way to shrink catalog.tsv (e.g. by coalescing pathnames, or
-// creating an array of just pathnames and referring to them by reference in the
-// catalog array).
 func buildCatalog(root string) {
 	assertValidRootPathname(root)
 	log.Printf("Building catalog in %q.\n", root)
