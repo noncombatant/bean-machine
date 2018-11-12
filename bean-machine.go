@@ -164,8 +164,7 @@ func (i *ItemInfo) normalize() {
 				i.Album = parts[1]
 			}
 			if i.Name == "" {
-				// TODO: Split off file extension.
-				i.Name = parts[2]
+				i.Name = removeFileExtension(parts[2])
 			}
 		}
 	}

@@ -94,11 +94,15 @@ func shouldSkipFile(pathname string, info os.FileInfo) bool {
 }
 
 func getFileExtension(pathname string) string {
+	return strings.ToLower(filepath.Ext(pathname))
+}
+
+func removeFileExtension(pathname string) string {
 	dot := strings.LastIndex(pathname, ".")
 	if -1 == dot {
-		return ""
+		return pathname
 	}
-	return strings.ToLower(pathname[dot:])
+	return pathname[:dot]
 }
 
 func isStringInStrings(needle string, haystack []string) bool {
