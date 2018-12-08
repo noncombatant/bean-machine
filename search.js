@@ -85,6 +85,9 @@ const getMatchingItems = function(catalog, query) {
   return hits
 }
 
+let searchCatalogFetchIndex = 0
+let searchCatalogFetchBudget = 0
+
 const searchCatalog = function(query, forceSearch) {
   query = query.trim()
   const previousQuery = localStorage.getItem("query")
@@ -94,6 +97,8 @@ const searchCatalog = function(query, forceSearch) {
   localStorage.setItem("query", query)
   searchHits = getMatchingItems(catalog, query)
   previousLastItem = buildCatalog(0)
+  searchCatalogFetchIndex = 0
+  searchCatalogFetchBudget = 3
 }
 
 const executeSearch = function(e) {

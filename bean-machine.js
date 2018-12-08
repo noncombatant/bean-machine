@@ -3,8 +3,6 @@
 
 "use strict";
 
-let player = audioPlayer
-
 const Pathname = 0
 const Album = 1
 const Artist = 2
@@ -15,8 +13,9 @@ const Year = 6
 const Genre = 7
 const Mtime = 8
 const catalog = []
-
 const buildCatalogLimit = 50
+
+let player = audioPlayer
 
 const setAudioVideoControls = function(itemID) {
   const pathname = catalog[itemID][Pathname]
@@ -45,6 +44,31 @@ const doPlay = function(itemID, shouldStartPlaying) {
 
   displayNowPlaying(item, nowPlayingTitle)
   populateArt(artSpan, dirname(item[Pathname]))
+  searchCatalogFetchBudget++
+}
+
+const fetchSearchHits = function() {
+  if (searchCatalogFetchIndex >= searchHits.length || 0 === searchCatalogFetchBudget) {
+    return
+  }
+
+  const itemID = searchHits[searchCatalogFetchIndex]
+  const item = catalog[itemID]
+  if (item[Pathname].startsWith("blob:")) {
+    searchCatalogFetchIndex++
+    return
+  }
+
+  fetch(item[Pathname])
+  .then(function(response) {
+    return response.blob()
+  })
+  .then(function(blob) {
+    const blobURL = URL.createObjectURL(blob)
+    item[Pathname] = blobURL
+    searchCatalogFetchIndex++
+    searchCatalogFetchBudget--
+  })
 }
 
 const populateArt = function(parentElement, directory) {
@@ -209,5 +233,7 @@ const main = function() {
     parseTSVRecords(tsvs, catalog)
     restoreState()
   })
+
+  setInterval(fetchSearchHits, 2000)
 }
 main()
