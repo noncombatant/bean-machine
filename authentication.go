@@ -23,6 +23,8 @@ const (
 	hmacKeyLength             = 32
 	hmacBasename              = "hmac.key"
 	authenticationTokenLength = 32
+	// 60 * 60 * 24 * 7:
+	sevenDays                 = "604800"
 )
 
 var (
@@ -254,6 +256,8 @@ func (h AuthenticatingFileHandler) serveFile(w http.ResponseWriter, r *http.Requ
 	if isGzipped {
 		w.Header().Set("Content-Encoding", "gzip")
 	}
+
+	w.Header().Set("Cache-Control", "max-age=" + sevenDays)
 
 	defer result.File.Close()
 	http.ServeContent(w, r, pathname, result.Info.ModTime(), result.File)
