@@ -24,7 +24,7 @@ means that a hypothetical record named <em>Brown</em> by the band James would
 match.</li>
 
 <li><code><strong>"james brown"</strong></code> will match all items that
-contain the phrase anywhere in their metadata. Jameson Brownington and
+contain the quoted phrase anywhere in their metadata. Jameson Brownington and
 <em>Brown</em> by James no longer match, although James Brownington still
 would.</li>
 
@@ -33,11 +33,27 @@ them: <code><strong>"james brown" -popcorn</strong></code> matches all items
 that contain the phrase anywhere in their metadata, but will exclude items that
 match “popcorn”.</li>
 
+<li>Each item has in its metadata the date it was added to the catalog, in the
+format YYYY-MM-DD. This means you can search for items that were added at a
+given time, by searching for e.g. <code><strong>2018-03-02</strong></code>,
+<code><strong>2018-03</strong></code>, or even just
+<code><strong>2018-</strong></code>.</li>
+
 </ul>
+
+<h2>Prefetching</h2>
+
+<p>When you don’t have really good, always-on connectivity (like when on
+cellular data and when walking or driving in areas with spotty coverage), Bean
+Machine may pause playback for lack of song data.</p>
+
+<p>Therefore, Bean Machine will prefetch 3 items from your search results, and
+then will fetch 1 more each time you play 1. This way, you should usually have a
+‘buffer’ of already-downloaded songs even when you have a connectivity gap.</p>
 
 <h2>About Bean Machine</h2>
 
-<p>This is Bean Machine version 2018-11-10, written by <a
+<p>This is Bean Machine version 2018-12-08, written by <a
 href="https://noncombatant.org/">Chris Palmer</a>. The command line utility uses
 the <a href="https://github.com/ascherkus/go-id3"><code>id3</code> package by
 Andrew Scherkus</a>, and uses X.509 certificate generation code adapted from an
