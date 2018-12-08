@@ -47,8 +47,13 @@ const doPlay = function(itemID, shouldStartPlaying) {
   searchCatalogFetchBudget++
 }
 
+let fetchSearchHitsInProgress = false
+
 const fetchSearchHits = function() {
-  if (searchCatalogFetchIndex >= searchHits.length || 0 === searchCatalogFetchBudget) {
+  if (fetchSearchHitsInProgress ||
+      searchCatalogFetchIndex >= searchHits.length ||
+      0 === searchCatalogFetchBudget)
+  {
     return
   }
 
@@ -59,6 +64,7 @@ const fetchSearchHits = function() {
     return
   }
 
+  fetchSearchHitsInProgress = true
   fetch(item[Pathname])
   .then(function(response) {
     return response.blob()
@@ -68,6 +74,7 @@ const fetchSearchHits = function() {
     item[Pathname] = blobURL
     searchCatalogFetchIndex++
     searchCatalogFetchBudget--
+    fetchSearchHitsInProgress = false
   })
 }
 
