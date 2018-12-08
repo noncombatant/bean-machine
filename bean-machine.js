@@ -16,6 +16,7 @@ const catalog = []
 const buildCatalogLimit = 50
 
 let player = audioPlayer
+let searchHits
 
 const setAudioVideoControls = function(itemID) {
   const pathname = catalog[itemID][Pathname]
@@ -104,8 +105,6 @@ const populateArt = function(parentElement, directory) {
     }
   })
 }
-
-const shouldRequireLongPress = isAndroidDevice()
 
 const buildItemDiv = function(itemID) {
   const item = catalog[itemID]
@@ -227,6 +226,371 @@ const addEventListeners = function() {
   document.body.addEventListener("keyup", togglePlayback)
   randomCheckbox.addEventListener("click", randomCheckboxOnClick)
 }
+
+const resetSearchHits = function(catalog) {
+  const hits = new Array(catalog.length)
+  for (let i = 0; i < catalog.length; ++i) {
+    hits[i] = i
+  }
+  return hits
+}
+
+const displayNowPlaying = function(item, element) {
+  removeAllChildren(element)
+  const trackName = item[Name] || basename(item[Pathname])
+  element.appendChild(createElement("span", "", item[Disc] + "-" + item[Track] + " “" + trackName + "”\u200A—\u200A"))
+  element.appendChild(createElement("strong", "", item[Artist]))
+  element.appendChild(createElement("span", "", "\u200A—\u200A"))
+  element.appendChild(createElement("em", "", item[Album]))
+  document.title = element.textContent
+}
+
+const playNext = function(e) {
+  const random = (typeof(randomCheckbox) !== "undefined" && randomCheckbox.checked) ||
+                 (typeof(shuffleButton) !== "undefined" && "Repeat" === shuffleButton.title)
+  if (random) {
+    let i
+    while (true) {
+      i = getRandomIndex(searchHits)
+      if (i !== undefined) {
+        break
+      }
+    }
+    doPlay(searchHits[i], true)
+  } else {
+    for (let i = 0; i < searchHits.length; ++i) {
+      if (player.itemID === searchHits[i]) {
+        doPlay(searchHits[(i + 1) % searchHits.length], true)
+        return
+      }
+    }
+    doPlay(searchHits[0], true)
+  }
+}
+
+const togglePlayback = function(e) {
+  e.stopPropagation()
+  if ("p" !== e.key) {
+    return
+  }
+  if (player.paused) {
+    player.play()
+  } else {
+    player.pause()
+  }
+}
+
+let errorCount = 0
+const playerLoadedMetadata = function(e) {
+  errorCount = 0
+}
+
+const playerOnError = function(e) {
+  console.log("Could not load", catalog[player.itemID][Pathname], e)
+  if (errorCount < 10) {
+    this.dispatchEvent(new Event("ended"))
+  }
+  ++errorCount
+}
+
+const randomCheckboxOnClick = function(e) {
+  localStorage.setItem("random", randomCheckbox.checked)
+}
+
+const restoreState = function() {
+  const itemID = localStorage.getItem("itemID")
+  if (undefined !== typeof(itemID) && null !== itemID) {
+    doPlay(itemID, false)
+  }
+  const query = localStorage.getItem("query")
+  if (query) {
+    searchInput.value = query
+    searchCatalog(query, true)
+  }
+  searchInput.focus()
+  searchInput.select()
+  if ('undefined' !== typeof(randomCheckbox)) {
+    const random = localStorage.getItem("random")
+    randomCheckbox.checked = "true" === random ? true : false
+  }
+}
+
+const parseTSVRecords = function(tsvs, array) {
+  let start = 0
+  for (let i = 0; i < tsvs.length; ++i) {
+    if ('\n' === tsvs[i]) {
+      const record = tsvs.substring(start, i)
+      array.push(record.split("\t"))
+      start = i + 1
+    }
+  }
+}
+
+const zeroOrMoreSpaces = /^\s*$/
+const pushTerm = function(terms, term) {
+  if (term.match(zeroOrMoreSpaces)) {
+    return
+  }
+  terms.push(normalizeStringForSearch(term))
+}
+
+const parseTerms = function(string) {
+  const terms = []
+  let in_quotes = false
+  let in_word = false
+  let word_start = 0
+
+  for (let i = 0; i < string.length; ++i) {
+    const c = string[i]
+    if ('"' === c) {
+      if (in_quotes) {
+        in_quotes = in_word = false
+        pushTerm(terms, string.substring(word_start, i))
+        word_start = i + 1
+      } else {
+        if (-1 !== word_start) {
+          pushTerm(terms, string.substring(word_start, i))
+        }
+        in_quotes = in_word = true
+        word_start = i + 1
+      }
+    } else if (c.match(/^\s/)) {
+      if (in_quotes) {
+        // do nothing
+      } else if (in_word) {
+        pushTerm(terms, string.substring(word_start, i))
+        in_word = in_quotes = false
+        word_start = i + 1
+      } else {
+        // do nothing
+      }
+    } else {
+      if (in_word || in_quotes) {
+        // do nothing
+      } else {
+        word_start = i
+        in_word = true
+      }
+    }
+  }
+  if (-1 !== word_start) {
+    const t = string.substring(word_start, string.length).trim()
+    if (t.length > 0) {
+      pushTerm(terms, t)
+    }
+  }
+  return terms
+}
+
+const itemMatches = function(terms, item) {
+  const delimiter = "\x00"
+  const all = normalizeStringForSearch(item[Pathname] + delimiter + item[Artist] + delimiter + item[Album] + delimiter + item[Name] + delimiter + item[Genre] + delimiter + item[Year] + delimiter + item[Mtime])
+  for (let i = 0; i < terms.length; ++i) {
+    let t = terms[i]
+    const negated = "-" === t[0]
+    if (negated) {
+      t = t.substring(1)
+    }
+    const matched = all.indexOf(t) >= 0
+    if (negated === matched) {
+      return false
+    }
+  }
+  return true
+}
+
+const getMatchingItems = function(catalog, query) {
+  const hits = []
+  const terms = parseTerms(query)
+  for (let i = 0; i < catalog.length; ++i) {
+    const item = catalog[i]
+    if (itemMatches(terms, item)) {
+      hits.push(i)
+    }
+  }
+  return hits
+}
+
+let searchCatalogFetchIndex = 0
+let searchCatalogFetchBudget = 0
+
+const searchCatalog = function(query, forceSearch) {
+  query = query.trim()
+  const previousQuery = localStorage.getItem("query")
+  if (!forceSearch && previousQuery === query) {
+    return
+  }
+  localStorage.setItem("query", query)
+  searchHits = getMatchingItems(catalog, query)
+  previousLastItem = buildCatalog(0)
+  searchCatalogFetchIndex = 0
+  searchCatalogFetchBudget = 3
+}
+
+const executeSearch = function(e) {
+  searchCatalog(searchInput.value, false)
+}
+
+const searchInputOnKeyUp = function(e) {
+  e.stopPropagation()
+  if ("Enter" === e.code) {
+    searchCatalog(this.value, false)
+  }
+}
+
+const memoize = function(f) {
+  const memo = {}
+  return function() {
+    const a = Array.prototype.slice.call(arguments)
+    if (!memo.hasOwnProperty(a)) {
+      memo[a] = f.apply(null, a)
+    }
+    return memo[a]
+  }
+}
+
+const $ = function(id) {
+  return document.getElementById(id)
+}
+
+const isElementInViewport = function(element) {
+  if (!element) {
+    return false
+  }
+
+  let top = element.offsetTop
+  let left = element.offsetLeft
+  const width = element.offsetWidth
+  const height = element.offsetHeight
+
+  while (element.offsetParent) {
+    element = element.offsetParent
+    top += element.offsetTop
+    left += element.offsetLeft
+  }
+
+  return top >= window.pageYOffset &&
+      left >= window.pageXOffset &&
+      (top + height) <= (window.pageYOffset + window.innerHeight) &&
+      (left + width) <= (window.pageXOffset + window.innerWidth)
+}
+
+const createElement = function(type, className, text) {
+  const e = document.createElement(type)
+  if (className) {
+    e.className = className
+  }
+  if (text) {
+    setSingleTextChild(e, text)
+  }
+  return e
+}
+
+const setSingleTextChild = function(element, text) {
+  (element.childNodes[0] || element.appendChild(document.createTextNode("")))
+      .data = text
+}
+
+const removeAllChildren = function(element) {
+  while (element.firstChild) {
+    element.removeChild(element.firstChild)
+  }
+}
+
+const all = function(array, predicate) {
+  for (let i in array) {
+    if (!predicate(array[i])) {
+      return false
+    }
+  }
+  return true
+}
+
+const any = function(array, predicate) {
+  for (let i in array) {
+    if (predicate(array[i])) {
+      return true
+    }
+  }
+  return false
+}
+
+const basename = function(pathname) {
+  const i = pathname.lastIndexOf("/")
+  return -1 == i ? pathname : pathname.substring(i + 1)
+}
+
+const dirname = function(pathname) {
+  return pathname.substring(0, pathname.lastIndexOf("/"))
+}
+
+const fileExtension = function(pathname) {
+  const i = pathname.lastIndexOf(".")
+  return -1 == i ? "" : pathname.substring(i)
+}
+
+const stripFileExtension = function(pathname) {
+  const i = pathname.lastIndexOf(".")
+  return -1 == i ? pathname : pathname.substring(0, i)
+}
+
+const isPathnameInExtensions = function(pathname, extensions) {
+  const e = fileExtension(pathname)
+  return any(extensions, function(extension) { return e == extension })
+}
+
+// NOTE: These must be kept in sync with the format extensions arrays in the Go
+// code.
+const audioFormatExtensions = [
+  ".flac",
+  ".m4a",
+  ".mid",
+  ".midi",
+  ".mp3",
+  ".ogg",
+  ".wav",
+  ".wave",
+]
+const videoFormatExtensions = [
+  ".avi",
+  ".mkv",
+  ".mov",
+  ".mp4",
+  ".mpeg",
+  ".mpg",
+  ".ogv",
+  ".webm",
+]
+
+const isAudioPathname = function(pathname) {
+  return isPathnameInExtensions(pathname, audioFormatExtensions)
+}
+
+const isVideoPathname = function(pathname) {
+  return isPathnameInExtensions(pathname, videoFormatExtensions)
+}
+
+const getRandomIndex = function(array) {
+  return Math.floor(Math.random() * array.length)
+}
+
+// Borrowed from
+// https://github.com/mathiasbynens/strip-combining-marks/blob/master/strip-combining-marks.js
+// by Mathias Bynens <https://mathiasbynens.be/>.
+//
+// "héllo".normalize("NFD").replace(regexSymbolWithCombiningMarks, '$1') -> "hello"
+
+const regexSymbolWithCombiningMarks = new RegExp(/([\0-\u02FF\u0370-\u1AAF\u1B00-\u1DBF\u1E00-\u20CF\u2100-\uD7FF\uE000-\uFE1F\uFE30-\uFFFF]|[\uD800-\uDBFF][\uDC00-\uDFFF]|[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?:[^\uD800-\uDBFF]|^)[\uDC00-\uDFFF])([\u0300-\u036F\u1AB0-\u1AFF\u1DC0-\u1DFF\u20D0-\u20FF\uFE20-\uFE2F]+)/g)
+
+const normalizeStringForSearch = memoize(function(string) {
+  return string.toString().normalize("NFD").replace(regexSymbolWithCombiningMarks, '$1').toLocaleLowerCase()
+})
+
+const isAndroidDevice = function() {
+  const regexAndroidUserAgent = new RegExp(/Android/)
+  return regexAndroidUserAgent.test(navigator.userAgent)
+}
+const shouldRequireLongPress = isAndroidDevice()
 
 const main = function() {
   addEventListeners()

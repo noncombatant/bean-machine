@@ -38,10 +38,6 @@ var (
 		"index.html",
 		"bean-machine.js",
 
-		"core.js",
-		"util.js",
-		"search.js",
-
 		"favicon.ico",
 		"clef-192.png",
 		"clef-144.png",
