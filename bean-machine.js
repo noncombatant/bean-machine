@@ -238,9 +238,7 @@ const displayNowPlaying = function(item, element) {
 }
 
 const playNext = function(e) {
-  const random = (typeof(randomCheckbox) !== "undefined" && randomCheckbox.checked) ||
-                 (typeof(shuffleButton) !== "undefined" && "Repeat" === shuffleButton.title)
-  if (random) {
+  if (randomCheckbox.checked) {
     let i
     while (true) {
       i = getRandomIndex(searchHits)
@@ -301,10 +299,7 @@ const restoreState = function() {
   }
   searchInput.focus()
   searchInput.select()
-  if ('undefined' !== typeof(randomCheckbox)) {
-    const random = localStorage.getItem("random")
-    randomCheckbox.checked = "true" === random ? true : false
-  }
+  randomCheckbox.checked = "true" === localStorage.getItem("random")
 }
 
 const parseTSVRecords = function(tsvs, array) {
