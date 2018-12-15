@@ -51,7 +51,8 @@ const doPlay = function(itemID, shouldStartPlaying) {
 let fetchSearchHitsInProgress = false
 
 const fetchSearchHits = function() {
-  if (fetchSearchHitsInProgress ||
+  if (randomCheckbox.checked ||
+      fetchSearchHitsInProgress ||
       searchCatalogFetchIndex >= searchHits.length ||
       0 === searchCatalogFetchBudget)
   {
