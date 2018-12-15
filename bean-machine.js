@@ -219,7 +219,7 @@ const addEventListeners = function() {
   nextButton.addEventListener("click", playNext)
   player.addEventListener("ended", playNext)
   player.addEventListener("error", playerOnError)
-  player.addEventListener("loadedmetadata", playerLoadedMetadata)
+  player.addEventListener("loadedmetadata", playerOnLoadedMetadata)
   searchInput.addEventListener("blur", executeSearch)
   searchInput.addEventListener("keyup", searchInputOnKeyUp)
   searchButton.addEventListener("click", executeSearch)
@@ -272,7 +272,7 @@ const togglePlayback = function(e) {
 }
 
 let errorCount = 0
-const playerLoadedMetadata = function(e) {
+const playerOnLoadedMetadata = function(e) {
   errorCount = 0
 }
 
