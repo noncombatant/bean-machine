@@ -419,6 +419,7 @@ const executeSearch = function(e) {
 }
 
 const searchInputOnKeyUp = function(e) {
+  e.stopPropagation()
   if ("Enter" === e.code) {
     searchCatalog(this.value, false)
   }
