@@ -49,7 +49,6 @@ const doPlay = function(itemID, shouldStartPlaying) {
 }
 
 let fetchSearchHitsInProgress = false
-
 const fetchSearchHits = function() {
   if (randomCheckbox.checked ||
       fetchSearchHitsInProgress ||
@@ -402,7 +401,6 @@ const getMatchingItems = function(catalog, query) {
 
 let searchCatalogFetchIndex = 0
 let searchCatalogFetchBudget = 0
-
 const searchCatalog = function(query, forceSearch) {
   query = query.trim()
   const previousQuery = localStorage.getItem("query")
