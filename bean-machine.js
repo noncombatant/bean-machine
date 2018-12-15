@@ -291,6 +291,7 @@ const randomCheckboxOnClick = function(e) {
 }
 
 const restoreState = function() {
+  randomCheckbox.checked = "true" === localStorage.getItem("random")
   const itemID = localStorage.getItem("itemID")
   if (undefined !== typeof(itemID) && null !== itemID) {
     doPlay(itemID, false)
@@ -302,7 +303,6 @@ const restoreState = function() {
   }
   searchInput.focus()
   searchInput.select()
-  randomCheckbox.checked = "true" === localStorage.getItem("random")
 }
 
 const parseTSVRecords = function(tsvs, array) {
