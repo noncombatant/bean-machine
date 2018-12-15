@@ -106,11 +106,13 @@ const populateArt = function(parentElement, directory) {
   })
 }
 
+const requireLongPress = /android/i.test(navigator.userAgent)
+
 const buildItemDiv = function(itemID) {
   const item = catalog[itemID]
   const div = createElement("div", "itemDiv")
   div.itemID = itemID
-  if (shouldRequireLongPress) {
+  if (requireLongPress) {
     div.addEventListener("contextmenu", itemDivOnClick)
   } else {
     div.addEventListener("dblclick", itemDivOnClick)
@@ -130,7 +132,7 @@ const buildAlbumTitleDiv = function(itemID) {
   const item = catalog[itemID]
   const div = createElement("div", "albumTitleDiv")
   div.itemID = itemID
-  if (shouldRequireLongPress) {
+  if (requireLongPress) {
     div.addEventListener("contextmenu", itemDivOnClick)
   } else {
     div.addEventListener("dblclick", itemDivOnClick)
@@ -572,12 +574,6 @@ const regexSymbolWithCombiningMarks = new RegExp(/([\0-\u02FF\u0370-\u1AAF\u1B00
 const normalizeStringForSearch = memoize(function(string) {
   return string.toString().normalize("NFD").replace(regexSymbolWithCombiningMarks, '$1').toLocaleLowerCase()
 })
-
-const isAndroidDevice = function() {
-  const regexAndroidUserAgent = new RegExp(/Android/)
-  return regexAndroidUserAgent.test(navigator.userAgent)
-}
-const shouldRequireLongPress = isAndroidDevice()
 
 const main = function() {
   addEventListeners()
