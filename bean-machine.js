@@ -157,6 +157,7 @@ let currentAlbumPathname = ""
 const buildCatalog = function(start) {
   if (0 === start) {
     removeAllChildren(itemListDiv)
+    currentAlbumPathname = ""
   } else {
     itemListDiv.removeChild($("bottom"))
   }
