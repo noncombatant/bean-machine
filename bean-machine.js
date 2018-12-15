@@ -16,7 +16,7 @@ const catalog = []
 const buildCatalogLimit = 50
 
 let player = audioPlayer
-let searchHits
+let searchHits = []
 
 const setAudioVideoControls = function(itemID) {
   const pathname = catalog[itemID][Pathname]
@@ -225,14 +225,6 @@ const addEventListeners = function() {
   window.addEventListener("scroll", windowOnScroll)
   document.body.addEventListener("keyup", togglePlayback)
   randomCheckbox.addEventListener("click", randomCheckboxOnClick)
-}
-
-const resetSearchHits = function(catalog) {
-  const hits = new Array(catalog.length)
-  for (let i = 0; i < catalog.length; ++i) {
-    hits[i] = i
-  }
-  return hits
 }
 
 const displayNowPlaying = function(item, element) {
@@ -594,7 +586,6 @@ const shouldRequireLongPress = isAndroidDevice()
 
 const main = function() {
   addEventListeners()
-  searchHits = resetSearchHits(catalog)
 
   fetch("catalog.tsv", {"credentials": "include"})
   .then(function(response) {
