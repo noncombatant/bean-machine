@@ -3,17 +3,6 @@
 
 "use strict";
 
-// TODO: It's goaty to have to repeat these.
-const Pathname = 0
-const Album = 1
-const Artist = 2
-const Name = 3
-const Disc = 4
-const Track = 5
-const Year = 6
-const Genre = 7
-const Mtime = 8
-
 const zeroOrMoreSpaces = /^\s*$/
 const pushTerm = function(terms, term) {
   if (term.match(zeroOrMoreSpaces)) {
@@ -84,7 +73,7 @@ const getMatchingItems = function(catalog, query) {
 
 const itemMatches = function(terms, item) {
   const delimiter = "\x00"
-  const all = normalizeStringForSearch(item[Pathname] + delimiter + item[Artist] + delimiter + item[Album] + delimiter + item[Name] + delimiter + item[Genre] + delimiter + item[Year] + delimiter + item[Mtime])
+  const all = normalizeStringForSearch(item.pathname + delimiter + item.artist + delimiter + item.album + delimiter + item.name + delimiter + item.genre + delimiter + item.year + delimiter + item.mtime)
   for (let i = 0; i < terms.length; ++i) {
     let t = terms[i]
     const negated = "-" === t[0]

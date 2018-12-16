@@ -3,15 +3,6 @@
 
 "use strict";
 
-const Pathname = 0
-const Album = 1
-const Artist = 2
-const Name = 3
-const Disc = 4
-const Track = 5
-const Year = 6
-const Genre = 7
-const Mtime = 8
 const catalog = []
 const buildCatalogLimit = 50
 
@@ -20,7 +11,7 @@ let searchHits = []
 let searchWorker
 
 const setAudioVideoControls = function(itemID) {
-  const pathname = catalog[itemID][Pathname]
+  const pathname = catalog[itemID].pathname
   if (isAudioPathname(pathname)) {
     player = audioPlayer
     audioPlayer.className = ""
@@ -37,7 +28,7 @@ const doPlay = function(itemID, shouldStartPlaying) {
   player.pause()
   setAudioVideoControls(itemID)
   const item = catalog[itemID]
-  player.src = item[Pathname]
+  player.src = item.blobURL || item.pathname
   player.itemID = itemID
   if (shouldStartPlaying) {
     player.play()
@@ -45,7 +36,7 @@ const doPlay = function(itemID, shouldStartPlaying) {
   localStorage.setItem("itemID", itemID)
 
   displayNowPlaying(item, nowPlayingTitle)
-  populateArt(artSpan, dirname(item[Pathname]))
+  populateArt(artSpan, dirname(item.pathname))
   searchCatalogFetchBudget++
 }
 
@@ -61,25 +52,25 @@ const fetchSearchHits = function() {
 
   const itemID = searchHits[searchCatalogFetchIndex]
   const item = catalog[itemID]
-  if (item[Pathname].startsWith("blob:")) {
+  if (item.blobURL) {
     searchCatalogFetchIndex++
     return
   }
 
   fetchSearchHitsInProgress = true
-  fetch(item[Pathname])
+  fetch(item.pathname)
   .then(function(response) {
     return response.blob()
   })
   .then(function(blob) {
-    const blobURL = URL.createObjectURL(blob)
-    item[Pathname] = blobURL
+    item.blobURL = URL.createObjectURL(blob)
     searchCatalogFetchIndex++
     searchCatalogFetchBudget--
     fetchSearchHitsInProgress = false
   })
 }
 
+// TODO: Memoize this to save network traffic.
 const populateArt = function(parentElement, directory) {
   removeAllChildren(parentElement)
 
@@ -120,10 +111,10 @@ const buildItemDiv = function(itemID) {
     div.addEventListener("click", itemDivOnClick)
   }
 
-  const trackSpan = createElement("span", "itemDivCell trackNumber", (item[Disc] || "1") + "-" + (item[Track] || "1"))
+  const trackSpan = createElement("span", "itemDivCell trackNumber", (item.disc || "1") + "-" + (item.track || "1"))
   div.appendChild(trackSpan)
 
-  const nameSpan = createElement("span", "itemDivCell", item[Name])
+  const nameSpan = createElement("span", "itemDivCell", item.name)
   div.appendChild(nameSpan)
 
   return div
@@ -140,14 +131,14 @@ const buildAlbumTitleDiv = function(itemID) {
     div.addEventListener("click", itemDivOnClick)
   }
 
-  const albumSpan = createElement("span", "itemDivCell albumTitle", item[Album])
+  const albumSpan = createElement("span", "itemDivCell albumTitle", item.album)
   div.appendChild(albumSpan)
 
-  const artistSpan = createElement("span", "itemDivCell artistName", item[Artist])
+  const artistSpan = createElement("span", "itemDivCell artistName", item.artist)
   div.appendChild(artistSpan)
 
-  if (item[Year]) {
-    const yearSpan = createElement("span", "itemDivCell year", item[Year])
+  if (item.year) {
+    const yearSpan = createElement("span", "itemDivCell year", item.year)
     div.appendChild(yearSpan)
   }
 
@@ -169,7 +160,7 @@ const buildCatalog = function(start) {
   for (i = 0; i < limit && start + i < searchHits.length; ++i) {
     const itemID = searchHits[start + i]
     const item = catalog[itemID]
-    const albumPathname = dirname(item[Pathname])
+    const albumPathname = dirname(item.pathname)
     if (albumPathname !== currentAlbumPathname) {
       itemListDiv.appendChild(buildAlbumTitleDiv(itemID))
       currentAlbumPathname = albumPathname
@@ -220,11 +211,11 @@ const windowOnScroll = function(e) {
 
 const displayNowPlaying = function(item, element) {
   removeAllChildren(element)
-  const trackName = item[Name] || basename(item[Pathname])
-  element.appendChild(createElement("span", "", item[Disc] + "-" + item[Track] + " “" + trackName + "”\u200A—\u200A"))
-  element.appendChild(createElement("strong", "", item[Artist]))
+  const trackName = item.name || basename(item.pathname)
+  element.appendChild(createElement("span", "", item.disc + "-" + item.track + " “" + trackName + "”\u200A—\u200A"))
+  element.appendChild(createElement("strong", "", item.artist))
   element.appendChild(createElement("span", "", "\u200A—\u200A"))
-  element.appendChild(createElement("em", "", item[Album]))
+  element.appendChild(createElement("em", "", item.album))
   document.title = element.textContent
 }
 
@@ -267,7 +258,7 @@ const playerOnLoadedMetadata = function(e) {
 }
 
 const playerOnError = function(e) {
-  console.log("Could not load", catalog[player.itemID][Pathname], e)
+  console.log("Could not load", catalog[player.itemID].pathname, e)
   if (errorCount < 10) {
     this.dispatchEvent(new Event("ended"))
   }
@@ -287,17 +278,37 @@ const restoreState = function() {
   }
 
   const storedQuery = localStorage.getItem("query")
+// TODO: Instead, change this so that all empty queries result in a random
+// search.
   const query = storedQuery || getRandomWord()
-  searchInput.value = query
   searchCatalog(query, true)
 }
 
 const parseTSVRecords = function(tsvs, array) {
+  const pathname = 0
+  const album = 1
+  const artist = 2
+  const name = 3
+  const disc = 4
+  const track = 5
+  const year = 6
+  const genre = 7
+  const mtime = 8
+
   let start = 0
   for (let i = 0; i < tsvs.length; ++i) {
     if ('\n' === tsvs[i]) {
       const record = tsvs.substring(start, i)
-      array.push(record.split("\t"))
+      const fields = record.split("\t")
+      array.push({ pathname: fields[pathname],
+                   album:    fields[album],
+                   artist:   fields[artist],
+                   name:     fields[name],
+                   disc:     fields[disc],
+                   track:    fields[track],
+                   year:     fields[year],
+                   genre:    fields[genre],
+                   mtime:    fields[mtime] })
       start = i + 1
     }
   }
@@ -311,6 +322,7 @@ const searchCatalog = function(query, forceSearch) {
   if (!forceSearch && previousQuery === query) {
     return
   }
+  searchInput.value = query
   localStorage.setItem("query", query)
   searchWorker.postMessage({catalog: catalog, query: query})
 }
@@ -460,7 +472,7 @@ const getRandomIndex = function(array) {
 
 const getRandomWord = function() {
   const item = catalog[getRandomIndex(catalog)]
-  const words = item[Pathname].split("/").join(" ").split(" ")
+  const words = item.pathname.split("/").join(" ").split(" ")
   return words[getRandomIndex(words)]
 }
 
