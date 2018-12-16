@@ -218,19 +218,6 @@ const windowOnScroll = function(e) {
   haveRequestedExtendCatalog = true
 }
 
-const addEventListeners = function() {
-  nextButton.addEventListener("click", playNext)
-  player.addEventListener("ended", playNext)
-  player.addEventListener("error", playerOnError)
-  player.addEventListener("loadedmetadata", playerOnLoadedMetadata)
-  searchInput.addEventListener("blur", executeSearch)
-  searchInput.addEventListener("keyup", searchInputOnKeyUp)
-  searchButton.addEventListener("click", executeSearch)
-  window.addEventListener("scroll", windowOnScroll)
-  document.body.addEventListener("keyup", togglePlayback)
-  randomCheckbox.addEventListener("click", randomCheckboxOnClick)
-}
-
 const displayNowPlaying = function(item, element) {
   removeAllChildren(element)
   const trackName = item[Name] || basename(item[Pathname])
@@ -293,17 +280,16 @@ const randomCheckboxOnClick = function(e) {
 
 const restoreState = function() {
   randomCheckbox.checked = "true" === localStorage.getItem("random")
+
   const itemID = localStorage.getItem("itemID")
   if (undefined !== typeof(itemID) && null !== itemID) {
     doPlay(itemID, false)
   }
-  const query = localStorage.getItem("query")
-  if (query) {
-    searchInput.value = query
-    searchCatalog(query, true)
-  }
-  searchInput.focus()
-  searchInput.select()
+
+  const storedQuery = localStorage.getItem("query")
+  const query = storedQuery || getRandomWord()
+  searchInput.value = query
+  searchCatalog(query, true)
 }
 
 const parseTSVRecords = function(tsvs, array) {
@@ -472,8 +458,24 @@ const getRandomIndex = function(array) {
   return Math.floor(Math.random() * array.length)
 }
 
+const getRandomWord = function() {
+  const item = catalog[getRandomIndex(catalog)]
+  const words = item[Pathname].split("/").join(" ").split(" ")
+  return words[getRandomIndex(words)]
+}
+
 const main = function() {
-  addEventListeners()
+  nextButton.addEventListener("click", playNext)
+  player.addEventListener("ended", playNext)
+  player.addEventListener("error", playerOnError)
+  player.addEventListener("loadedmetadata", playerOnLoadedMetadata)
+  searchInput.addEventListener("blur", executeSearch)
+  searchInput.addEventListener("keyup", searchInputOnKeyUp)
+  searchButton.addEventListener("click", executeSearch)
+  window.addEventListener("scroll", windowOnScroll)
+  document.body.addEventListener("keyup", togglePlayback)
+  randomCheckbox.addEventListener("click", randomCheckboxOnClick)
+
   searchWorker = new Worker("search.js")
   searchWorker.addEventListener("message", onMessageFromSearchWorker)
 
