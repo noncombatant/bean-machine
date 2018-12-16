@@ -184,12 +184,12 @@ const buildCatalog = function(start) {
   return start + i
 }
 
-let extendCatalogRequested = false
+let haveRequestedExtendCatalog = false
 const extendCatalog = function() {
   if (isElementInViewport($("bottom"))) {
     previousLastItem = buildCatalog(previousLastItem)
   }
-  extendCatalogRequested = false
+  haveRequestedExtendCatalog = false
 }
 
 const albumTitleDivOnClick = function(e) {
@@ -212,10 +212,10 @@ const albumTitleDivOnClick = function(e) {
 const itemDivOnClick = albumTitleDivOnClick
 
 const windowOnScroll = function(e) {
-  if (!extendCatalogRequested) {
+  if (!haveRequestedExtendCatalog) {
     window.requestAnimationFrame(extendCatalog)
   }
-  extendCatalogRequested = true
+  haveRequestedExtendCatalog = true
 }
 
 const addEventListeners = function() {
