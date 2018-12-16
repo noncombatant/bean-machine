@@ -466,10 +466,16 @@ const getRandomIndex = function(array) {
   return Math.floor(Math.random() * array.length)
 }
 
+const stopwords = new Set(["a", "an", "the", "le", "la"])
 const getRandomWord = function() {
-  const item = catalog[getRandomIndex(catalog)]
-  const words = item.pathname.split("/").join(" ").split(" ")
-  return words[getRandomIndex(words)]
+  while (true) {
+    const item = catalog[getRandomIndex(catalog)]
+    const words = item.pathname.split("/").join(" ").split(" ")
+    const word = words[getRandomIndex(words)].toLowerCase()
+    if (/\w/.test(word) && !/^[0-9_-]+$/.test(word) && !stopwords.has(word)) {
+      return word
+    }
+  }
 }
 
 const main = function() {
