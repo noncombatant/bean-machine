@@ -277,11 +277,7 @@ const restoreState = function() {
     doPlay(itemID, false)
   }
 
-  const storedQuery = localStorage.getItem("query")
-// TODO: Instead, change this so that all empty queries result in a random
-// search.
-  const query = storedQuery || getRandomWord()
-  searchCatalog(query, true)
+  searchCatalog(localStorage.getItem("query"), true)
 }
 
 const parseTSVRecords = function(tsvs, array) {
@@ -317,7 +313,7 @@ const parseTSVRecords = function(tsvs, array) {
 let searchCatalogFetchIndex = 0
 let searchCatalogFetchBudget = 0
 const searchCatalog = function(query, forceSearch) {
-  query = query.trim()
+  query = query.trim() || getRandomWord()
   const previousQuery = localStorage.getItem("query")
   if (!forceSearch && previousQuery === query) {
     return
