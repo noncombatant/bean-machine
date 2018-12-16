@@ -24,46 +24,45 @@ const pushTerm = function(terms, term) {
 
 const parseTerms = function(string) {
   const terms = []
-  // TODO: Use jsStyle:
-  let in_quotes = false
-  let in_word = false
-  let word_start = 0
+  let inQuotes = false
+  let inWord = false
+  let wordStart = 0
 
   for (let i = 0; i < string.length; ++i) {
     const c = string[i]
     if ('"' === c) {
-      if (in_quotes) {
-        in_quotes = in_word = false
-        pushTerm(terms, string.substring(word_start, i))
-        word_start = i + 1
+      if (inQuotes) {
+        inQuotes = inWord = false
+        pushTerm(terms, string.substring(wordStart, i))
+        wordStart = i + 1
       } else {
-        if (-1 !== word_start) {
-          pushTerm(terms, string.substring(word_start, i))
+        if (-1 !== wordStart) {
+          pushTerm(terms, string.substring(wordStart, i))
         }
-        in_quotes = in_word = true
-        word_start = i + 1
+        inQuotes = inWord = true
+        wordStart = i + 1
       }
     } else if (c.match(/^\s/)) {
-      if (in_quotes) {
+      if (inQuotes) {
         // do nothing
-      } else if (in_word) {
-        pushTerm(terms, string.substring(word_start, i))
-        in_word = in_quotes = false
-        word_start = i + 1
+      } else if (inWord) {
+        pushTerm(terms, string.substring(wordStart, i))
+        inWord = inQuotes = false
+        wordStart = i + 1
       } else {
         // do nothing
       }
     } else {
-      if (in_word || in_quotes) {
+      if (inWord || inQuotes) {
         // do nothing
       } else {
-        word_start = i
-        in_word = true
+        wordStart = i
+        inWord = true
       }
     }
   }
-  if (-1 !== word_start) {
-    const t = string.substring(word_start, string.length).trim()
+  if (-1 !== wordStart) {
+    const t = string.substring(wordStart, string.length).trim()
     if (t.length > 0) {
       pushTerm(terms, t)
     }
