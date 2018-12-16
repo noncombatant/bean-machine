@@ -37,6 +37,7 @@ var (
 		"bean-machine.css",
 		"index.html",
 		"bean-machine.js",
+		"search.js",
 
 		"favicon.ico",
 		"clef-192.png",
