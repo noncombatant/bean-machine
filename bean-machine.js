@@ -188,7 +188,7 @@ const albumTitleDivOnClick = function(e) {
   randomCheckbox.checked = false
   if (player.paused || player.itemID != itemID) {
     if (undefined !== itemID) {
-      if (itemID == player.itemID) {
+      if (itemID === player.itemID) {
         player.play()
       } else {
         doPlay(itemID, true)
