@@ -230,13 +230,9 @@ const playNext = function(e) {
     }
     doPlay(searchHits[i], true)
   } else {
-    for (let i = 0; i < searchHits.length; ++i) {
-      if (player.itemID === searchHits[i]) {
-        doPlay(searchHits[(i + 1) % searchHits.length], true)
-        return
-      }
-    }
-    doPlay(searchHits[0], true)
+    const i = searchHits.indexOf(player.itemID)
+    const index = -1 === i ? 0 : (i + 1) % searchHits.length
+    doPlay(searchHits[index], true)
   }
 }
 
