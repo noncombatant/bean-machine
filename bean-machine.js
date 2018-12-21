@@ -220,20 +220,18 @@ const displayNowPlaying = function(item, element) {
 }
 
 const playNext = function(e) {
+  if (0 === searchHits.length) {
+    return
+  }
+
+  let index = 0
   if (randomCheckbox.checked) {
-    let i
-    while (true) {
-      i = getRandomIndex(searchHits)
-      if (i !== undefined) {
-        break
-      }
-    }
-    doPlay(searchHits[i], true)
+    index = getRandomIndex(searchHits)
   } else {
     const i = searchHits.indexOf(player.itemID)
-    const index = -1 === i ? 0 : (i + 1) % searchHits.length
-    doPlay(searchHits[index], true)
+    index = -1 === i ? 0 : (i + 1) % searchHits.length
   }
+  doPlay(searchHits[index], true)
 }
 
 const togglePlayback = function(e) {
