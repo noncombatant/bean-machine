@@ -273,8 +273,7 @@ const parseTSVRecords = function(tsvs, array) {
   const genre = 7
   const mtime = 8
 
-  let start = 0
-  for (let i = 0; i < tsvs.length; ++i) {
+  for (let start = 0, i = 0; i < tsvs.length; ++i) {
     if ('\n' === tsvs[i]) {
       const record = tsvs.substring(start, i)
       const fields = record.split("\t")
