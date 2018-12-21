@@ -272,8 +272,8 @@ const randomCheckboxOnClick = function(e) {
 const restoreState = function() {
   randomCheckbox.checked = "true" === localStorage.getItem("random")
 
-  const itemID = localStorage.getItem("itemID")
-  if (undefined !== typeof(itemID) && null !== itemID) {
+  const itemID = parseInt(localStorage.getItem("itemID"))
+  if (!Number.isNaN(itemID)) {
     doPlay(itemID, false)
   }
 
