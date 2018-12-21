@@ -242,17 +242,9 @@ const togglePlayback = function(e) {
   player[player.paused ? "play" : "pause"]()
 }
 
-let errorCount = 0
-const playerOnLoadedMetadata = function(e) {
-  errorCount = 0
-}
-
 const playerOnError = function(e) {
-  console.log("Could not load", catalog[player.itemID].pathname, e)
-  if (errorCount < 10) {
-    this.dispatchEvent(new Event("ended"))
-  }
-  ++errorCount
+  const item = catalog[player.itemID]
+  speechSynthesis.speak(new SpeechSynthesisUtterance(`Could not play ${item.name} by ${item.artist}`))
 }
 
 const randomCheckboxOnClick = function(e) {
@@ -472,7 +464,6 @@ const main = function() {
   nextButton.addEventListener("click", playNext)
   player.addEventListener("ended", playNext)
   player.addEventListener("error", playerOnError)
-  player.addEventListener("loadedmetadata", playerOnLoadedMetadata)
   searchInput.addEventListener("blur", executeSearch)
   searchInput.addEventListener("keyup", searchInputOnKeyUp)
   searchButton.addEventListener("click", executeSearch)
