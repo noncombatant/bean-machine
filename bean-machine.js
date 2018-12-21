@@ -239,11 +239,7 @@ const togglePlayback = function(e) {
   if ("p" !== e.key) {
     return
   }
-  if (player.paused) {
-    player.play()
-  } else {
-    player.pause()
-  }
+  player[player.paused ? "play" : "pause"]()
 }
 
 let errorCount = 0
