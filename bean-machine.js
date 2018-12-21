@@ -277,7 +277,7 @@ const restoreState = function() {
     doPlay(itemID, false)
   }
 
-  searchCatalog(localStorage.getItem("query"), true)
+  searchCatalog(localStorage.getItem("query") || "", true)
 }
 
 const parseTSVRecords = function(tsvs, array) {
