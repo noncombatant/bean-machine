@@ -263,29 +263,19 @@ const restoreState = function() {
 }
 
 const parseTSVRecords = function(tsvs, array) {
-  const pathname = 0
-  const album = 1
-  const artist = 2
-  const name = 3
-  const disc = 4
-  const track = 5
-  const year = 6
-  const genre = 7
-  const mtime = 8
-
   for (let start = 0, i = 0; i < tsvs.length; ++i) {
     if ('\n' === tsvs[i]) {
       const record = tsvs.substring(start, i)
       const fields = record.split("\t")
-      array.push({ pathname: fields[pathname],
-                   album:    fields[album],
-                   artist:   fields[artist],
-                   name:     fields[name],
-                   disc:     fields[disc],
-                   track:    fields[track],
-                   year:     fields[year],
-                   genre:    fields[genre],
-                   mtime:    fields[mtime] })
+      array.push({ pathname: fields[0],
+                   album:    fields[1],
+                   artist:   fields[2],
+                   name:     fields[3],
+                   disc:     fields[4],
+                   track:    fields[5],
+                   year:     fields[6],
+                   genre:    fields[7],
+                   mtime:    fields[8] })
       start = i + 1
     }
   }
