@@ -60,6 +60,7 @@ const parseTerms = function(string) {
 }
 
 const getMatchingItems = function(catalog, query) {
+  const start = performance.now()
   const hits = []
   const terms = parseTerms(query)
   for (let i = 0; i < catalog.length; ++i) {
@@ -68,6 +69,7 @@ const getMatchingItems = function(catalog, query) {
       hits.push(i)
     }
   }
+  console.log("getMatchingItems: " + Math.round(performance.now() - start))
   return hits
 }
 
