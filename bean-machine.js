@@ -286,14 +286,15 @@ const parseTSVRecords = function(tsvs, array) {
 let searchCatalogFetchIndex = 0
 let searchCatalogFetchBudget = 0
 const searchCatalog = function(query, forceSearch) {
-  query = query.trim() || getRandomWord()
+  query = query.trim()
+  const effectiveQuery = query || getRandomWord()
   const previousQuery = localStorage.getItem("query")
   if (!forceSearch && previousQuery === query) {
     return
   }
   searchInput.value = query
   localStorage.setItem("query", query)
-  searchWorker.postMessage({catalog: catalog, query: query})
+  searchWorker.postMessage({catalog: catalog, query: effectiveQuery})
 }
 
 const onMessageFromSearchWorker = function(e) {
