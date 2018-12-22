@@ -171,7 +171,6 @@ const buildCatalog = function(start) {
   const bottom = createElement("div")
   bottom.id = "bottom"
   itemListDiv.appendChild(bottom)
-
   return start + i
 }
 
@@ -343,18 +342,14 @@ const isElementInViewport = function(element) {
 
 const createElement = function(type, className, text) {
   const e = document.createElement(type)
-  if (className) {
-    e.className = className
-  }
-  if (text) {
-    setSingleTextChild(e, text)
-  }
+  e.className = className
+  setSingleTextChild(e, text)
   return e
 }
 
 const setSingleTextChild = function(element, text) {
   (element.childNodes[0] || element.appendChild(document.createTextNode("")))
-      .data = text
+      .data = text || ""
 }
 
 const removeAllChildren = function(element) {
