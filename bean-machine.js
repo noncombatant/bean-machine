@@ -100,7 +100,7 @@ const populateArt = function(parentElement, directory) {
 
 const requireLongPress = /android/i.test(navigator.userAgent)
 
-const buildItemDiv = function(item, itemID) {  // TODO: Do we need itemID here?
+const buildItemDiv = function(item, itemID) {
   const div = createElement("div", "itemDiv")
   div.itemID = itemID
   if (requireLongPress) {
@@ -119,7 +119,7 @@ const buildItemDiv = function(item, itemID) {  // TODO: Do we need itemID here?
   return div
 }
 
-const buildAlbumTitleDiv = function(item, itemID) { // TODO: Do we need itemID here?
+const buildAlbumTitleDiv = function(item, itemID) {
   const div = createElement("div", "albumTitleDiv")
   div.itemID = itemID
   if (requireLongPress) {
