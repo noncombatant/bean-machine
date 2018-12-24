@@ -276,14 +276,12 @@ const getItem = function(tsvs, itemID) {
 }
 
 const parseTSVRecords = function(tsvs, array) {
-  const start = performance.now()
   array.push(0)
   for (let i = 0; i < tsvs.length; ++i) {
     if ('\n' === tsvs[i]) {
       array.push(i + 1)
     }
   }
-  console.log("parseTSVRecords: " + Math.round(performance.now() - start))
 }
 
 let searchCatalogFetchIndex = 0
@@ -468,10 +466,8 @@ const main = function() {
   searchWorker = new Worker("search.js")
   searchWorker.addEventListener("message", onMessageFromSearchWorker)
 
-  const start = performance.now()
   fetch("catalog.tsv", {"credentials": "include"})
   .then(function(response) {
-    console.log("fetched catalog: " + Math.round(performance.now() - start))
     return response.text()
   })
   .then(function(text) {

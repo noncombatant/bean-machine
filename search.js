@@ -67,7 +67,6 @@ const getItemString = function(tsvs, itemID) {
 }
 
 const getMatchingItems = function(tsvs, tsvOffsets, query) {
-  const start = performance.now()
   const hits = []
   const terms = parseTerms(query)
   for (let i = 0; i < tsvOffsets.length; ++i) {
@@ -76,7 +75,6 @@ const getMatchingItems = function(tsvs, tsvOffsets, query) {
       hits.push(tsvOffsets[i])
     }
   }
-  console.log("getMatchingItems: " + Math.round(performance.now() - start))
   return hits
 }
 
