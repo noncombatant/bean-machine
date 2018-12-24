@@ -59,14 +59,33 @@ const parseTerms = function(string) {
   return terms
 }
 
-const getMatchingItems = function(catalog, query) {
+// TODO: Duplicating this across files is goaty. It should be possible to get
+// rid of this and to just search on the item substring directly, and without
+// creating an `all` string in `itemMatches` (still need to
+// `normalizeStringForSearch` though).
+const getItem = function(tsvs, itemID) {
+  const end = tsvs.indexOf("\n", itemID)
+  const record = tsvs.substring(itemID, end === -1 ? undefined : end)
+  const fields = record.split("\t")
+  return { pathname: fields[0],
+           album:    fields[1],
+           artist:   fields[2],
+           name:     fields[3],
+           disc:     fields[4],
+           track:    fields[5],
+           year:     fields[6],
+           genre:    fields[7],
+           mtime:    fields[8] }
+}
+
+const getMatchingItems = function(tsvs, tsvOffsets, query) {
   const start = performance.now()
   const hits = []
   const terms = parseTerms(query)
-  for (let i = 0; i < catalog.length; ++i) {
-    const item = catalog[i]
+  for (let i = 0; i < tsvOffsets.length; ++i) {
+    const item = getItem(tsvs, tsvOffsets[i])
     if (itemMatches(terms, item)) {
-      hits.push(i)
+      hits.push(tsvOffsets[i])
     }
   }
   console.log("getMatchingItems: " + Math.round(performance.now() - start))
@@ -114,5 +133,5 @@ const normalizeStringForSearch = memoize(function(string) {
 })
 
 addEventListener("message", function(e) {
-  postMessage(getMatchingItems(e.data.catalog, e.data.query))
+  postMessage(getMatchingItems(e.data.tsvs, e.data.tsvOffsets, e.data.query))
 })

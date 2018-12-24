@@ -3,20 +3,20 @@
 
 "use strict";
 
-const catalog = []
+let tsvs
+const tsvOffsets = []
 const buildCatalogLimit = 50
 
 let player = audioPlayer
 let searchHits = []
 let searchWorker
 
-const setAudioVideoControls = function(itemID) {
-  const pathname = catalog[itemID].pathname
-  if (isAudioPathname(pathname)) {
+const setAudioVideoControls = function(item) {
+  if (isAudioPathname(item.pathname)) {
     player = audioPlayer
     audioPlayer.className = ""
     videoPlayer.className = "hidden"
-  } else if (isVideoPathname(pathname)) {
+  } else if (isVideoPathname(item.pathname)) {
     player = videoPlayer
     audioPlayer.className = "hidden"
     videoPlayer.className = ""
@@ -26,8 +26,8 @@ const setAudioVideoControls = function(itemID) {
 
 const doPlay = function(itemID, shouldStartPlaying) {
   player.pause()
-  setAudioVideoControls(itemID)
-  const item = catalog[itemID]
+  const item = getItem(tsvs, itemID)
+  setAudioVideoControls(item)
   player.src = item.blobURL || item.pathname
   player.itemID = itemID
   if (shouldStartPlaying) {
@@ -51,7 +51,7 @@ const fetchSearchHits = function() {
   }
 
   const itemID = searchHits[searchCatalogFetchIndex]
-  const item = catalog[itemID]
+  const item = getItem(tsvs, itemID)
   if (item.blobURL) {
     searchCatalogFetchIndex++
     return
@@ -100,8 +100,7 @@ const populateArt = function(parentElement, directory) {
 
 const requireLongPress = /android/i.test(navigator.userAgent)
 
-const buildItemDiv = function(itemID) {
-  const item = catalog[itemID]
+const buildItemDiv = function(item, itemID) {  // TODO: Do we need itemID here?
   const div = createElement("div", "itemDiv")
   div.itemID = itemID
   if (requireLongPress) {
@@ -120,8 +119,7 @@ const buildItemDiv = function(itemID) {
   return div
 }
 
-const buildAlbumTitleDiv = function(itemID) {
-  const item = catalog[itemID]
+const buildAlbumTitleDiv = function(item, itemID) { // TODO: Do we need itemID here?
   const div = createElement("div", "albumTitleDiv")
   div.itemID = itemID
   if (requireLongPress) {
@@ -159,13 +157,13 @@ const buildCatalog = function(start) {
   let i
   for (i = 0; i < limit && start + i < searchHits.length; ++i) {
     const itemID = searchHits[start + i]
-    const item = catalog[itemID]
+    const item = getItem(tsvs, itemID)
     const albumPathname = dirname(item.pathname)
     if (albumPathname !== currentAlbumPathname) {
-      itemListDiv.appendChild(buildAlbumTitleDiv(itemID))
+      itemListDiv.appendChild(buildAlbumTitleDiv(item, itemID))
       currentAlbumPathname = albumPathname
     }
-    itemListDiv.appendChild(buildItemDiv(itemID))
+    itemListDiv.appendChild(buildItemDiv(item, itemID))
   }
 
   const bottom = createElement("div")
@@ -242,7 +240,7 @@ const togglePlayback = function(e) {
 }
 
 const playerOnError = function(e) {
-  const item = catalog[player.itemID]
+  const item = getItem(tsvs, player.itemID)
   speechSynthesis.speak(new SpeechSynthesisUtterance(`Could not play ${item.name} by ${item.artist}`))
 }
 
@@ -261,22 +259,27 @@ const restoreState = function() {
   searchCatalog(localStorage.getItem("query") || "", true)
 }
 
+const getItem = function(tsvs, itemID) {
+  const end = tsvs.indexOf("\n", itemID)
+  const record = tsvs.substring(itemID, end === -1 ? undefined : end)
+  const fields = record.split("\t")
+  return { pathname: fields[0],
+           album:    fields[1],
+           artist:   fields[2],
+           name:     fields[3],
+           disc:     fields[4],
+           track:    fields[5],
+           year:     fields[6],
+           genre:    fields[7],
+           mtime:    fields[8] }
+}
+
 const parseTSVRecords = function(tsvs, array) {
   const start = performance.now()
-  for (let start = 0, i = 0; i < tsvs.length; ++i) {
+  array.push(0)
+  for (let i = 0; i < tsvs.length; ++i) {
     if ('\n' === tsvs[i]) {
-      const record = tsvs.substring(start, i)
-      const fields = record.split("\t")
-      array.push({ pathname: fields[0],
-                   album:    fields[1],
-                   artist:   fields[2],
-                   name:     fields[3],
-                   disc:     fields[4],
-                   track:    fields[5],
-                   year:     fields[6],
-                   genre:    fields[7],
-                   mtime:    fields[8] })
-      start = i + 1
+      array.push(i + 1)
     }
   }
   console.log("parseTSVRecords: " + Math.round(performance.now() - start))
@@ -293,7 +296,7 @@ const searchCatalog = function(query, forceSearch) {
   }
   searchInput.value = query
   localStorage.setItem("query", query)
-  searchWorker.postMessage({catalog: catalog, query: effectiveQuery})
+  searchWorker.postMessage({tsvs: tsvs, tsvOffsets: tsvOffsets, query: effectiveQuery})
 }
 
 const onMessageFromSearchWorker = function(e) {
@@ -438,7 +441,7 @@ const getRandomIndex = function(array) {
 const stopwords = new Set(["a", "an", "the", "le", "la"])
 const getRandomWord = function() {
   while (true) {
-    const item = catalog[getRandomIndex(catalog)]
+    const item = getItem(tsvs, tsvOffsets[getRandomIndex(tsvOffsets)])
     const words = item.pathname.split("/").join(" ").split(" ")
     const word = words[getRandomIndex(words)].toLowerCase()
     if (/\w/.test(word) && !/^[0-9_-]+$/.test(word) && !stopwords.has(word)) {
@@ -467,8 +470,9 @@ const main = function() {
     console.log("fetched catalog: " + Math.round(performance.now() - start))
     return response.text()
   })
-  .then(function(tsvs) {
-    parseTSVRecords(tsvs, catalog)
+  .then(function(text) {
+    tsvs = text
+    parseTSVRecords(tsvs, tsvOffsets)
     restoreState()
   })
 
