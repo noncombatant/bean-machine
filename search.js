@@ -59,23 +59,9 @@ const parseTerms = function(string) {
   return terms
 }
 
-// TODO: Duplicating this across files is goaty. It should be possible to get
-// rid of this and to just search on the item substring directly, and without
-// creating an `all` string in `itemMatches` (still need to
-// `normalizeStringForSearch` though).
-const getItem = function(tsvs, itemID) {
+const getItemString = function(tsvs, itemID) {
   const end = tsvs.indexOf("\n", itemID)
-  const record = tsvs.substring(itemID, end === -1 ? undefined : end)
-  const fields = record.split("\t")
-  return { pathname: fields[0],
-           album:    fields[1],
-           artist:   fields[2],
-           name:     fields[3],
-           disc:     fields[4],
-           track:    fields[5],
-           year:     fields[6],
-           genre:    fields[7],
-           mtime:    fields[8] }
+  return tsvs.substring(itemID, end === -1 ? undefined : end)
 }
 
 const getMatchingItems = function(tsvs, tsvOffsets, query) {
@@ -83,7 +69,7 @@ const getMatchingItems = function(tsvs, tsvOffsets, query) {
   const hits = []
   const terms = parseTerms(query)
   for (let i = 0; i < tsvOffsets.length; ++i) {
-    const item = getItem(tsvs, tsvOffsets[i])
+    const item = getItemString(tsvs, tsvOffsets[i])
     if (itemMatches(terms, item)) {
       hits.push(tsvOffsets[i])
     }
@@ -92,16 +78,15 @@ const getMatchingItems = function(tsvs, tsvOffsets, query) {
   return hits
 }
 
-const itemMatches = function(terms, item) {
-  const delimiter = "\x00"
-  const all = normalizeStringForSearch(item.pathname + delimiter + item.artist + delimiter + item.album + delimiter + item.name + delimiter + item.genre + delimiter + item.year + delimiter + item.mtime)
+const itemMatches = function(terms, itemString) {
+  itemString = normalizeStringForSearch(itemString)
   for (let i = 0; i < terms.length; ++i) {
     let t = terms[i]
     const negated = "-" === t[0]
     if (negated) {
       t = t.substring(1)
     }
-    const matched = all.indexOf(t) >= 0
+    const matched = itemString.indexOf(t) >= 0
     if (negated === matched) {
       return false
     }
