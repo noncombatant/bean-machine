@@ -3,6 +3,8 @@
 
 "use strict";
 
+let tsvs = undefined
+
 const zeroOrMoreSpaces = /^\s*$/
 const pushTerm = function(terms, term) {
   if (term.match(zeroOrMoreSpaces)) {
@@ -118,5 +120,8 @@ const normalizeStringForSearch = memoize(function(string) {
 })
 
 addEventListener("message", function(e) {
-  postMessage(getMatchingItems(e.data.tsvs, e.data.tsvOffsets, e.data.query))
+  if (!tsvs) {
+    tsvs = e.data.tsvs
+  }
+  postMessage(getMatchingItems(tsvs, e.data.tsvOffsets, e.data.query))
 })

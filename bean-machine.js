@@ -260,6 +260,7 @@ const restoreState = function() {
 }
 
 const getItem = function(tsvs, itemID) {
+  // TODO: gracefully handle weird/invalid offsets
   const end = tsvs.indexOf("\n", itemID)
   const record = tsvs.substring(itemID, end === -1 ? undefined : end)
   const fields = record.split("\t")
@@ -287,6 +288,7 @@ const parseTSVRecords = function(tsvs, array) {
 
 let searchCatalogFetchIndex = 0
 let searchCatalogFetchBudget = 0
+let haveSentTsvsToWorker = false
 const searchCatalog = function(query, forceSearch) {
   query = query.trim()
   const effectiveQuery = query || getRandomWord()
@@ -296,7 +298,9 @@ const searchCatalog = function(query, forceSearch) {
   }
   searchInput.value = query
   localStorage.setItem("query", query)
-  searchWorker.postMessage({tsvs: tsvs, tsvOffsets: tsvOffsets, query: effectiveQuery})
+  const maybeTsvs = haveSentTsvsToWorker ? undefined : tsvs
+  searchWorker.postMessage({tsvs: maybeTsvs, tsvOffsets: tsvOffsets, query: effectiveQuery})
+  haveSentTsvsToWorker = true
 }
 
 const onMessageFromSearchWorker = function(e) {
