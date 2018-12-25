@@ -251,7 +251,10 @@ const randomCheckboxOnClick = function(e) {
 const restoreState = function() {
   randomCheckbox.checked = "true" === localStorage.getItem("random")
 
-  const itemID = parseInt(localStorage.getItem("itemID"))
+  let itemID = parseInt(localStorage.getItem("itemID"))
+  if (itemID > tsvs.length || itemID < 0 || (itemID > 0 && "\n" !== tsvs[itemID - 1])) {
+    itemID = 0
+  }
   if (!Number.isNaN(itemID)) {
     doPlay(itemID, false)
   }
@@ -260,7 +263,6 @@ const restoreState = function() {
 }
 
 const getItem = function(tsvs, itemID) {
-  // TODO: gracefully handle weird/invalid offsets
   const end = tsvs.indexOf("\n", itemID)
   const record = tsvs.substring(itemID, end === -1 ? undefined : end)
   const fields = record.split("\t")
@@ -278,7 +280,7 @@ const getItem = function(tsvs, itemID) {
 const parseTSVRecords = function(tsvs, array) {
   array.push(0)
   for (let i = 0; i < tsvs.length; ++i) {
-    if ('\n' === tsvs[i]) {
+    if ("\n" === tsvs[i]) {
       array.push(i + 1)
     }
   }
@@ -289,6 +291,7 @@ let searchCatalogFetchBudget = 0
 let haveSentTsvsToWorker = false
 const searchCatalog = function(query, forceSearch) {
   query = query.trim()
+  // TODO: Only getRandomWord on "?", not blank. For blank just return [].
   const effectiveQuery = query || getRandomWord()
   const previousQuery = localStorage.getItem("query")
   if (!forceSearch && previousQuery === query) {
