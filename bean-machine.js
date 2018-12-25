@@ -291,8 +291,9 @@ let searchCatalogFetchBudget = 0
 let haveSentTsvsToWorker = false
 const searchCatalog = function(query, forceSearch) {
   query = query.trim()
-  // TODO: Only getRandomWord on "?", not blank. For blank just return [].
-  const effectiveQuery = query || getRandomWord()
+  if ("?" === query) {
+    query = getRandomWord()
+  }
   const previousQuery = localStorage.getItem("query")
   if (!forceSearch && previousQuery === query) {
     return
@@ -300,7 +301,7 @@ const searchCatalog = function(query, forceSearch) {
   searchInput.value = query
   localStorage.setItem("query", query)
   const maybeTsvs = haveSentTsvsToWorker ? undefined : tsvs
-  searchWorker.postMessage({tsvs: maybeTsvs, tsvOffsets: tsvOffsets, query: effectiveQuery})
+  searchWorker.postMessage({tsvs: maybeTsvs, tsvOffsets: tsvOffsets, query: query})
   haveSentTsvsToWorker = true
 }
 
