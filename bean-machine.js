@@ -181,20 +181,8 @@ const extendCatalog = function() {
 }
 
 const albumTitleDivOnClick = function(e) {
-  const itemID = this.itemID
-  randomCheckbox.checked = false
-  if (player.paused || player.itemID != itemID) {
-    if (undefined !== itemID) {
-      if (itemID === player.itemID) {
-        player.play()
-      } else {
-        doPlay(itemID, true)
-      }
-    } else {
-      playNext()
-    }
-  } else {
-    player.pause()
+  if (player.itemID !== this.itemID) {
+    doPlay(this.itemID, true)
   }
 }
 const itemDivOnClick = albumTitleDivOnClick
