@@ -259,7 +259,7 @@ const restoreState = function() {
     doPlay(itemID, false)
   }
 
-  searchCatalog(localStorage.getItem("query") || "", true)
+  searchCatalog(localStorage.getItem("query") || "")
 }
 
 const getItem = function(tsvs, itemID) {
@@ -289,14 +289,10 @@ const parseTSVRecords = function(tsvs, array) {
 let searchCatalogFetchIndex = 0
 let searchCatalogFetchBudget = 0
 let haveSentTsvsToWorker = false
-const searchCatalog = function(query, forceSearch) {
+const searchCatalog = function(query) {
   query = query.trim()
   if ("?" === query) {
     query = getRandomWord()
-  }
-  const previousQuery = localStorage.getItem("query")
-  if (!forceSearch && previousQuery === query) {
-    return
   }
   searchInput.value = query
   localStorage.setItem("query", query)
@@ -313,13 +309,13 @@ const onMessageFromSearchWorker = function(e) {
 }
 
 const executeSearch = function(e) {
-  searchCatalog(searchInput.value, false)
+  searchCatalog(searchInput.value)
 }
 
 const searchInputOnKeyUp = function(e) {
   e.stopPropagation()
   if ("Enter" === e.code) {
-    searchCatalog(this.value, false)
+    searchCatalog(this.value)
   }
 }
 
