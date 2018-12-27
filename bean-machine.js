@@ -3,8 +3,8 @@
 
 "use strict";
 
-let tsvs
-const tsvOffsets = []
+let catalog
+const itemIDs = []
 const recordSeparator = "\n"
 const fieldSeparator = "\t"
 
@@ -27,7 +27,7 @@ const setAudioVideoControls = function(item) {
 
 const preparePlay = function(itemID) {
   player.pause()
-  const item = getItem(tsvs, itemID)
+  const item = getItem(catalog, itemID)
   setAudioVideoControls(item)
   player.src = item.blobURL || item.pathname
   player.itemID = itemID
@@ -48,7 +48,7 @@ const fetchSearchHits = function() {
   }
 
   const itemID = searchHits[searchCatalogFetchIndex]
-  const item = getItem(tsvs, itemID)
+  const item = getItem(catalog, itemID)
   if (item.blobURL) {
     searchCatalogFetchIndex++
     return
@@ -154,7 +154,7 @@ const buildCatalog = function(start) {
   let i
   for (i = 0; i < limit && start + i < searchHits.length; ++i) {
     const itemID = searchHits[start + i]
-    const item = getItem(tsvs, itemID)
+    const item = getItem(catalog, itemID)
     const albumPathname = dirname(item.pathname)
     if (albumPathname !== currentAlbumPathname) {
       itemListDiv.appendChild(buildAlbumTitleDiv(item, itemID))
@@ -227,7 +227,7 @@ const togglePlayback = function(e) {
 }
 
 const playerOnError = function(e) {
-  const item = getItem(tsvs, player.itemID)
+  const item = getItem(catalog, player.itemID)
   speechSynthesis.speak(new SpeechSynthesisUtterance(`Could not play ${item.name} by ${item.artist}`))
 }
 
@@ -239,7 +239,7 @@ const restoreState = function() {
   randomCheckbox.checked = "true" === localStorage.getItem("random")
 
   let itemID = parseInt(localStorage.getItem("itemID"))
-  if (itemID > tsvs.length || itemID < 0 || (itemID > 0 && recordSeparator !== tsvs[itemID - 1])) {
+  if (itemID > catalog.length || itemID < 0 || (itemID > 0 && recordSeparator !== catalog[itemID - 1])) {
     itemID = 0
   }
   if (!Number.isNaN(itemID)) {
@@ -249,9 +249,9 @@ const restoreState = function() {
   searchCatalog(localStorage.getItem("query") || "")
 }
 
-const getItem = function(tsvs, itemID) {
-  const end = tsvs.indexOf(recordSeparator, itemID)
-  const record = tsvs.substring(itemID, end === -1 ? undefined : end)
+const getItem = function(catalog, itemID) {
+  const end = catalog.indexOf(recordSeparator, itemID)
+  const record = catalog.substring(itemID, end === -1 ? undefined : end)
   const fields = record.split(fieldSeparator)
   return { pathname: fields[0],
            album:    fields[1],
@@ -264,10 +264,10 @@ const getItem = function(tsvs, itemID) {
            mtime:    fields[8] }
 }
 
-const parseTSVRecords = function(tsvs, array) {
+const parseCatalogRecords = function(catalog, array) {
   array.push(0)
-  for (let i = 0; i < tsvs.length; ++i) {
-    if (recordSeparator === tsvs[i]) {
+  for (let i = 0; i < catalog.length; ++i) {
+    if (recordSeparator === catalog[i]) {
       array.push(i + 1)
     }
   }
@@ -275,7 +275,7 @@ const parseTSVRecords = function(tsvs, array) {
 
 let searchCatalogFetchIndex = 0
 let searchCatalogFetchBudget = 0
-let haveSentTsvsToWorker = false
+let haveSentCatalogToWorker = false
 const searchCatalog = function(query) {
   query = query.trim()
   if ("?" === query) {
@@ -283,9 +283,9 @@ const searchCatalog = function(query) {
   }
   searchInput.value = query
   localStorage.setItem("query", query)
-  const maybeTsvs = haveSentTsvsToWorker ? undefined : tsvs
-  searchWorker.postMessage({tsvs: maybeTsvs, tsvOffsets: tsvOffsets, query: query})
-  haveSentTsvsToWorker = true
+  const maybeCatalog = haveSentCatalogToWorker ? undefined : catalog
+  searchWorker.postMessage({catalog: maybeCatalog, itemIDs: itemIDs, query: query})
+  haveSentCatalogToWorker = true
 }
 
 const onMessageFromSearchWorker = function(e) {
@@ -430,7 +430,7 @@ const getRandomIndex = function(array) {
 const stopwords = new Set(["a", "an", "the", "le", "la"])
 const getRandomWord = function() {
   while (true) {
-    const item = getItem(tsvs, tsvOffsets[getRandomIndex(tsvOffsets)])
+    const item = getItem(catalog, itemIDs[getRandomIndex(itemIDs)])
     const words = item.pathname.split("/").join(" ").split(" ")
     const word = words[getRandomIndex(words)].toLowerCase()
     if (/\w/.test(word) && !/^[0-9_-]+$/.test(word) && !stopwords.has(word)) {
@@ -458,8 +458,8 @@ const main = function() {
     return response.text()
   })
   .then(function(text) {
-    tsvs = text
-    parseTSVRecords(tsvs, tsvOffsets)
+    catalog = text
+    parseCatalogRecords(catalog, itemIDs)
     restoreState()
   })
 

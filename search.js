@@ -3,7 +3,7 @@
 
 "use strict";
 
-let tsvs = undefined
+let catalog = undefined
 
 const zeroOrMoreSpaces = /^\s*$/
 const pushTerm = function(terms, term) {
@@ -61,18 +61,18 @@ const parseTerms = function(string) {
   return terms
 }
 
-const getItemString = function(tsvs, itemID) {
-  const end = tsvs.indexOf("\n", itemID)
-  return tsvs.substring(itemID, end === -1 ? undefined : end)
+const getItemString = function(catalog, itemID) {
+  const end = catalog.indexOf("\n", itemID)
+  return catalog.substring(itemID, end === -1 ? undefined : end)
 }
 
-const getMatchingItems = function(tsvs, tsvOffsets, query) {
+const getMatchingItems = function(catalog, itemIDs, query) {
   const hits = []
   const terms = parseTerms(query)
-  for (let i = 0; i < tsvOffsets.length; ++i) {
-    const item = getItemString(tsvs, tsvOffsets[i])
+  for (let i = 0; i < itemIDs.length; ++i) {
+    const item = getItemString(catalog, itemIDs[i])
     if (itemMatches(terms, item)) {
-      hits.push(tsvOffsets[i])
+      hits.push(itemIDs[i])
     }
   }
   return hits
@@ -118,8 +118,8 @@ const normalizeStringForSearch = memoize(function(string) {
 })
 
 addEventListener("message", function(e) {
-  if (!tsvs) {
-    tsvs = e.data.tsvs
+  if (!catalog) {
+    catalog = e.data.catalog
   }
-  postMessage(getMatchingItems(tsvs, e.data.tsvOffsets, e.data.query))
+  postMessage(getMatchingItems(catalog, e.data.itemIDs, e.data.query))
 })

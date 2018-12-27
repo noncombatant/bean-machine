@@ -4,6 +4,10 @@ body {
   margin: 0px;
 }
 
+.mainText {
+  margin: 5em;
+}
+
 .loginForm {
   display: flex;
   justify-content: center;
