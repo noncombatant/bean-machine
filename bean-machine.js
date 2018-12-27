@@ -194,9 +194,9 @@ const windowOnScroll = function(e) {
 const displayNowPlaying = function(item, element) {
   removeAllChildren(element)
   const trackName = item.name || basename(item.pathname)
-  element.appendChild(createElement("span", "", item.disc + "-" + item.track + " “" + trackName + "”\u200A—\u200A"))
+  element.appendChild(createElement("span", "", "“" + trackName + "” by "))
   element.appendChild(createElement("strong", "", item.artist))
-  element.appendChild(createElement("span", "", "\u200A—\u200A"))
+  element.appendChild(createElement("span", "", " from "))
   element.appendChild(createElement("em", "", item.album))
   document.title = element.textContent
 }
