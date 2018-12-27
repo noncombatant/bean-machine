@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="bean-machine.css"/>
+<title>Implementation Notes</title>
+
+<div class="mainText">
+
+<h1>Implementation Notes</h1>
+
+<h2>Client</h2>
+
+<p>The client web application uses a deliberately simple (even simplistic)
+design. The user interface is an infinite scroll of media items, with a playback
+control panel at the top of the page. Search and catalog listing are the same
+operation. Search is linear search over a sequence of media item metadata
+records.</p>
+
+<p>We represent the database (<var>catalog</var>) as UTF-8 text, with records
+and fields delimited by special characters. (When generating the catalog, the
+server escapes the delimiters if they appear in metadata text.)</p>
+
+<p>To avoid memory allocation and copying, we search for and retrive metadata
+for each media item by its offset in the database text, which remains unchanged.
+We call the offset the <var>itemID</var>. To avoid UI jank, a Worker thread
+computes search results. We only copy the catalog database from the main thread
+to the Worker on the first search. (It would be nice to avoid this copy.)</p>
+
+<p>The client is implemented as an HTML frame, a stylesheet, and 2 JavaScript
+files (the main UI and the Worker). It uses no JS frameworks or CSS
+preprocessors. The largest non-media resource is the catalog file, which
+compresses well. My installation, with more than 71,000 media items, has a 1.6
+MiB compressed catalog file (10.3 MiB uncompressed). Although this is large and
+significantly impacts startup time, it is about an order of magnitude smaller
+than an MP3 of a 4-minute song.</p>
+
+<p>The client pre-fetches a few items after a search completes, and stores them
+as Blobs. Sending the entire catalog to the client enables the client to search
+for and play cached and pre-fetched content when offline. When the Writable File
+or similar API becomes available, we can use that, and a client’s local copy of
+the media store will gradually become a mirror of the server’s.</p>
+
+<p>The code is a small collection of global data objects and plain functions
+that operate on them and on the DOM. It makes no use of JavaScript classes or
+custom HTML elements.</p>
+
+<h2>Server</h2>
+
+</div>
