@@ -24,17 +24,13 @@ const setAudioVideoControls = function(item) {
   player.className = "normal"
 }
 
-const doPlay = function(itemID, shouldStartPlaying) {
+const preparePlay = function(itemID) {
   player.pause()
   const item = getItem(tsvs, itemID)
   setAudioVideoControls(item)
   player.src = item.blobURL || item.pathname
   player.itemID = itemID
-  if (shouldStartPlaying) {
-    player.play()
-  }
   localStorage.setItem("itemID", itemID)
-
   displayNowPlaying(item, nowPlayingTitle)
   populateArt(artSpan, dirname(item.pathname))
   searchCatalogFetchBudget++
@@ -182,7 +178,8 @@ const extendCatalog = function() {
 
 const albumTitleDivOnClick = function(e) {
   if (player.itemID !== this.itemID) {
-    doPlay(this.itemID, true)
+    preparePlay(this.itemID)
+    player.play()
   }
 }
 const itemDivOnClick = albumTitleDivOnClick
@@ -216,7 +213,8 @@ const playNext = function(e) {
     const i = searchHits.indexOf(player.itemID)
     index = -1 === i ? 0 : (i + 1) % searchHits.length
   }
-  doPlay(searchHits[index], true)
+  preparePlay(searchHits[index])
+  player.play()
 }
 
 const togglePlayback = function(e) {
@@ -244,7 +242,7 @@ const restoreState = function() {
     itemID = 0
   }
   if (!Number.isNaN(itemID)) {
-    doPlay(itemID, false)
+    preparePlay(itemID)
   }
 
   searchCatalog(localStorage.getItem("query") || "")
