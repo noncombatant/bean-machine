@@ -5,7 +5,6 @@
 
 let tsvs
 const tsvOffsets = []
-const buildCatalogLimit = 50
 
 let player = audioPlayer
 let searchHits = []
@@ -149,7 +148,7 @@ const buildCatalog = function(start) {
     itemListDiv.removeChild($("bottom"))
   }
 
-  const limit = Math.min(searchHits.length, buildCatalogLimit)
+  const limit = Math.min(searchHits.length, 50)
   let i
   for (i = 0; i < limit && start + i < searchHits.length; ++i) {
     const itemID = searchHits[start + i]
