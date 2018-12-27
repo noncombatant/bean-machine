@@ -180,8 +180,8 @@ const extendCatalog = function() {
 const albumTitleDivOnClick = function(e) {
   if (player.itemID !== this.itemID) {
     preparePlay(this.itemID)
-    player.play()
   }
+  player.play()
 }
 const itemDivOnClick = albumTitleDivOnClick
 
