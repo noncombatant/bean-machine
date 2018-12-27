@@ -5,6 +5,8 @@
 
 let tsvs
 const tsvOffsets = []
+const recordSeparator = "\n"
+const fieldSeparator = "\t"
 
 let player = audioPlayer
 let searchHits = []
@@ -74,7 +76,7 @@ const populateArt = function(parentElement, directory) {
     return response.text()
   })
   .then(function(arts) {
-    arts = arts.split("\n")
+    arts = arts.split(recordSeparator)
     let haveDoneFirst = false
     for (let art of arts) {
       if (0 == art.length) {
@@ -237,7 +239,7 @@ const restoreState = function() {
   randomCheckbox.checked = "true" === localStorage.getItem("random")
 
   let itemID = parseInt(localStorage.getItem("itemID"))
-  if (itemID > tsvs.length || itemID < 0 || (itemID > 0 && "\n" !== tsvs[itemID - 1])) {
+  if (itemID > tsvs.length || itemID < 0 || (itemID > 0 && recordSeparator !== tsvs[itemID - 1])) {
     itemID = 0
   }
   if (!Number.isNaN(itemID)) {
@@ -248,9 +250,9 @@ const restoreState = function() {
 }
 
 const getItem = function(tsvs, itemID) {
-  const end = tsvs.indexOf("\n", itemID)
+  const end = tsvs.indexOf(recordSeparator, itemID)
   const record = tsvs.substring(itemID, end === -1 ? undefined : end)
-  const fields = record.split("\t")
+  const fields = record.split(fieldSeparator)
   return { pathname: fields[0],
            album:    fields[1],
            artist:   fields[2],
@@ -265,7 +267,7 @@ const getItem = function(tsvs, itemID) {
 const parseTSVRecords = function(tsvs, array) {
   array.push(0)
   for (let i = 0; i < tsvs.length; ++i) {
-    if ("\n" === tsvs[i]) {
+    if (recordSeparator === tsvs[i]) {
       array.push(i + 1)
     }
   }
