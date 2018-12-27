@@ -29,7 +29,7 @@ const preparePlay = function(itemID) {
   player.pause()
   const item = getItem(catalog, itemID)
   setAudioVideoControls(item)
-  player.src = item.blobURL || item.pathname
+  player.src = blobCache[itemID] || item.pathname
   player.itemID = itemID
   localStorage.setItem("itemID", itemID)
   displayNowPlaying(item, nowPlayingTitle)
@@ -38,6 +38,7 @@ const preparePlay = function(itemID) {
 }
 
 let fetchSearchHitsInProgress = false
+const blobCache = {}
 const fetchSearchHits = function() {
   if (randomCheckbox.checked ||
       fetchSearchHitsInProgress ||
@@ -49,7 +50,7 @@ const fetchSearchHits = function() {
 
   const itemID = searchHits[searchCatalogFetchIndex]
   const item = getItem(catalog, itemID)
-  if (item.blobURL) {
+  if (blobCache[itemID]) {
     searchCatalogFetchIndex++
     return
   }
@@ -60,7 +61,7 @@ const fetchSearchHits = function() {
     return response.blob()
   })
   .then(function(blob) {
-    item.blobURL = URL.createObjectURL(blob)
+    blobCache[itemID] = URL.createObjectURL(blob)
     searchCatalogFetchIndex++
     searchCatalogFetchBudget--
     fetchSearchHitsInProgress = false
