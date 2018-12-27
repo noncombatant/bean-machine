@@ -45,4 +45,31 @@ custom HTML elements.</p>
 
 <h2>Server</h2>
 
+<p>The server software is also deliberately simple in most areas, although the
+authentication mechanism is perhaps overdone (and perhaps also underdone). The
+server can perform several functions:</p>
+
+<ul>
+<li>Building the catalog file
+<li>Installing the front-end files in the media store directory
+<li>Serving the application
+<li>Setting user passwords
+<li>Checking user passwords
+<li>Searching the media store for duplicate files
+<li>Searching the media store for empty directories
+</ul>
+
+<p>Very little application work happens on the server side. The server is mostly
+an authenticated file server. The only application logic is in the
+<code>/getArt</code> endpoint. Given a pathname to a subdirectory in the media
+store, <code>/getArt</code> returns to the client a list of PDFs and images in
+that directory. The client can then show these as cover art for media.</p>
+
+<p>The server creates a self-signed x.509 certificate if it doesn’t find a
+certificate in the configuration directory
+(<code>$HOME/.bean-machine</code>).</p>
+
+<p>A key area for improvement in the server is making logging more consistent
+and concise.</p>
+
 </div>
