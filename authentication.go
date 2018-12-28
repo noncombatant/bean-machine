@@ -303,6 +303,11 @@ func (h AuthenticatingFileHandler) ServeHTTP(w http.ResponseWriter, r *http.Requ
 		}
 	}
 
+	if "" == username {
+		redirectToLogin(w, r)
+		return
+	}
+
 	if !checkToken(username, decodedToken) {
 		log.Printf("ServeHTTP: Refusing %q to %q with invalid token", r.URL.Path, username)
 		redirectToLogin(w, r)
