@@ -27,19 +27,19 @@ func copyFile(source, destination string) {
 
 	s, e := os.Open(source)
 	if e != nil {
-		log.Fatalf("Could not read %q: %s\n", source, e)
+		log.Fatalf("copyFile: Could not read %q: %s\n", source, e)
 	}
 	defer s.Close()
 
 	d, e := os.Create(destination)
 	if e != nil {
-		log.Fatalf("Could not write %q: %s\n", destination, e)
+		log.Fatalf("copyFile: Could not write %q: %s\n", destination, e)
 	}
 	defer d.Close()
 
 	_, e = io.Copy(d, s)
 	if e != nil {
-		log.Fatalf("Could not copy %q to %q: %s\n", source, destination, e)
+		log.Fatalf("copyFile: Could not copy %q to %q: %s\n", source, destination, e)
 	}
 }
 
@@ -118,7 +118,7 @@ func makeRandomBytes(length int) []byte {
 	bytes := make([]byte, length)
 	_, e := rand.Read(bytes)
 	if e != nil {
-		log.Fatalf("Could not get random bytes: %v", e)
+		log.Fatalf("makeRandomBytes: Could not get random bytes: %v", e)
 	}
 	return bytes
 }
@@ -174,7 +174,7 @@ func openFileAndGetInfo(pathname string) FileAndInfoResult {
 
 func replaceStringAndLog(s, old, new, description string) string {
 	if -1 != strings.Index(s, old) {
-		log.Printf("%q contains a %s", s, description)
+		log.Printf("replaceStringAndLog: %q contains a %s", s, description)
 		s = strings.Replace(s, old, new, -1)
 	}
 	return s

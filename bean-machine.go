@@ -95,7 +95,7 @@ func fileSizesToPathnames(root string) map[int64][]string {
 		return nil
 	})
 	if e != nil {
-		log.Printf("%q: %v\n", root, e)
+		log.Printf("fileSizesToPathnames: %q: %v", root, e)
 	}
 	return m
 }
@@ -212,13 +212,12 @@ func (i *ItemInfo) ToTSV() string {
 
 func assertValidRootPathname(root string) {
 	if "" == root {
-		log.Fatal("Cannot continue without a valid music-directory.")
+		log.Fatal("assertValidRootPathname: Cannot continue without a valid music-directory.")
 	}
 }
 
 func buildCatalog(root string) {
 	assertValidRootPathname(root)
-	log.Printf("Building catalog in %q.\n", root)
 
 	if os.PathSeparator == root[len(root)-1] {
 		root = root[:len(root)-1]
@@ -226,7 +225,7 @@ func buildCatalog(root string) {
 	pathname := path.Join(root, "catalog.tsv")
 	output, e := os.Create(pathname)
 	if e != nil {
-		log.Fatalf("Could not create %q: %s\n", pathname, e)
+		log.Fatalf("buildCatalog: Could not create %q: %s", pathname, e)
 	}
 	defer output.Close()
 
@@ -234,11 +233,11 @@ func buildCatalog(root string) {
 	e = filepath.Walk(root,
 		func(pathname string, info os.FileInfo, e error) error {
 			if e != nil {
-				log.Printf("%q: %s\n", pathname, e)
+				log.Printf("buildCatalog: %q: %s", pathname, e)
 				return e
 			}
 			if shouldSkipFile(pathname, info) {
-				log.Printf("Skipping %q\n", pathname)
+				log.Printf("buildCatalog: Skipping %q", pathname)
 				return nil
 			}
 			if !info.Mode().IsRegular() {
@@ -248,13 +247,13 @@ func buildCatalog(root string) {
 			input, e := os.Open(pathname)
 			count++
 			if e != nil {
-				log.Printf("\n%q: %s\n", pathname, e)
+				log.Printf("buildCatalog: %q: %s", pathname, e)
 				return nil
 			}
 			defer input.Close()
 
 			if 0 == count%1000 {
-				log.Printf("%v items", count)
+				log.Printf("buildCatalog: %v items", count)
 			}
 
 			webPathname := pathname[len(root)+1:]
@@ -263,7 +262,7 @@ func buildCatalog(root string) {
 				if isAudioPathname(pathname) {
 					itemInfo.File, e = id3.Read(input)
 					if e != nil {
-						log.Printf("%q: %v", pathname, e)
+						log.Printf("buildCatalog: %q: %v", pathname, e)
 					}
 				}
 				fileInfo, e := os.Stat(pathname)
@@ -277,10 +276,8 @@ func buildCatalog(root string) {
 		})
 
 	if e != nil {
-		log.Printf("Problem walking %q: %s\n", root, e)
+		log.Printf("buildCatalog: Problem walking %q: %s", root, e)
 	}
-
-	log.Println("Finished building catalog.")
 }
 
 func printDuplicates(root string) error {
@@ -294,7 +291,7 @@ func printDuplicates(root string) error {
 		for _, pathname := range pathnames {
 			hash, e := computeMD5(pathname)
 			if e != nil {
-				log.Printf("%q: %v\n", pathname, e)
+				log.Printf("printDuplicates: %q: %v", pathname, e)
 				continue
 			}
 			hashes[hash] = append(hashes[hash], pathname)
@@ -315,7 +312,7 @@ func printEmpties(root string) error {
 	assertValidRootPathname(root)
 	e := filepath.Walk(root, func(pathname string, info os.FileInfo, e error) error {
 		if e != nil {
-			log.Printf("%q: %v\n", pathname, e)
+			log.Printf("printEmpties: %q: %v", pathname, e)
 			return nil
 		}
 		if info.Mode().IsRegular() && info.Size() == 0 {
@@ -324,7 +321,7 @@ func printEmpties(root string) error {
 		if info.Mode().IsDir() {
 			infos, e := ioutil.ReadDir(pathname)
 			if e != nil {
-				log.Printf("%q: %v\n", pathname, e)
+				log.Printf("printEmpties: %q: %v", pathname, e)
 			}
 			if len(infos) == 0 {
 				fmt.Printf("%q\n", pathname)
@@ -340,7 +337,6 @@ func installFrontEndFiles(root string) {
 	for _, f := range frontEndFiles {
 		copyFile(f, path.Join(root, string(os.PathSeparator), f))
 	}
-	log.Printf("Installed web front-end files in %q.\n", root)
 }
 
 func generateServerCredentials(hosts []string) (string, string) {
@@ -355,19 +351,17 @@ func generateServerCredentials(hosts []string) (string, string) {
 
 	certificateFile, err := os.Create(certificatePathname)
 	if err != nil {
-		log.Fatalf("Failed to open %q for writing: %s", certificatePathname, err)
+		log.Fatalf("generateServerCredentials: Failed to open %q for writing: %s", certificatePathname, err)
 	}
 
 	keyFile, err := os.OpenFile(keyPathname, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0600)
 	if err != nil {
-		log.Fatalf("Failed to open %q for writing: %s", keyPathname, err)
+		log.Fatalf("generateServerCredentials: Failed to open %q for writing: %s", keyPathname, err)
 	}
 
 	generateCertificate(hosts, false, keyFile, certificateFile)
 	certificateFile.Close()
 	keyFile.Close()
-	log.Printf("Generated key for X.509 certificate. %q", keyPathname)
-	log.Printf("Generated X.509 certificate. %q", certificatePathname)
 	return certificatePathname, keyPathname
 }
 
@@ -384,17 +378,17 @@ func getHomePathname() string {
 		}
 	}
 
-	log.Fatal("No HOME environment variable is set.")
+	log.Fatal("getHomePathname: No HOME environment variable is set.")
 	return ""
 }
 
 func establishConfiguration() {
 	if homePathname == "" {
-		log.Fatal("No HOME environment variable is set.")
+		log.Fatal("establishConfiguration: No HOME environment variable is set.")
 	}
 
 	if e := os.MkdirAll(configurationPathname, 0755); e != nil {
-		log.Fatalf("Could not create %q: %v", configurationPathname, e)
+		log.Fatalf("establishConfiguration: Could not create %q: %v", configurationPathname, e)
 	}
 }
 
@@ -402,15 +396,14 @@ func serveApp(root string) {
 	assertValidRootPathname(root)
 	addresses, e := net.InterfaceAddrs()
 	if e != nil || 0 == len(addresses) {
-		log.Println("Hmm, I can't find any network interfaces to run the web server on. I have to give up.")
-		os.Exit(1)
+		log.Fatal("serveApp: Can't find any network interfaces to run the web server on. Giving up.")
 	}
 
 	message := "Starting the web server. Point your browser to any of these addresses:"
 	if 1 == len(addresses) {
 		message = "Starting the web server. Point your browser to this address:"
 	}
-	log.Println(message)
+	log.Printf("serveApp: %s", message)
 
 	var hosts []string
 	for _, address := range addresses {
@@ -421,11 +414,11 @@ func serveApp(root string) {
 			}
 			names, e := net.LookupAddr(a.IP.String())
 			if e != nil || 0 == len(names) {
-				log.Printf("    https://%s%s/\n", a.IP, httpPort)
+				log.Printf("    https://%s%s/", a.IP, httpPort)
 				hosts = append(hosts, fmt.Sprintf("%s", a.IP))
 			} else {
 				for _, name := range names {
-					log.Printf("    https://%s%s/\n", name, httpPort)
+					log.Printf("    https://%s%s/", name, httpPort)
 					hosts = append(hosts, fmt.Sprintf("%s", name))
 				}
 			}
@@ -522,7 +515,7 @@ func main() {
 			username, password := promptForCredentials()
 			stored := readPasswordDatabase(path.Join(configurationPathname, passwordsBasename))
 			ok := checkPassword(stored, username, password)
-			log.Printf("Password check for %q: %v\n", username, ok)
+			log.Printf("check-password for %q: %v", username, ok)
 			if !ok {
 				status = 1
 			}

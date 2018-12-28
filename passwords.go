@@ -36,7 +36,7 @@ func readPasswordDatabase(pathname string) Credentials {
 		if os.IsNotExist(result.Error) {
 			return credentials
 		}
-		log.Fatalf("Could not open %q: %v", pathname, result.Error)
+		log.Fatalf("readPasswordDatabase: Could not open %q: %v", pathname, result.Error)
 	}
 	defer result.File.Close()
 
@@ -68,7 +68,7 @@ func promptForCredentials() (string, string) {
 func obfuscatePassword(password, salt []byte) []byte {
 	obfuscated, e := scrypt.Key(password, salt, scryptN, scryptR, scryptP, scryptLength)
 	if e != nil {
-		log.Fatalf("Could not obfuscate the password: %v", e)
+		log.Fatalf("obfuscatePassword: Could not obfuscate the password: %v", e)
 	}
 	return obfuscated
 }
@@ -81,7 +81,7 @@ func setPassword() {
 
 	file, e := os.OpenFile(pathname, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0600)
 	if e != nil {
-		log.Fatalf("Could not open %q: %v", pathname, e)
+		log.Fatalf("setPassword: Could not open %q: %v", pathname, e)
 	}
 	defer file.Close()
 
@@ -95,7 +95,7 @@ func setPassword() {
 func mustWriteString(file *os.File, s string) {
 	_, e := file.WriteString(s)
 	if e != nil {
-		log.Fatalf("Could not write string to file: %v", e)
+		log.Fatalf("mustWriteString: Could not write to file: %v", e)
 	}
 }
 
@@ -111,7 +111,7 @@ func writePasswordDatabase(file *os.File, toBeStored Credentials) {
 func getSaltAndScrypted(storedCredential string) ([]byte, []byte) {
 	decodedCredential, e := hex.DecodeString(storedCredential)
 	if e != nil {
-		log.Fatalf("Could not decode stored credential: %v", e)
+		log.Fatalf("getSaltAndScrypted: Could not decode stored credential: %v", e)
 	}
 	return decodedCredential[:saltSize], decodedCredential[saltSize:]
 }

@@ -64,9 +64,8 @@ func getCookieLifetime() time.Time {
 func generateAndSaveHmacKey(pathname string) {
 	key := makeRandomBytes(hmacKeyLength)
 	if e := ioutil.WriteFile(pathname, key, 0600); e != nil {
-		log.Fatalf("Could not save HMAC key to %q: %v", pathname, e)
+		log.Fatalf("generateAndSaveHmacKey: Could not save HMAC key to %q: %v", pathname, e)
 	}
-	log.Print("Generated and saved new HMAC key")
 }
 
 func getHmacKey() []byte {
@@ -78,11 +77,11 @@ func getHmacKey() []byte {
 
 	key, e := ioutil.ReadFile(pathname)
 	if e != nil {
-		log.Fatalf("Could not open %q: %v", pathname, e)
+		log.Fatalf("getHmacKey: Could not open %q: %v", pathname, e)
 	}
 
 	if len(key) != hmacKeyLength {
-		log.Fatalf("No valid key in %q: %v", pathname, e)
+		log.Fatalf("getHmacKey: No valid key in %q: %v", pathname, e)
 	}
 	return key
 }
@@ -156,12 +155,13 @@ func (h AuthenticatingFileHandler) handleLogIn(w http.ResponseWriter, r *http.Re
 	stored := readPasswordDatabase(path.Join(configurationPathname, passwordsBasename))
 
 	if checkPassword(stored, username, password) {
-		log.Printf("Successful authentication for user %q", username)
+		log.Printf("handleLogIn: %q successful", username)
 		token := username + ":" + hex.EncodeToString(generateToken(username, stored[username]))
 		cookie := &http.Cookie{Name: "token", Value: token, Secure: true, HttpOnly: true, Expires: getCookieLifetime()}
 		http.SetCookie(w, cookie)
 		http.Redirect(w, r, "/index.html", http.StatusFound)
 	} else {
+		log.Printf("handleLogIn: %q unsuccessful", username)
 		cookie := &http.Cookie{Name: "token", Value: "", Secure: true, HttpOnly: true}
 		http.SetCookie(w, cookie)
 		redirectToLogin(w, r)
@@ -175,11 +175,11 @@ func (h AuthenticatingFileHandler) handleGetArt(w http.ResponseWriter, r *http.R
 	}
 
 	directory := path.Join(musicRoot, filepath.Clean(directories[0]))
-	log.Printf("handleGetArt %q", directory)
+	log.Printf("handleGetArt: %q", directory)
 
 	infos, e := ioutil.ReadDir(directory)
 	if e != nil {
-		log.Printf("handleGetArt %q: %v", directory, e)
+		log.Printf("handleGetArt: %q: %v", directory, e)
 		return
 	}
 
@@ -200,7 +200,7 @@ func redirectToLogin(w http.ResponseWriter, r *http.Request) {
 func openFileIfPublic(pathname string, shouldTryGzip bool) (FileAndInfoResult, bool) {
 	nonGzResult := openFileAndGetInfo(pathname)
 	if nonGzResult.Error != nil {
-		log.Printf("Could not open %q: %v", pathname, nonGzResult.Error)
+		log.Printf("openFileIfPublic: Could not open %q: %v", pathname, nonGzResult.Error)
 		return nonGzResult, false
 	}
 
@@ -260,6 +260,7 @@ func (h AuthenticatingFileHandler) serveFile(w http.ResponseWriter, r *http.Requ
 	w.Header().Set("Cache-Control", "max-age=" + sevenDays)
 
 	defer result.File.Close()
+	log.Printf("serveFile: %q", pathname)
 	http.ServeContent(w, r, pathname, result.Info.ModTime(), result.File)
 }
 
@@ -296,14 +297,14 @@ func (h AuthenticatingFileHandler) ServeHTTP(w http.ResponseWriter, r *http.Requ
 	if e == nil {
 		username, decodedToken, e = parseCookie(cookie.Value)
 		if e != nil {
-			log.Printf("Refusing %q to client with invalid cookie (%v)", r.URL.Path, e)
+			log.Printf("ServeHTTP: Refusing %q to client with invalid cookie (%v)", r.URL.Path, e)
 			redirectToLogin(w, r)
 			return
 		}
 	}
 
 	if !checkToken(username, decodedToken) {
-		log.Printf("Refusing %q to %q with invalid token", r.URL.Path, username)
+		log.Printf("ServeHTTP: Refusing %q to %q with invalid token", r.URL.Path, username)
 		redirectToLogin(w, r)
 		return
 	}
