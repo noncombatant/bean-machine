@@ -143,10 +143,17 @@ const buildAlbumTitleDiv = function(item, itemID) {
 
 let previousLastItem = 0
 let currentAlbumPathname = ""
+let haveRequestedExtendCatalog = false
 const buildCatalog = function(start) {
   if (0 === start) {
     removeAllChildren(itemListDiv)
     currentAlbumPathname = ""
+    haveRequestedExtendCatalog = false
+    if (randomCheckbox.checked) {
+      shuffle(searchHits)
+    } else {
+      searchHits.sort()
+    }
   } else {
     itemListDiv.removeChild($("bottom"))
   }
@@ -167,13 +174,12 @@ const buildCatalog = function(start) {
   const bottom = createElement("div")
   bottom.id = "bottom"
   itemListDiv.appendChild(bottom)
-  return start + i
+  previousLastItem = start + i
 }
 
-let haveRequestedExtendCatalog = false
 const extendCatalog = function() {
   if (isElementInViewport($("bottom"))) {
-    previousLastItem = buildCatalog(previousLastItem)
+    buildCatalog(previousLastItem)
   }
   haveRequestedExtendCatalog = false
 }
@@ -232,7 +238,20 @@ const playerOnError = function(e) {
   speechSynthesis.speak(new SpeechSynthesisUtterance(`Could not play ${item.name} by ${item.artist}`))
 }
 
+// https://stackoverflow.com/questions/2450954/how-to-randomize-shuffle-a-javascript-array
+const shuffle = function(array) {
+  let currentIndex = array.length
+  while (0 !== currentIndex) {
+    const randomIndex = Math.floor(Math.random() * currentIndex)
+    --currentIndex
+    const temp = array[currentIndex]
+    array[currentIndex] = array[randomIndex]
+    array[randomIndex] = temp
+  }
+}
+
 const randomCheckboxOnClick = function(e) {
+  buildCatalog(0)
   localStorage.setItem("random", randomCheckbox.checked)
 }
 
@@ -291,7 +310,7 @@ const searchCatalog = function(query) {
 
 const onMessageFromSearchWorker = function(e) {
   searchHits = e.data
-  previousLastItem = buildCatalog(0)
+  buildCatalog(0)
   searchCatalogFetchIndex = 0
   searchCatalogFetchBudget = 3
 }
