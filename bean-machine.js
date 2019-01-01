@@ -35,6 +35,8 @@ const preparePlay = function(itemID) {
   displayNowPlaying(item, nowPlayingTitle)
   populateArt(artSpan, dirname(item.pathname))
   searchCatalogFetchBudget++
+  // TODO: Update the searchCatalogFetchIndex to the index into searchHits that
+  // the itemID is at. Also, keep searchCatalogFetchIndex % searchHits.length.
 }
 
 let fetchSearchHitsInProgress = false
@@ -151,7 +153,8 @@ const buildCatalog = function(start) {
     if (randomCheckbox.checked) {
       shuffle(searchHits)
     } else {
-      searchHits.sort()
+      // TODO/BUG: It should not be necessary to force Number here.
+      searchHits.sort((a, b) => Number(a) - Number(b))
     }
   } else {
     itemListDiv.removeChild($("bottom"))
@@ -480,3 +483,6 @@ const main = function() {
   setInterval(fetchSearchHits, 2000)
 }
 main()
+
+// TODO: Turn everything into ES modules, and export only `main`. Or, at least
+// create a utilities.js module, and put shared stuff in there (like `memoize`).
