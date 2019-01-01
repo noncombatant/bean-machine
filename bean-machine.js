@@ -40,8 +40,7 @@ const preparePlay = function(itemID) {
 let fetchSearchHitsInProgress = false
 const blobCache = {}
 const fetchSearchHits = function() {
-  if (randomCheckbox.checked ||
-      fetchSearchHitsInProgress ||
+  if (fetchSearchHitsInProgress ||
       searchCatalogFetchIndex >= searchHits.length ||
       0 === searchCatalogFetchBudget)
   {
@@ -214,13 +213,8 @@ const playNext = function(e) {
     return
   }
 
-  let index = 0
-  if (randomCheckbox.checked) {
-    index = getRandomIndex(searchHits)
-  } else {
-    const i = searchHits.indexOf(player.itemID)
-    index = -1 === i ? 0 : (i + 1) % searchHits.length
-  }
+  const i = searchHits.indexOf(player.itemID)
+  const index = -1 === i ? 0 : (i + 1) % searchHits.length
   preparePlay(searchHits[index])
   player.play()
 }
