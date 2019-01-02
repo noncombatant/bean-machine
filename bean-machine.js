@@ -35,21 +35,17 @@ const preparePlay = function(itemID) {
   displayNowPlaying(item, nowPlayingTitle)
   populateArt(artSpan, dirname(item.pathname))
   searchCatalogFetchBudget++
-  // TODO: Update the searchCatalogFetchIndex to the index into searchHits that
-  // the itemID is at. Also, keep searchCatalogFetchIndex % searchHits.length.
+  searchCatalogFetchIndex = searchHits.indexOf(itemID) + 1
 }
 
 let fetchSearchHitsInProgress = false
 const blobCache = {}
 const fetchSearchHits = function() {
-  if (fetchSearchHitsInProgress ||
-      searchCatalogFetchIndex >= searchHits.length ||
-      0 === searchCatalogFetchBudget)
-  {
+  if (fetchSearchHitsInProgress || 0 === searchCatalogFetchBudget) {
     return
   }
 
-  const itemID = searchHits[searchCatalogFetchIndex]
+  const itemID = searchHits[searchCatalogFetchIndex % searchHits.length]
   const item = getItem(catalog, itemID)
   if (blobCache[itemID]) {
     searchCatalogFetchIndex++
@@ -239,7 +235,7 @@ const shuffle = function(array) {
   let currentIndex = array.length
   while (0 !== currentIndex) {
     const randomIndex = Math.floor(Math.random() * currentIndex)
-    --currentIndex
+    currentIndex--
     const temp = array[currentIndex]
     array[currentIndex] = array[randomIndex]
     array[randomIndex] = temp
