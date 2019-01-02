@@ -85,12 +85,12 @@ your <code>Music</code> folder.</p>
 <tr>
 <td>
 <pre>
-$ <strong>./bean-machine ~/Music</strong>
+$ <strong>./bean-machine -m ~/Music</strong>
 </pre>
 </td>
 <td>
 <pre>
-$ <strong>.\bean-machine.exe %HOMEPATH\Music</strong>
+$ <strong>.\bean-machine.exe -m %HOMEPATH\Music</strong>
 </pre>
 </tr>
 
@@ -99,12 +99,9 @@ $ <strong>.\bean-machine.exe %HOMEPATH\Music</strong>
 <p>The output should look something like this (on all platforms):</p>
 
 <pre>
-2016/11/19 14:20:56 Building catalog of audio files in "/Users/chris/Music". This might take a while.
-2016/11/19 14:20:56 1000 items
-2016/11/19 14:20:56 2000 items
-2016/11/19 14:20:56 3000 items
-2016/11/19 14:20:57 Finished building catalog.
-2016/11/19 14:20:57 Installed web front-end files in "/Users/chris/Music".
+2016/11/19 14:20:56 buildCatalog: 1000 items
+2016/11/19 14:20:56 buildCatalog: 2000 items
+2016/11/19 14:20:56 buildCatalog: 3000 items
 2016/11/19 14:20:57 Starting the web server. Point your browser to any of these addresses:
 2016/11/19 14:20:57     https://localhost:8443/
 2016/11/19 14:20:57     https://127.0.0.1:8443/
