@@ -153,8 +153,7 @@ const buildCatalog = function(start) {
     if (randomCheckbox.checked) {
       shuffle(searchHits)
     } else {
-      // TODO/BUG: It should not be necessary to force Number here.
-      searchHits.sort((a, b) => Number(a) - Number(b))
+      searchHits.sort((a, b) => a - b)
     }
   } else {
     itemListDiv.removeChild($("bottom"))
