@@ -226,8 +226,7 @@ const togglePlayback = function(e) {
 }
 
 const playerOnError = function(e) {
-  const item = getItem(catalog, player.itemID)
-  speechSynthesis.speak(new SpeechSynthesisUtterance(`Could not play ${item.name} by ${item.artist}`))
+  this.dispatchEvent(new Event("ended"))
 }
 
 // https://stackoverflow.com/questions/2450954/how-to-randomize-shuffle-a-javascript-array
