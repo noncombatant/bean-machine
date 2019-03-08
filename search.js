@@ -19,6 +19,8 @@ const parseTerms = function(string) {
   let inWord = false
   let wordStart = 0
 
+  string = string.replace(/[“”]+/g, '"')
+
   for (let i = 0; i < string.length; ++i) {
     const c = string[i]
     if ('"' === c) {
