@@ -7,7 +7,6 @@ import (
 	"flag"
 	"fmt"
 	"id3"
-	"io/ioutil"
 	"log"
 	"net"
 	"net/http"
@@ -304,30 +303,6 @@ func printDuplicates(root string) error {
 	return nil
 }
 
-func printEmpties(root string) error {
-	assertValidRootPathname(root)
-	e := filepath.Walk(root, func(pathname string, info os.FileInfo, e error) error {
-		if e != nil {
-			log.Printf("printEmpties: %q: %v", pathname, e)
-			return nil
-		}
-		if info.Mode().IsRegular() && info.Size() == 0 {
-			fmt.Printf("%q\n", pathname)
-		}
-		if info.Mode().IsDir() {
-			infos, e := ioutil.ReadDir(pathname)
-			if e != nil {
-				log.Printf("printEmpties: %q: %v", pathname, e)
-			}
-			if len(infos) == 0 {
-				fmt.Printf("%q\n", pathname)
-			}
-		}
-		return nil
-	})
-	return e
-}
-
 func installFrontEndFiles(root string) {
 	assertValidRootPathname(root)
 	for _, f := range frontEndFiles {
@@ -444,10 +419,6 @@ Invoking bean-machine with no command is equivalent to invoking it with the
   duplicate
     Scans music-directory for duplicate files, and prints out a list of any.
 
-  empty
-    Scans music-directory for empty files and directories, and prints out a
-    list of any found.
-
   install
     Installs the web front-end files in music-directory.
 
@@ -516,8 +487,6 @@ func main() {
 			}
 		case "duplicate":
 			printDuplicates(musicRoot)
-		case "empty":
-			printEmpties(musicRoot)
 		case "help":
 			printHelp()
 		case "install":
