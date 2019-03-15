@@ -206,7 +206,8 @@ func (i *ItemInfo) ToTSV() string {
 }
 
 func assertValidRootPathname(root string) {
-	if "" == root {
+	info, e := os.Stat(root)
+	if e != nil || !info.IsDir() {
 		log.Fatal("assertValidRootPathname: Cannot continue without a valid music-directory.")
 	}
 }
