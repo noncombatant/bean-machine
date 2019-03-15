@@ -143,20 +143,15 @@ func (i *ItemInfo) normalize() {
 		// "AC_DC/Back In Black/1-01 Hells Bells.m4a"
 		//     performer/album/disc#-track# name
 		parts := strings.Split(i.Pathname, string(filepath.Separator))
-		if len(parts) != 3 {
-			if i.Name == "" {
-				i.Name = i.Pathname
-			}
-		} else {
-			if i.Artist == "" {
-				i.Artist = parts[0]
-			}
-			if i.Album == "" {
-				i.Album = parts[1]
-			}
-			if i.Name == "" {
-				i.Name = removeFileExtension(parts[2])
-			}
+		length := len(parts)
+		if i.Artist == "" && length > 2 {
+			i.Artist = parts[length - 3]
+		}
+		if i.Album == "" && length > 1 {
+			i.Album = parts[length - 2]
+		}
+		if i.Name == "" && length > 0 {
+			i.Name = removeFileExtension(parts[length - 1])
 		}
 	}
 
