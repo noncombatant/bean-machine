@@ -430,10 +430,12 @@ func printHelp() {
 	fmt.Println(`Usage:
 
   bean-machine -m music-directory
-  bean-machine [-m music-directory] command [command...]
+  bean-machine -m music-directory command [command...]
+  bean-machine set-password
+  bean-machine check-password
 
 Invoking bean-machine with no command is equivalent to invoking it with the
-"run" command (see below). The commands are:
+"catalog", "install", and "serve" commands (see below). The commands are:
 
   catalog
     Scans music-directory for music files, and creates a database of their
@@ -448,9 +450,6 @@ Invoking bean-machine with no command is equivalent to invoking it with the
 
   install
     Installs the web front-end files in music-directory.
-
-  run
-    Equivalent to "bean-machine music-directory catalog install serve".
 
   serve
     Starts a web server rooted at music-directory, and prints out the URL(s)
@@ -523,10 +522,6 @@ func main() {
 			printHelp()
 		case "install":
 			installFrontEndFiles(musicRoot)
-		case "run":
-			buildCatalog(musicRoot)
-			installFrontEndFiles(musicRoot)
-			serveApp(musicRoot)
 		case "serve":
 			serveApp(musicRoot)
 		case "set-password":
