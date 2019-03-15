@@ -275,34 +275,6 @@ func buildCatalog(root string) {
 	}
 }
 
-func printDuplicates(root string) error {
-	assertValidRootPathname(root)
-	for _, pathnames := range fileSizesToPathnames(root) {
-		if len(pathnames) < 2 {
-			continue
-		}
-
-		hashes := make(map[string][]string)
-		for _, pathname := range pathnames {
-			hash, e := computeMD5(pathname)
-			if e != nil {
-				log.Printf("printDuplicates: %q: %v", pathname, e)
-				continue
-			}
-			hashes[hash] = append(hashes[hash], pathname)
-		}
-		for _, pathnames := range hashes {
-			if len(pathnames) < 2 {
-				continue
-			}
-			printStringArray(pathnames)
-			fmt.Println()
-		}
-	}
-
-	return nil
-}
-
 func installFrontEndFiles(root string) {
 	assertValidRootPathname(root)
 	for _, f := range frontEndFiles {
@@ -416,9 +388,6 @@ Invoking bean-machine with no command is equivalent to invoking it with the
     Scans music-directory for music files, and creates a database of their
     metadata in music-directory/catalog.tsv.
 
-  duplicate
-    Scans music-directory for duplicate files, and prints out a list of any.
-
   install
     Installs the web front-end files in music-directory.
 
@@ -485,8 +454,6 @@ func main() {
 			if !ok {
 				status = 1
 			}
-		case "duplicate":
-			printDuplicates(musicRoot)
 		case "help":
 			printHelp()
 		case "install":

@@ -6,9 +6,7 @@ package main
 import (
 	"bufio"
 	"compress/gzip"
-	"crypto/md5"
 	"crypto/rand"
-	"fmt"
 	"io"
 	"io/ioutil"
 	"log"
@@ -43,22 +41,6 @@ func copyFile(source, destination string) {
 	}
 }
 
-func computeMD5(pathname string) (string, error) {
-	file, e := os.Open(pathname)
-	if e != nil {
-		return "", e
-	}
-	defer file.Close()
-
-	hash := md5.New()
-	if _, e := io.Copy(hash, file); e != nil {
-		return "", e
-	}
-
-	var result []byte
-	return string(hash.Sum(result)), nil
-}
-
 func normalizeNumericString(numeric string) string {
 	numeric = strings.TrimSpace(numeric)
 	if len(numeric) == 0 {
@@ -73,12 +55,6 @@ func normalizeNumericString(numeric string) string {
 	for i = 0; numeric[i] == '0' && i < len(numeric)-1; i++ {
 	}
 	return numeric[i:]
-}
-
-func printStringArray(strings []string) {
-	for _, s := range strings {
-		fmt.Printf("%q\n", s)
-	}
 }
 
 func escapePathname(pathname string) string {
