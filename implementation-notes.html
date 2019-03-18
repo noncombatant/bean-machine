@@ -35,9 +35,11 @@ than an MP3 of a 4-minute song.</p>
 
 <p>The client pre-fetches a few items after a search completes, and stores them
 as Blobs. Sending the entire catalog to the client enables the client to search
-for and play cached and pre-fetched content when offline. When the Writable File
-or similar API becomes available, we can use that, and a client’s local copy of
-the media store will gradually become a mirror of the server’s.</p>
+for and play cached and pre-fetched content when offline. When the <a
+href="https://www.chromestatus.com/feature/6284708426022912">Native Filesystem
+API</a> or a similar API becomes available, we can use that, and a client’s
+local copy of the media store will gradually become a mirror of the
+server’s.</p>
 
 <p>The code is a small collection of global data objects and plain functions
 that operate on them and on the DOM. It makes no use of JavaScript classes or
