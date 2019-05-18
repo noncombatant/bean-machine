@@ -175,19 +175,6 @@ func (i *ItemInfo) normalize() {
 	i.Year = normalizeNumericString(i.Year)
 }
 
-func (i *ItemInfo) ToJSON() string {
-	i.normalize()
-	return fmt.Sprintf("%q,%q,%q,%q,%q,%q,%q,%q",
-		escapePathname(i.Pathname),
-		i.Album,
-		i.Artist,
-		i.Name,
-		i.Disc,
-		i.Track,
-		i.Year,
-		i.Genre)
-}
-
 func (i *ItemInfo) ToTSV() string {
 	i.normalize()
 	year, month, day := i.ModTime.Date()
