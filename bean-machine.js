@@ -32,6 +32,7 @@ const preparePlay = function(itemID) {
   player.src = blobCache[itemID] || item.pathname
   player.itemID = itemID
   localStorage.setItem("itemID", itemID)
+  player.currentTime = getTimeupdateForItemID(itemID)
   displayNowPlaying(item, nowPlayingTitle)
   populateArt(artSpan, dirname(item.pathname))
   searchCatalogFetchBudget++
@@ -227,6 +228,20 @@ const togglePlayback = function(e) {
 
 const playerOnError = function(e) {
   this.dispatchEvent(new Event("ended"))
+}
+
+const getTimeupdateForItemID = function(itemID) {
+  const key = "timeupdate" + itemID
+  const time = parseInt(localStorage.getItem(key))
+  return Number.isNaN(time) ? 0 : time
+}
+
+const playerOnTimeupdate = function(e) {
+  const time = getTimeupdateForItemID(player.itemID)
+  if (player.currentTime < time || (player.currentTime - time) > 5) {
+    const key = "timeupdate" + player.itemID
+    localStorage.setItem(key, player.currentTime)
+  }
 }
 
 // https://stackoverflow.com/questions/2450954/how-to-randomize-shuffle-a-javascript-array
@@ -454,6 +469,7 @@ const main = function() {
   nextButton.addEventListener("click", playNext)
   player.addEventListener("ended", playNext)
   player.addEventListener("error", playerOnError)
+  player.addEventListener("timeupdate", playerOnTimeupdate)
   searchInput.addEventListener("blur", executeSearch)
   searchInput.addEventListener("keyup", searchInputOnKeyUp)
   searchButton.addEventListener("click", executeSearch)
