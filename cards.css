@@ -1,0 +1,70 @@
+body {
+  font-family: system-ui;
+  line-height: 140%;
+  margin: 0px;
+}
+
+#itemListDiv {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  grid-gap: 30px;
+  margin: 2px;
+}
+
+.itemDiv {
+  width: 260px;
+  margin: 2px;
+  padding: 2px;
+}
+
+th {
+  text-align: right;
+}
+
+th, td {
+  padding: 0.25em;
+}
+
+#controlsDiv {
+  position: -webkit-sticky;
+  position: sticky;
+  top: 0px;
+  left: 0px;
+  background-color: #ddd;
+  border-bottom: 1px #999 solid;
+  line-height: 190%;
+  background: linear-gradient(to bottom, #faf, #aaf);
+}
+
+#controlsDiv, table {
+  width: 100%;
+}
+
+audio, #searchInput {
+  width: 97%;
+}
+
+button, input {
+  font-family: inherit;
+  font-size: 100%;
+  border-radius: 0.3em;
+  padding: 0.5em;
+}
+
+input {
+  border: 2px solid #333;
+}
+
+button {
+  border: 2px solid #333;
+  font-weight: bold;
+  background-color: #fff;
+}
+
+.hidden {
+  display: none;
+}
+
+video {
+  max-width: 100%;
+}

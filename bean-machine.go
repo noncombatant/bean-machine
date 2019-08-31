@@ -38,6 +38,11 @@ var (
 		"bean-machine.js",
 		"search.js",
 
+		"cards.css",
+		"cards.html",
+		"cards.js",
+		"unknown-album.jpg",
+
 		"favicon.ico",
 		"clef-192.png",
 		"clef-144.png",
