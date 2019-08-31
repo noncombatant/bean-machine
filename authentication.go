@@ -114,7 +114,7 @@ func checkToken(username string, receivedToken []byte) bool {
 	passwords := readPasswordDatabase(path.Join(configurationPathname, passwordsBasename))
 	storedCredential, ok := passwords[username]
 	if !ok {
-		log.Printf("checkToken: No such username: %q", username)
+		log.Printf("checkToken: No such username %q", username)
 		return false
 	}
 
@@ -198,13 +198,13 @@ func redirectToLogin(w http.ResponseWriter, r *http.Request) {
 func openFileIfPublic(pathname string, shouldTryGzip bool) (FileAndInfoResult, bool) {
 	nonGzResult := openFileAndGetInfo(pathname)
 	if nonGzResult.Error != nil {
-		log.Printf("openFileIfPublic: Could not open %q: %v", pathname, nonGzResult.Error)
+		log.Printf("openFileIfPublic: Could not open %q", pathname)
 		return nonGzResult, false
 	}
 
 	if nonGzResult.Info.Mode()&0004 == 0 {
 		nonGzResult.File.Close()
-		return FileAndInfoResult{File: nil, Error: errors.New(fmt.Sprintf("Couldn't open %q: not public", pathname))}, false
+		return FileAndInfoResult{File: nil, Error: errors.New(fmt.Sprintf("openFileIfPublic: %q not public", pathname))}, false
 	}
 
 	if shouldTryGzip {
