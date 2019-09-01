@@ -41,13 +41,16 @@ var (
 		"cards.css",
 		"cards.html",
 		"cards.js",
-		"unknown-album.jpg",
+		"unknown-album.png",
 
 		"favicon.ico",
 		"clef-192.png",
 		"clef-144.png",
 		"clef-96.png",
 		"clef-64.png",
+
+		"play.png",
+		"pause.png",
 	}
 
 	homePathname          = getHomePathname()

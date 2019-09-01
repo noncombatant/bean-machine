@@ -100,7 +100,7 @@ const imgOnError = function(e) {
   if (e.target.src.endsWith("/cover.jpg")) {
     e.target.src = e.target.src.replace("/cover.jpg", "/cover.png")
   } else {
-    e.target.src = "unknown-album.jpg"
+    e.target.src = "unknown-album.png"
   }
 }
 
@@ -121,14 +121,15 @@ const buildItemDiv = function(item, itemID) {
   div.appendChild(img)
   div.appendChild(createElement("br"))
 
-  const trackSpan = createElement("span", "itemDivCell trackNumber", (item.disc || "1") + "-" + (item.track || "1") + " " + item.name)
-
-  const album = createElement("i", "", " — " + item.album + " — ")
-  trackSpan.appendChild(album)
-
-  const artist = createElement("b", "", item.artist)
-  trackSpan.appendChild(artist)
-
+  const trackSpan = createElement("span")
+  const playImg = createElement("img")
+  playImg.src = "play.png"
+  playImg.height = playImg.width = 16
+  playImg.className = "playImg"
+  trackSpan.appendChild(playImg)
+  trackSpan.appendChild(document.createTextNode(" " + (item.disc || "1") + "-" + (item.track || "1") + " " + item.name))
+  trackSpan.appendChild(createElement("i", "", " " + item.album + " "))
+  trackSpan.appendChild(createElement("b", "", item.artist))
   div.appendChild(trackSpan)
 
   return div
