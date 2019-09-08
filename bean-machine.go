@@ -215,19 +215,24 @@ func buildCatalog(root string) {
 	pathname := path.Join(root, "catalog.tsv")
 	output, e := os.Create(pathname)
 	if e != nil {
-		log.Fatalf("buildCatalog: Could not create %q: %s", pathname, e)
+		fmt.Fprintf(os.Stderr, "Could not create %q: %s\n", pathname, e)
+		os.Exit(1)
 	}
-	defer output.Close()
+	defer func() {
+		e := output.Close()
+		if e != nil {
+			fmt.Fprintf(os.Stderr, "%q: %v\n", pathname, e)
+		}
+	}()
 
-	count := 0
 	e = filepath.Walk(root,
 		func(pathname string, info os.FileInfo, e error) error {
 			if e != nil {
-				log.Printf("buildCatalog: %q: %s", pathname, e)
+				fmt.Fprintf(os.Stderr, "%q: %s\n", pathname, e)
 				return e
 			}
 			if shouldSkipFile(pathname, info) {
-				log.Printf("buildCatalog: Skipping %q", pathname)
+				fmt.Fprintf(os.Stderr, "Skipping %q\n", pathname)
 				return nil
 			}
 			if !info.Mode().IsRegular() {
@@ -235,16 +240,11 @@ func buildCatalog(root string) {
 			}
 
 			input, e := os.Open(pathname)
-			count++
 			if e != nil {
-				log.Printf("buildCatalog: %q: %s", pathname, e)
+				fmt.Fprintf(os.Stderr, "%q: %s\n", pathname, e)
 				return nil
 			}
 			defer input.Close()
-
-			if 0 == count%1000 {
-				log.Printf("buildCatalog: %v items", count)
-			}
 
 			webPathname := pathname[len(root)+1:]
 			if isAudioPathname(pathname) || isVideoPathname(pathname) {
@@ -252,7 +252,7 @@ func buildCatalog(root string) {
 				if isAudioPathname(pathname) {
 					itemInfo.File, e = id3.Read(input)
 					if e != nil {
-						log.Printf("buildCatalog: %q: %v", pathname, e)
+						fmt.Fprintf(os.Stderr, "%q: %v\n", pathname, e)
 					}
 				}
 				fileInfo, e := os.Stat(pathname)
@@ -266,7 +266,7 @@ func buildCatalog(root string) {
 		})
 
 	if e != nil {
-		log.Printf("buildCatalog: Problem walking %q: %s", root, e)
+		fmt.Fprintf(os.Stderr, "Problem walking %q: %s\n", root, e)
 	}
 }
 
