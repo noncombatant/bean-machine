@@ -97,8 +97,11 @@ const populateArt = function(parentElement, directory) {
 const requireLongPress = /android/i.test(navigator.userAgent)
 
 const imgOnError = function(e) {
-  if (e.target.src.endsWith("/cover.jpg")) {
-    e.target.src = e.target.src.replace("/cover.jpg", "/cover.png")
+  const src = e.target.src
+  if (src.endsWith("/cover.jpg")) {
+    e.target.src = src.replace("/cover.jpg", "/cover.png")
+  } else if (src.endsWith("/cover.png")) {
+    e.target.src = src.replace("/cover.png", "/cover.gif")
   } else {
     e.target.src = "unknown-album.png"
   }
