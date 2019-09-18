@@ -32,7 +32,7 @@ const preparePlay = function(itemID) {
   player.src = blobCache[itemID] || item.pathname
   player.itemID = itemID
   localStorage.setItem("itemID", itemID)
-  player.currentTime = getTimeupdateForItemID(itemID)
+//  player.currentTime = getTimeupdateForItemID(itemID)
   displayNowPlaying(item, nowPlayingTitle)
   populateArt(artSpan, dirname(item.pathname))
   searchCatalogFetchBudget++
@@ -469,7 +469,7 @@ const main = function() {
   nextButton.addEventListener("click", playNext)
   player.addEventListener("ended", playNext)
   player.addEventListener("error", playerOnError)
-  player.addEventListener("timeupdate", playerOnTimeupdate)
+//  player.addEventListener("timeupdate", playerOnTimeupdate)
   searchInput.addEventListener("blur", executeSearch)
   searchInput.addEventListener("keyup", searchInputOnKeyUp)
   searchButton.addEventListener("click", executeSearch)
