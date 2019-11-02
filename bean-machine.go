@@ -122,12 +122,15 @@ type ItemInfo struct {
 
 func (i *ItemInfo) normalize() {
 	if i.File != nil {
+		i.File.Album = strings.TrimSpace(i.File.Album)
 		if i.File.Album != "" {
 			i.Album = i.File.Album
 		}
+		i.File.Artist = strings.TrimSpace(i.File.Artist)
 		if i.File.Artist != "" {
 			i.Artist = i.File.Artist
 		}
+		i.File.Name = strings.TrimSpace(i.File.Name)
 		if i.File.Name != "" {
 			i.Name = i.File.Name
 		}
@@ -140,6 +143,7 @@ func (i *ItemInfo) normalize() {
 		if i.File.Year != "" {
 			i.Year = i.File.Year
 		}
+		i.File.Genre = strings.TrimSpace(i.File.Genre)
 		if i.File.Genre != "" {
 			i.Genre = i.File.Genre
 		}
@@ -152,13 +156,13 @@ func (i *ItemInfo) normalize() {
 		parts := strings.Split(i.Pathname, string(filepath.Separator))
 		length := len(parts)
 		if i.Artist == "" && length > 2 {
-			i.Artist = parts[length - 3]
+			i.Artist = parts[length-3]
 		}
 		if i.Album == "" && length > 1 {
-			i.Album = parts[length - 2]
+			i.Album = parts[length-2]
 		}
 		if i.Name == "" && length > 0 {
-			i.Name = removeFileExtension(parts[length - 1])
+			i.Name = removeFileExtension(parts[length-1])
 		}
 	}
 
@@ -181,6 +185,22 @@ func (i *ItemInfo) normalize() {
 	i.Disc = normalizeNumericString(i.Disc)
 	i.Track = normalizeNumericString(i.Track)
 	i.Year = normalizeNumericString(i.Year)
+
+	// Now, remove redundant information: If the ID3 info is identical to the
+	// info contained in the pathname, remove it (to save file size).
+	x := path.Base(i.Pathname)
+	mp3Name := i.Name + ".mp3"
+	track := fmt.Sprintf("%02d", parseInt(i.Track))
+	if mp3Name == x || track+" "+mp3Name == x || i.Disc+"-"+track+" "+mp3Name == x {
+		i.Name = ""
+	}
+	x = path.Dir(i.Pathname)
+	if i.Album == path.Base(x) {
+		i.Album = ""
+	}
+	if i.Artist == path.Base(path.Dir(x)) {
+		i.Artist = ""
+	}
 }
 
 func (i *ItemInfo) ToTSV() string {
@@ -252,7 +272,7 @@ func buildCatalog(root string) {
 				if isAudioPathname(pathname) {
 					itemInfo.File, e = id3.Read(input)
 					if e != nil {
-						fmt.Fprintf(os.Stderr, "%q: %v\n", pathname, e)
+						//fmt.Fprintf(os.Stderr, "%q: %v\n", pathname, e)
 					}
 				}
 				fileInfo, e := os.Stat(pathname)

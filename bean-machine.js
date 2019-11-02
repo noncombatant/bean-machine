@@ -109,7 +109,7 @@ const buildItemDiv = function(item, itemID) {
   const trackSpan = createElement("span", "itemDivCell trackNumber", (item.disc || "1") + "-" + (item.track || "1"))
   div.appendChild(trackSpan)
 
-  const nameSpan = createElement("span", "itemDivCell", item.name)
+  const nameSpan = createElement("span", "itemDivCell", getName(item))
   div.appendChild(nameSpan)
 
   return div
@@ -125,10 +125,10 @@ const buildAlbumTitleDiv = function(item, itemID) {
     div.addEventListener("click", itemDivOnClick)
   }
 
-  const albumSpan = createElement("span", "itemDivCell albumTitle", item.album)
+  const albumSpan = createElement("span", "itemDivCell albumTitle", getAlbum(item))
   div.appendChild(albumSpan)
 
-  const artistSpan = createElement("span", "itemDivCell artistName", item.artist)
+  const artistSpan = createElement("span", "itemDivCell artistName", getArtist(item))
   div.appendChild(artistSpan)
 
   if (item.year) {
@@ -199,11 +199,10 @@ const windowOnScroll = function(e) {
 
 const displayNowPlaying = function(item, element) {
   removeAllChildren(element)
-  const trackName = item.name || basename(item.pathname)
-  element.appendChild(createElement("span", "", "“" + trackName + "” by "))
-  element.appendChild(createElement("strong", "", item.artist))
+  element.appendChild(createElement("span", "", "“" + getName(item) + "” by "))
+  element.appendChild(createElement("strong", "", getArtist(item)))
   element.appendChild(createElement("span", "", " from "))
-  element.appendChild(createElement("em", "", item.album))
+  element.appendChild(createElement("em", "", getAlbum(item)))
   document.title = element.textContent
 }
 
@@ -411,6 +410,22 @@ const fileExtension = function(pathname) {
 const stripFileExtension = function(pathname) {
   const i = pathname.lastIndexOf(".")
   return -1 == i ? pathname : pathname.substring(0, i)
+}
+
+const stripLeadingTrack = function(pathname) {
+  return pathname.replace(/^(\d|-)+ /, "")
+}
+
+const getName = function(item) {
+  return item.name || decodeURIComponent(stripLeadingTrack(stripFileExtension(basename(item.pathname))))
+}
+
+const getAlbum = function(item) {
+  return item.album || decodeURIComponent(basename(dirname(item.pathname)))
+}
+
+const getArtist = function(item) {
+  return item.artist || decodeURIComponent(basename(dirname(dirname(item.pathname))))
 }
 
 const isPathnameInExtensions = function(pathname, extensions) {

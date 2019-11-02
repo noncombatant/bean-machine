@@ -7,12 +7,14 @@ import (
 	"bufio"
 	"compress/gzip"
 	"crypto/rand"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"log"
 	"os"
 	"path"
 	"path/filepath"
+	"strconv"
 	"strings"
 )
 
@@ -160,4 +162,12 @@ func replaceTSVMetacharacters(s string) string {
 	s = replaceStringAndLog(s, "\t", " ", "tab")
 	s = replaceStringAndLog(s, "\n", " ", "newline")
 	return s
+}
+
+func parseInt(s string) int64 {
+	i, e := strconv.ParseInt(s, 10, 32)
+	if e != nil {
+		fmt.Fprint(os.Stderr, e, "\n")
+	}
+	return i
 }
