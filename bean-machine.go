@@ -59,38 +59,7 @@ var (
 	bindToIPv6            = false
 
 	musicRoot = ""
-
-	// NOTE: These must be kept in sync with the format extensions arrays in the
-	// JS code.
-	audioFormatExtensions = []string{
-		".flac",
-		".m4a",
-		".mid",
-		".midi",
-		".mp3",
-		".ogg",
-		".wav",
-		".wave",
-	}
-	videoFormatExtensions = []string{
-		".avi",
-		".mkv",
-		".mov",
-		".mp4",
-		".mpeg",
-		".mpg",
-		".ogv",
-		".webm",
-	}
 )
-
-func isAudioPathname(pathname string) bool {
-	return isStringInStrings(getFileExtension(pathname), audioFormatExtensions)
-}
-
-func isVideoPathname(pathname string) bool {
-	return isStringInStrings(getFileExtension(pathname), videoFormatExtensions)
-}
 
 func fileSizesToPathnames(root string) map[int64][]string {
 	m := make(map[int64][]string)
@@ -253,6 +222,10 @@ func buildCatalog(root string) {
 			}
 			if shouldSkipFile(pathname, info) {
 				fmt.Fprintf(os.Stderr, "Skipping %q\n", pathname)
+				return nil
+			}
+			if info.Mode().IsDir() {
+				buildMediaIndex(pathname)
 				return nil
 			}
 			if !info.Mode().IsRegular() {

@@ -34,7 +34,6 @@ const preparePlay = function(itemID) {
   localStorage.setItem("itemID", itemID)
 //  player.currentTime = getTimeupdateForItemID(itemID)
   displayNowPlaying(item, nowPlayingTitle)
-  populateArt(artSpan, dirname(item.pathname))
   searchCatalogFetchBudget++
   searchCatalogFetchIndex = searchHits.indexOf(itemID) + 1
 }
@@ -66,35 +65,18 @@ const fetchSearchHits = function() {
   })
 }
 
-// TODO: Memoize this to save network traffic.
-const populateArt = function(parentElement, directory) {
-  removeAllChildren(parentElement)
-
-  fetch("/getArt?d=" + encodeURIComponent(directory), {"credentials": "include"})
-  .then(function(response) {
-    return response.text()
-  })
-  .then(function(arts) {
-    arts = arts.split(recordSeparator)
-    let haveDoneFirst = false
-    for (let art of arts) {
-      if (0 == art.length) {
-        continue
-      }
-      const a = document.createElement("a")
-      a.href = directory + "/" + art
-      a.target = "_blank"
-      a.appendChild(document.createTextNode(stripFileExtension(art)))
-      if (haveDoneFirst) {
-        parentElement.appendChild(document.createTextNode(" "))
-      }
-      parentElement.appendChild(a)
-      haveDoneFirst = true
-    }
-  })
-}
-
 const requireLongPress = /android/i.test(navigator.userAgent)
+
+const imgOnError = function(e) {
+  const src = e.target.src
+  if (src.endsWith("/cover.jpg")) {
+    e.target.src = src.replace("/cover.jpg", "/cover.png")
+  } else if (src.endsWith("/cover.png")) {
+    e.target.src = src.replace("/cover.png", "/cover.gif")
+  } else {
+    e.target.src = "unknown-album.png"
+  }
+}
 
 const buildItemDiv = function(item, itemID) {
   const div = createElement("div", "itemDiv")
@@ -118,12 +100,18 @@ const buildItemDiv = function(item, itemID) {
 const buildAlbumTitleDiv = function(item, itemID) {
   const div = createElement("div", "albumTitleDiv")
   div.itemID = itemID
-  if (requireLongPress) {
-    div.addEventListener("contextmenu", itemDivOnClick)
-  } else {
-    div.addEventListener("dblclick", itemDivOnClick)
-    div.addEventListener("click", itemDivOnClick)
-  }
+
+  const directory = dirname(item.pathname)
+
+  const coverA = createElement("a")
+  const coverImg = createElement("img")
+  coverA.href = directory + "/media.html"
+  coverImg.addEventListener("error", imgOnError)
+  coverImg.src = directory + "/cover.jpg"
+  coverImg.height = coverImg.width = 64
+  coverA.target = "cover"
+  coverA.appendChild(coverImg)
+  div.appendChild(coverA)
 
   const albumSpan = createElement("span", "itemDivCell albumTitle", getAlbum(item))
   div.appendChild(albumSpan)
