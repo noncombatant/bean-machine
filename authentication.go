@@ -247,6 +247,7 @@ func (h AuthenticatingFileHandler) serveFile(w http.ResponseWriter, r *http.Requ
 	result, isGzipped := openFileIfPublic(pathname, gzippable && acceptsGzip)
 
 	if result.Error != nil || result.File == nil || result.Info == nil {
+		log.Print(result.Error)
 		http.NotFound(w, r)
 		return
 	}
