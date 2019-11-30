@@ -163,7 +163,7 @@ img {
 	}
 	for _, f := range infos {
 		name := f.Name()
-		if isAudioPathname(name) || isVideoPathname(name) || isDocumentPathname(name) {
+		if isDocumentPathname(name) {
 			name = escapeDoubleQuotes(name)
 			fmt.Fprintf(index, "<li><a href=\"%s\">%s</a></li>\n", name, name)
 		}
