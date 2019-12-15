@@ -122,54 +122,6 @@ func shouldSkipFile(pathname string, info os.FileInfo) bool {
 	return "" == basename || '.' == basename[0] || 0 == info.Size()
 }
 
-func buildMediaIndex(pathname string) {
-	infos, e := ioutil.ReadDir(pathname)
-	if e != nil {
-		log.Fatal(e)
-	}
-
-	index, e := os.OpenFile(pathname+"/media.html", os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
-	if e != nil {
-		log.Fatal(e)
-	}
-	defer index.Close()
-
-	header := `
-<!DOCTYPE html>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>%s</title>
-<style>
-body {
-  line-height: 1.6;
-  font-size: 16px;
-  color: #222;
-  font-family: system-ui;
-}
-img {
-  border: 1px solid black;
-  max-width: 100%%;
-  height: auto;
-}
-</style>
-`
-	fmt.Fprintf(index, header, path.Base(pathname))
-
-	for _, f := range infos {
-		name := f.Name()
-		if isImagePathname(name) {
-			fmt.Fprintf(index, "<img src=\"%s\"/>\n", escapeDoubleQuotes(name))
-		}
-	}
-	for _, f := range infos {
-		name := f.Name()
-		if isDocumentPathname(name) {
-			name = escapeDoubleQuotes(name)
-			fmt.Fprintf(index, "<li><a href=\"%s\">%s</a></li>\n", name, name)
-		}
-	}
-}
-
 func getFileExtension(pathname string) string {
 	return strings.ToLower(filepath.Ext(pathname))
 }

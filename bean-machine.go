@@ -6,7 +6,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"id3"
 	"log"
 	"net"
 	"net/http"
@@ -54,6 +53,7 @@ var (
 	musicRoot = ""
 )
 
+// TODO: Delete this unused function.
 func fileSizesToPathnames(root string) map[int64][]string {
 	m := make(map[int64][]string)
 	e := filepath.Walk(root, func(pathname string, info os.FileInfo, e error) error {
@@ -67,74 +67,6 @@ func fileSizesToPathnames(root string) map[int64][]string {
 		log.Printf("fileSizesToPathnames: %q: %v", root, e)
 	}
 	return m
-}
-
-func buildCatalog(root string) {
-	assertValidRootPathname(root)
-
-	if os.PathSeparator == root[len(root)-1] {
-		root = root[:len(root)-1]
-	}
-	pathname := path.Join(root, "catalog.tsv")
-	output, e := os.Create(pathname)
-	if e != nil {
-		fmt.Fprintf(os.Stderr, "Could not create %q: %s\n", pathname, e)
-		os.Exit(1)
-	}
-	defer func() {
-		e := output.Close()
-		if e != nil {
-			fmt.Fprintf(os.Stderr, "%q: %v\n", pathname, e)
-		}
-	}()
-
-	e = filepath.Walk(root,
-		func(pathname string, info os.FileInfo, e error) error {
-			if e != nil {
-				fmt.Fprintf(os.Stderr, "%q: %s\n", pathname, e)
-				return e
-			}
-			if shouldSkipFile(pathname, info) {
-				fmt.Fprintf(os.Stderr, "Skipping %q\n", pathname)
-				return nil
-			}
-			if info.Mode().IsDir() {
-				buildMediaIndex(pathname)
-				return nil
-			}
-			if !info.Mode().IsRegular() {
-				return nil
-			}
-
-			input, e := os.Open(pathname)
-			if e != nil {
-				fmt.Fprintf(os.Stderr, "%q: %s\n", pathname, e)
-				return nil
-			}
-			defer input.Close()
-
-			webPathname := pathname[len(root)+1:]
-			if isAudioPathname(pathname) || isVideoPathname(pathname) {
-				itemInfo := ItemInfo{Pathname: webPathname}
-				if isAudioPathname(pathname) {
-					itemInfo.File, e = id3.Read(input)
-					if e != nil {
-						//fmt.Fprintf(os.Stderr, "%q: %v\n", pathname, e)
-					}
-				}
-				fileInfo, e := os.Stat(pathname)
-				if e == nil {
-					itemInfo.ModTime = fileInfo.ModTime()
-				}
-				fmt.Fprintf(output, "%s\n", itemInfo.ToTSV())
-			}
-
-			return nil
-		})
-
-	if e != nil {
-		fmt.Fprintf(os.Stderr, "Problem walking %q: %s\n", root, e)
-	}
 }
 
 func installFrontEndFiles(root string) {
