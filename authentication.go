@@ -167,6 +167,18 @@ func (h AuthenticatingFileHandler) handleLogIn(w http.ResponseWriter, r *http.Re
 	}
 }
 
+func (h AuthenticatingFileHandler) handleSearch(w http.ResponseWriter, r *http.Request) {
+	queries := r.URL.Query()["q"]
+	if queries == nil || len(queries) == 0 {
+		return
+	}
+	log.Printf("handleSearch: %v", queries)
+	for _, q := range queries {
+		w.Write([]byte("<p>"))
+		w.Write([]byte(q))
+	}
+}
+
 // TODO: Delete this; not used anymore.
 func (h AuthenticatingFileHandler) handleGetArt(w http.ResponseWriter, r *http.Request) {
 	directories := r.URL.Query()["d"]
@@ -319,6 +331,11 @@ func (h AuthenticatingFileHandler) ServeHTTP(w http.ResponseWriter, r *http.Requ
 
 	if r.URL.Path == "/getArt" {
 		h.handleGetArt(w, r)
+		return
+	}
+
+	if r.URL.Path == "/search" {
+		h.handleSearch(w, r)
 		return
 	}
 
