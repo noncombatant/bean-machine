@@ -11,7 +11,6 @@ import (
 	"net/http"
 	"os"
 	"path"
-	"runtime"
 )
 
 const (
@@ -156,7 +155,6 @@ func printHelp() {
   bean-machine -m music-directory
   bean-machine -m music-directory command [command...]
   bean-machine set-password
-  bean-machine check-password
 
 Invoking bean-machine with no command is equivalent to invoking it with the
 "catalog", "install", and "serve" commands (see below). The commands are:
@@ -177,18 +175,11 @@ web app:
 
   set-password
     Prompts for a username and password, and sets the password for the given
-    username.
-
-  check-password
-    Prompts for a username and password, and checks the password for the given
-    username. Exits with status 0 if the username is in the database and the
-    password is correct; 1 otherwise.`)
+    username.`)
 	os.Exit(1)
 }
 
 func main() {
-	runtime.GOMAXPROCS(runtime.NumCPU())
-
 	establishConfiguration()
 
 	if os.Getenv("IPV6") != "" {
@@ -201,20 +192,8 @@ func main() {
 	flag.Parse()
 	musicRoot = *root
 
-	if *needsHelp1 || *needsHelp2 {
+	if *needsHelp1 || *needsHelp2 || flag.NArg() == 0 {
 		printHelp()
-		os.Exit(1)
-	}
-
-	if flag.NArg() == 0 {
-		if "" != musicRoot {
-			buildCatalog(musicRoot)
-			installFrontEndFiles(musicRoot)
-			serveApp(musicRoot)
-		} else {
-			printHelp()
-			os.Exit(1)
-		}
 	}
 
 	status := 0
@@ -223,14 +202,6 @@ func main() {
 		switch command {
 		case "catalog":
 			buildCatalog(musicRoot)
-		case "check-password":
-			username, password := promptForCredentials()
-			stored := readPasswordDatabase(path.Join(configurationPathname, passwordsBasename))
-			ok := checkPassword(stored, username, password)
-			log.Printf("check-password for %q: %v", username, ok)
-			if !ok {
-				status = 1
-			}
 		case "help":
 			printHelp()
 		case "install":
@@ -241,7 +212,6 @@ func main() {
 			setPassword()
 		default:
 			printHelp()
-			status = 1
 		}
 	}
 	os.Exit(status)
