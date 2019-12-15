@@ -35,21 +35,22 @@ var (
 		"readme.html",
 	}
 
-	gzippableExtensions = map[string]bool{
-		".css":  true,
-		".html": true,
-		".js":   true,
-		".json": true,
-		".svg":  true,
-		".tsv":  true,
-		".txt":  true,
+	gzippableExtensions = []string{
+		".css",
+		".html",
+		".js",
+		".json",
+		".svg",
+		".tsv",
+		".txt",
 	}
 
-	artExtensions = map[string]bool{
-		".jpeg": true,
-		".jpg":  true,
-		".pdf":  true,
-		".png":  true,
+	artExtensions = []string{
+		".gif",
+		".jpeg",
+		".jpg",
+		".pdf",
+		".png",
 	}
 
 	cookieLifetime, _ = time.ParseDuration("2400h")
@@ -166,6 +167,7 @@ func (h AuthenticatingFileHandler) handleLogIn(w http.ResponseWriter, r *http.Re
 	}
 }
 
+// TODO: Delete this; not used anymore.
 func (h AuthenticatingFileHandler) handleGetArt(w http.ResponseWriter, r *http.Request) {
 	directories := r.URL.Query()["d"]
 	if directories == nil || len(directories) == 0 {
@@ -183,7 +185,7 @@ func (h AuthenticatingFileHandler) handleGetArt(w http.ResponseWriter, r *http.R
 
 	for _, info := range infos {
 		name := info.Name()
-		_, isArt := artExtensions[path.Ext(name)]
+		isArt := isStringInStrings(path.Ext(name), artExtensions)
 		if isArt {
 			w.Write([]byte(info.Name()))
 			w.Write([]byte("\n"))
@@ -242,10 +244,9 @@ func openFileIfPublic(pathname string, shouldTryGzip bool) (FileAndInfoResult, b
 func (h AuthenticatingFileHandler) serveFile(w http.ResponseWriter, r *http.Request) {
 	pathname := h.normalizePathname(r.URL.Path)
 	acceptsGzip := strings.Contains(r.Header.Get("Accept-Encoding"), "gzip")
-	_, gzippable := gzippableExtensions[path.Ext(pathname)]
+	gzippable := isStringInStrings(path.Ext(pathname), gzippableExtensions)
 
 	result, isGzipped := openFileIfPublic(pathname, gzippable && acceptsGzip)
-
 	if result.Error != nil || result.File == nil || result.Info == nil {
 		log.Print(result.Error)
 		http.NotFound(w, r)
