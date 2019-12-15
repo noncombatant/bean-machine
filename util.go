@@ -128,7 +128,7 @@ func buildMediaIndex(pathname string) {
 		log.Fatal(e)
 	}
 
-	index, e := os.OpenFile(pathname + "/media.html", os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
+	index, e := os.OpenFile(pathname+"/media.html", os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
 	if e != nil {
 		log.Fatal(e)
 	}
