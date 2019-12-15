@@ -69,14 +69,6 @@ func fileSizesToPathnames(root string) map[int64][]string {
 	return m
 }
 
-
-func assertValidRootPathname(root string) {
-	info, e := os.Stat(root)
-	if e != nil || !info.IsDir() {
-		log.Fatal("assertValidRootPathname: Cannot continue without a valid music-directory.")
-	}
-}
-
 func buildCatalog(root string) {
 	assertValidRootPathname(root)
 
