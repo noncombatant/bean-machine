@@ -179,32 +179,6 @@ func (h AuthenticatingFileHandler) handleSearch(w http.ResponseWriter, r *http.R
 	}
 }
 
-// TODO: Delete this; not used anymore.
-func (h AuthenticatingFileHandler) handleGetArt(w http.ResponseWriter, r *http.Request) {
-	directories := r.URL.Query()["d"]
-	if directories == nil || len(directories) == 0 {
-		return
-	}
-
-	directory := path.Join(musicRoot, filepath.Clean(directories[0]))
-	log.Printf("handleGetArt: %q", directory)
-
-	infos, e := ioutil.ReadDir(directory)
-	if e != nil {
-		log.Printf("handleGetArt: %q: %v", directory, e)
-		return
-	}
-
-	for _, info := range infos {
-		name := info.Name()
-		isArt := isStringInStrings(path.Ext(name), artExtensions)
-		if isArt {
-			w.Write([]byte(info.Name()))
-			w.Write([]byte("\n"))
-		}
-	}
-}
-
 func redirectToLogin(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/login.html", http.StatusFound)
 }
@@ -327,11 +301,6 @@ func (h AuthenticatingFileHandler) ServeHTTP(w http.ResponseWriter, r *http.Requ
 	if cookie != nil {
 		cookie.Expires = getCookieLifetime()
 		http.SetCookie(w, cookie)
-	}
-
-	if r.URL.Path == "/getArt" {
-		h.handleGetArt(w, r)
-		return
 	}
 
 	if r.URL.Path == "/search" {

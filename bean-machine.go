@@ -34,23 +34,18 @@ var (
 		"manifest.json",
 
 		"bean-machine.css",
-		"index.html",
 		"bean-machine.js",
+		"index.html",
 		"search.js",
 
-		"cards.css",
-		"cards.html",
-		"cards.js",
-		"unknown-album.png",
-
-		"favicon.ico",
 		"clef-192.png",
 		"clef-144.png",
 		"clef-96.png",
 		"clef-64.png",
-
-		"play.png",
+		"favicon.ico",
 		"pause.png",
+		"play.png",
+		"unknown-album.png",
 	}
 
 	homePathname          = getHomePathname()
