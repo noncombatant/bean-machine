@@ -11,7 +11,6 @@ import (
 	"net/http"
 	"os"
 	"path"
-	"path/filepath"
 	"runtime"
 )
 
@@ -52,22 +51,6 @@ var (
 
 	musicRoot = ""
 )
-
-// TODO: Delete this unused function.
-func fileSizesToPathnames(root string) map[int64][]string {
-	m := make(map[int64][]string)
-	e := filepath.Walk(root, func(pathname string, info os.FileInfo, e error) error {
-		if e == nil && info.Mode().IsRegular() && !shouldSkipFile(pathname, info) {
-			s := info.Size()
-			m[s] = append(m[s], pathname)
-		}
-		return nil
-	})
-	if e != nil {
-		log.Printf("fileSizesToPathnames: %q: %v", root, e)
-	}
-	return m
-}
 
 func installFrontEndFiles(root string) {
 	assertValidRootPathname(root)
