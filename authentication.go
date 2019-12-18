@@ -15,6 +15,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"time"
 )
@@ -54,7 +55,46 @@ var (
 	}
 
 	cookieLifetime, _ = time.ParseDuration("2400h")
+
+	wordSplitter = regexp.MustCompile(`\s+`)
 )
+
+func writeString(w http.ResponseWriter, s string) (int, error) {
+	return w.Write([]byte(s))
+}
+
+func quote(s string) string {
+	return fmt.Sprintf("%q", s)
+}
+
+// TODO: Ultimately, we should give in and use a real templating system.
+func writeItemInfos(w http.ResponseWriter, infos []*ItemInfo) {
+	writeString(w, "[\n")
+	for i, info := range infos {
+		writeString(w, "{\"pathname\": ")
+		writeString(w, quote(info.Pathname))
+		writeString(w, ",\n\"album\": ")
+		writeString(w, quote(info.Album))
+		writeString(w, ",\n\"artist\": ")
+		writeString(w, quote(info.Artist))
+		writeString(w, ",\n\"name\": ")
+		writeString(w, quote(info.Name))
+		writeString(w, ",\n\"disc\": ")
+		writeString(w, quote(info.Disc))
+		writeString(w, ",\n\"track\": ")
+		writeString(w, quote(info.Track))
+		writeString(w, ",\n\"year\": ")
+		writeString(w, quote(info.Year))
+		writeString(w, ",\n\"genre\": ")
+		writeString(w, quote(info.Genre))
+		if i == len(infos) - 1 {
+			writeString(w, "}\n")  // Fucking JSON.
+		} else {
+			writeString(w, "},\n")
+		}
+	}
+	writeString(w, "]\n")
+}
 
 func getCookieLifetime() time.Time {
 	return (time.Now()).Add(cookieLifetime)
@@ -170,13 +210,15 @@ func (h AuthenticatingFileHandler) handleLogIn(w http.ResponseWriter, r *http.Re
 func (h AuthenticatingFileHandler) handleSearch(w http.ResponseWriter, r *http.Request) {
 	queries := r.URL.Query()["q"]
 	if queries == nil || len(queries) == 0 {
+		log.Printf("handleSearch: ignoring empty query")
 		return
 	}
-	log.Printf("handleSearch: %v", queries)
-	for _, q := range queries {
-		w.Write([]byte("<p>"))
-		w.Write([]byte(q))
-	}
+	query := strings.TrimSpace(queries[0])
+	words := wordSplitter.Split(query, -1)
+	log.Printf("handleSearch: %v", words)
+	results := matchItems(catalog, words)
+	w.Header()["Content-Type"] = []string{"text/json"}
+	writeItemInfos(w, results)
 }
 
 func redirectToLogin(w http.ResponseWriter, r *http.Request) {

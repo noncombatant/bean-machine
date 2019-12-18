@@ -3,14 +3,8 @@
 
 "use strict";
 
-let catalog
-const itemIDs = []
-const recordSeparator = "\n"
-const fieldSeparator = "\t"
-
 let player = audioPlayer
 let searchHits = []
-let searchWorker
 
 const setAudioVideoControls = function(item) {
   if (isAudioPathname(item.pathname)) {
@@ -25,17 +19,15 @@ const setAudioVideoControls = function(item) {
   player.className = "normal"
 }
 
-const preparePlay = function(itemID) {
+const preparePlay = function(item, itemID) {
   player.pause()
-  const item = getItem(catalog, itemID)
   setAudioVideoControls(item)
-  player.src = blobCache[itemID] || item.pathname
+  player.src = blobCache[item.pathname] || item.pathname
   player.itemID = itemID
   localStorage.setItem("itemID", itemID)
 //  player.currentTime = getTimeupdateForItemID(itemID)
   displayNowPlaying(item, nowPlayingTitle)
   searchCatalogFetchBudget++
-  searchCatalogFetchIndex = searchHits.indexOf(itemID) + 1
 }
 
 let fetchSearchHitsInProgress = false
@@ -45,9 +37,8 @@ const fetchSearchHits = function() {
     return
   }
 
-  const itemID = searchHits[searchCatalogFetchIndex % searchHits.length]
-  const item = getItem(catalog, itemID)
-  if (blobCache[itemID]) {
+  const item = searchHits[searchCatalogFetchIndex % searchHits.length]
+  if (blobCache[item.pathname]) {
     searchCatalogFetchIndex++
     return
   }
@@ -58,7 +49,7 @@ const fetchSearchHits = function() {
     return response.blob()
   })
   .then(function(blob) {
-    blobCache[itemID] = URL.createObjectURL(blob)
+    blobCache[item.pathname] = URL.createObjectURL(blob)
     searchCatalogFetchIndex++
     searchCatalogFetchBudget--
     fetchSearchHitsInProgress = false
@@ -99,7 +90,6 @@ const buildItemDiv = function(item, itemID) {
 
 const buildAlbumTitleDiv = function(item, itemID) {
   const div = createElement("div", "albumTitleDiv")
-  div.itemID = itemID
 
   const directory = dirname(item.pathname)
 
@@ -130,6 +120,7 @@ const buildAlbumTitleDiv = function(item, itemID) {
 let previousLastItem = 0
 let currentAlbumPathname = ""
 let haveRequestedExtendCatalog = false
+
 const buildCatalog = function(start) {
   if (0 === start) {
     removeAllChildren(itemListDiv)
@@ -138,7 +129,7 @@ const buildCatalog = function(start) {
     if (randomCheckbox.checked) {
       shuffle(searchHits)
     } else {
-      searchHits.sort((a, b) => a - b)
+      searchHits.sort((a, b) => a.pathname.localeCompare(b.pathname))
     }
   } else {
     itemListDiv.removeChild($("bottom"))
@@ -147,8 +138,8 @@ const buildCatalog = function(start) {
   const limit = Math.min(searchHits.length, 50)
   let i
   for (i = 0; i < limit && start + i < searchHits.length; ++i) {
-    const itemID = searchHits[start + i]
-    const item = getItem(catalog, itemID)
+    const itemID = start + i
+    const item = searchHits[itemID]
     const albumPathname = dirname(item.pathname)
     if (albumPathname !== currentAlbumPathname) {
       itemListDiv.appendChild(buildAlbumTitleDiv(item, itemID))
@@ -172,7 +163,7 @@ const extendCatalog = function() {
 
 const albumTitleDivOnClick = function(e) {
   if (player.itemID !== this.itemID) {
-    preparePlay(this.itemID)
+    preparePlay(searchHits[this.itemID], this.itemID)
   }
   player.play()
 }
@@ -198,10 +189,8 @@ const playNext = function(e) {
   if (0 === searchHits.length) {
     return
   }
-
-  const i = searchHits.indexOf(player.itemID)
-  const index = -1 === i ? 0 : (i + 1) % searchHits.length
-  preparePlay(searchHits[index])
+  const itemID = (player.itemID + 1) % searchHits.length
+  preparePlay(searchHits[itemID], itemID)
   player.play()
 }
 
@@ -251,61 +240,38 @@ const randomCheckboxOnClick = function(e) {
 const restoreState = function() {
   randomCheckbox.checked = "true" === localStorage.getItem("random")
 
-  let itemID = parseInt(localStorage.getItem("itemID"))
-  if (itemID > catalog.length || itemID < 0 || (itemID > 0 && recordSeparator !== catalog[itemID - 1])) {
-    itemID = 0
-  }
-  if (!Number.isNaN(itemID)) {
-    preparePlay(itemID)
-  }
-
   searchCatalog(localStorage.getItem("query") || "")
-}
 
-const getItem = function(catalog, itemID) {
-  const end = catalog.indexOf(recordSeparator, itemID)
-  const record = catalog.substring(itemID, end === -1 ? undefined : end)
-  const fields = record.split(fieldSeparator)
-  return { pathname: fields[0],
-           album:    fields[1],
-           artist:   fields[2],
-           name:     fields[3],
-           disc:     fields[4],
-           track:    fields[5],
-           year:     fields[6],
-           genre:    fields[7],
-           mtime:    fields[8] }
-}
-
-const parseCatalogRecords = function(catalog, array) {
-  array.push(0)
-  for (let i = 0; i < catalog.length; ++i) {
-    if (recordSeparator === catalog[i]) {
-      array.push(i + 1)
-    }
-  }
+// TODO: since searchCatalog gets its work done asynchronously, the code below
+// will happen too fast. Instead, pass this as a callback to searchCatalog to
+// call in its then function.
+//  let itemID = parseInt(localStorage.getItem("itemID"))
+//  if (itemID > searchHits.length || itemID < 0) {
+//    itemID = 0
+//  }
+//  if (!Number.isNaN(itemID)) {
+//    // TODO: Change this to store the pathname, not the itemID.
+//    preparePlay(searchHits[itemID])
+//  }
 }
 
 let searchCatalogFetchIndex = 0
 let searchCatalogFetchBudget = 0
 let haveSentCatalogToWorker = false
+
 const searchCatalog = function(query) {
   query = query.trim()
-  if ("?" === query) {
-    query = getRandomWord()
-  }
   searchInput.value = query
   localStorage.setItem("query", query)
-  const maybeCatalog = haveSentCatalogToWorker ? undefined : catalog
-  searchWorker.postMessage({catalog: maybeCatalog, itemIDs: itemIDs, query: query})
-  haveSentCatalogToWorker = true
-}
-
-const onMessageFromSearchWorker = function(e) {
-  searchHits = e.data
-  buildCatalog(0)
-  searchCatalogFetchIndex = 0
-  searchCatalogFetchBudget = 3
+  const queryURL = "search?q=" + escape(searchInput.value)
+  fetch(queryURL, {"credentials": "include"})
+  .then(r => r.json())
+  .then(j => {
+    searchHits = j
+    buildCatalog(0)
+    searchCatalogFetchIndex = 0
+    searchCatalogFetchBudget = 3
+  })
 }
 
 const executeSearch = function(e) {
@@ -452,22 +418,6 @@ const isVideoPathname = function(pathname) {
   return isPathnameInExtensions(pathname, videoFormatExtensions)
 }
 
-const getRandomIndex = function(array) {
-  return Math.floor(Math.random() * array.length)
-}
-
-const stopwords = new Set(["a", "an", "the", "le", "la"])
-const getRandomWord = function() {
-  while (true) {
-    const item = getItem(catalog, itemIDs[getRandomIndex(itemIDs)])
-    const words = item.pathname.split("/").join(" ").split(" ")
-    const word = words[getRandomIndex(words)].toLowerCase()
-    if (/\w/.test(word) && !/^[0-9_-]+$/.test(word) && !stopwords.has(word)) {
-      return word
-    }
-  }
-}
-
 const main = function() {
   nextButton.addEventListener("click", playNext)
   player.addEventListener("ended", playNext)
@@ -479,23 +429,8 @@ const main = function() {
   window.addEventListener("scroll", windowOnScroll)
   document.body.addEventListener("keyup", togglePlayback)
   randomCheckbox.addEventListener("click", randomCheckboxOnClick)
-
-  searchWorker = new Worker("search.js")
-  searchWorker.addEventListener("message", onMessageFromSearchWorker)
-
-  fetch("catalog.tsv", {"credentials": "include"})
-  .then(function(response) {
-    return response.text()
-  })
-  .then(function(text) {
-    catalog = text
-    parseCatalogRecords(catalog, itemIDs)
-    restoreState()
-  })
-
+  restoreState()
   setInterval(fetchSearchHits, 2000)
 }
-main()
 
-// TODO: Turn everything into ES modules, and export only `main`. Or, at least
-// create a utilities.js module, and put shared stuff in there (like `memoize`).
+main()

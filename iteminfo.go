@@ -4,28 +4,54 @@
 package main
 
 import (
-	"fmt"
 	"id3"
-	"path"
 	"path/filepath"
 	"strings"
 	"time"
 )
 
 type ItemInfo struct {
-	Pathname string
-	Album    string
-	Artist   string
-	Name     string
-	Disc     string
-	Track    string
-	Year     string
-	Genre    string
-	ModTime  time.Time
-	File     *id3.File
+	Pathname           string
+	Album              string
+	Artist             string
+	Name               string
+	Disc               string
+	Track              string
+	Year               string
+	Genre              string
+	NormalizedPathname string
+	NormalizedAlbum    string
+	NormalizedArtist   string
+	NormalizedName     string
+	NormalizedDisc     string
+	NormalizedTrack    string
+	NormalizedYear     string
+	NormalizedGenre    string
+	ModTime            time.Time
+	File               *id3.File
 }
 
-func (i *ItemInfo) normalize() {
+// Get info from pathname, assuming format:
+// ".../AC_DC/Back In Black/1-01 Hells Bells.m4a"
+//     performer/album/disc#-track# name
+func (i *ItemInfo) fillMetadataFromPathname() {
+	if i.Artist == "" || i.Album == "" || i.Name == "" {
+		parts := strings.Split(i.Pathname, string(filepath.Separator))
+		length := len(parts)
+		if i.Artist == "" && length > 2 {
+			i.Artist = parts[length-3]
+		}
+		if i.Album == "" && length > 1 {
+			i.Album = parts[length-2]
+		}
+		if i.Name == "" && length > 0 {
+			i.Name = removeFileExtension(parts[length-1])
+		}
+	}
+	// TODO: Fill in disc and track, too.
+}
+
+func (i *ItemInfo) fillMetadata() {
 	if i.File != nil {
 		i.File.Album = strings.TrimSpace(i.File.Album)
 		if i.File.Album != "" {
@@ -54,22 +80,7 @@ func (i *ItemInfo) normalize() {
 		}
 	}
 
-	if i.Artist == "" || i.Album == "" || i.Name == "" {
-		// Get info from pathname, assuming format:
-		// "AC_DC/Back In Black/1-01 Hells Bells.m4a"
-		//     performer/album/disc#-track# name
-		parts := strings.Split(i.Pathname, string(filepath.Separator))
-		length := len(parts)
-		if i.Artist == "" && length > 2 {
-			i.Artist = parts[length-3]
-		}
-		if i.Album == "" && length > 1 {
-			i.Album = parts[length-2]
-		}
-		if i.Name == "" && length > 0 {
-			i.Name = removeFileExtension(parts[length-1])
-		}
-	}
+	i.fillMetadataFromPathname()
 
 	if i.Artist == "" {
 		i.Artist = "Unknown Artist"
@@ -87,40 +98,12 @@ func (i *ItemInfo) normalize() {
 		i.Track = "1"
 	}
 
-	i.Disc = normalizeNumericString(i.Disc)
-	i.Track = normalizeNumericString(i.Track)
-	i.Year = normalizeNumericString(i.Year)
-
-	// Now, remove redundant information: If the ID3 info is identical to the
-	// info contained in the pathname, remove it (to save file size).
-	x := path.Base(i.Pathname)
-	mp3Name := i.Name + ".mp3"
-	track := fmt.Sprintf("%02d", parseInt(i.Track))
-	if mp3Name == x || track+" "+mp3Name == x || i.Disc+"-"+track+" "+mp3Name == x {
-		i.Name = ""
-	}
-	x = path.Dir(i.Pathname)
-	if i.Album == path.Base(x) {
-		i.Album = ""
-	}
-	if i.Artist == path.Base(path.Dir(x)) {
-		i.Artist = ""
-	}
-}
-
-// TODO: Delete this once the new server-side search thing is committed.
-func (i *ItemInfo) ToTSV() string {
-	i.normalize()
-	year, month, day := i.ModTime.Date()
-	modTime := fmt.Sprintf("%04d-%02d-%02d", year, month, day)
-	return fmt.Sprintf("%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s",
-		replaceTSVMetacharacters(escapePathname(i.Pathname)),
-		replaceTSVMetacharacters(i.Album),
-		replaceTSVMetacharacters(i.Artist),
-		replaceTSVMetacharacters(i.Name),
-		replaceTSVMetacharacters(i.Disc),
-		replaceTSVMetacharacters(i.Track),
-		replaceTSVMetacharacters(i.Year),
-		replaceTSVMetacharacters(i.Genre),
-		modTime)
+	i.NormalizedPathname = normalizeStringForSearch(i.Pathname)
+	i.NormalizedAlbum = normalizeStringForSearch(i.Album)
+	i.NormalizedArtist = normalizeStringForSearch(i.Artist)
+	i.NormalizedName = normalizeStringForSearch(i.Name)
+	i.NormalizedDisc = normalizeNumericString(i.Disc)
+	i.NormalizedTrack = normalizeNumericString(i.Track)
+	i.NormalizedYear = normalizeNumericString(i.Year)
+	i.NormalizedGenre = normalizeStringForSearch(i.Genre)
 }

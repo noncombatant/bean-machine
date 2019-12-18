@@ -31,7 +31,6 @@ var (
 		"bean-machine.css",
 		"bean-machine.js",
 		"index.html",
-		"search.js",
 
 		"clef-192.png",
 		"clef-144.png",

@@ -13,33 +13,22 @@ import (
 	"path/filepath"
 )
 
+var (
+	catalog = []*ItemInfo{}
+)
+
 func buildCatalog(root string) {
+	// TODO: We probably have too many redundant calls to this. Normalize that.
 	assertValidRootPathname(root)
+	log.Print("buildCatalog: start.")
 
-	if os.PathSeparator == root[len(root)-1] {
-		root = root[:len(root)-1]
-	}
-	pathname := path.Join(root, "catalog.tsv")
-	output, e := os.Create(pathname)
-	if e != nil {
-		fmt.Fprintf(os.Stderr, "Could not create %q: %s\n", pathname, e)
-		os.Exit(1)
-	}
-	defer func() {
-		e := output.Close()
-		if e != nil {
-			fmt.Fprintf(os.Stderr, "%q: %v\n", pathname, e)
-		}
-	}()
-
-	e = filepath.Walk(root,
+	e := filepath.Walk(root,
 		func(pathname string, info os.FileInfo, e error) error {
 			if e != nil {
-				fmt.Fprintf(os.Stderr, "%q: %s\n", pathname, e)
-				return e
+				log.Printf("buildCatalog: %q: %s\n", pathname, e)
+				return nil
 			}
 			if shouldSkipFile(pathname, info) {
-				fmt.Fprintf(os.Stderr, "Skipping %q\n", pathname)
 				return nil
 			}
 			if info.Mode().IsDir() {
@@ -52,33 +41,27 @@ func buildCatalog(root string) {
 
 			input, e := os.Open(pathname)
 			if e != nil {
-				fmt.Fprintf(os.Stderr, "%q: %s\n", pathname, e)
+				log.Printf("buildCatalog: %q: %s\n", pathname, e)
 				return nil
 			}
 			defer input.Close()
 
-			webPathname := pathname[len(root)+1:]
 			if isAudioPathname(pathname) || isVideoPathname(pathname) {
+				webPathname := pathname[len(root)+1:]
 				itemInfo := ItemInfo{Pathname: webPathname}
-				if isAudioPathname(pathname) {
-					itemInfo.File, e = id3.Read(input)
-					if e != nil {
-						//fmt.Fprintf(os.Stderr, "%q: %v\n", pathname, e)
-					}
-				}
-				fileInfo, e := os.Stat(pathname)
-				if e == nil {
-					itemInfo.ModTime = fileInfo.ModTime()
-				}
-				fmt.Fprintf(output, "%s\n", itemInfo.ToTSV())
+				itemInfo.File, _ = id3.Read(input)
+				itemInfo.ModTime = info.ModTime()
+				itemInfo.fillMetadata()
+				catalog = append(catalog, &itemInfo)
 			}
 
 			return nil
 		})
 
 	if e != nil {
-		fmt.Fprintf(os.Stderr, "Problem walking %q: %s\n", root, e)
+		log.Printf("buildCatalog: Problem walking %q: %s\n", root, e)
 	}
+	log.Printf("buildCatalog: completed. %v items.", len(catalog))
 }
 
 func buildMediaIndex(pathname string) {
