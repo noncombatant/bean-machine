@@ -108,13 +108,6 @@ func normalizeNumericString(numeric string) string {
 	return numeric[i:]
 }
 
-func escapePathname(pathname string) string {
-	pathname = strings.Replace(pathname, "%", "%25", -1)
-	pathname = strings.Replace(pathname, "#", "%23", -1)
-	pathname = strings.Replace(pathname, "?", "%3f", -1)
-	return pathname
-}
-
 func shouldSkipFile(pathname string, info os.FileInfo) bool {
 	basename := path.Base(pathname)
 	return "" == basename || '.' == basename[0] || 0 == info.Size()
