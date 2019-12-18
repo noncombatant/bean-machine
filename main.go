@@ -150,26 +150,19 @@ func serveApp(root string) {
 func printHelp() {
 	fmt.Println(`Usage:
 
-  bean-machine -m music-directory
-  bean-machine -m music-directory command [command...]
+  bean-machine -m music-directory serve
   bean-machine set-password
 
-Invoking bean-machine with no command is equivalent to invoking it with the
-"catalog", "install", and "serve" commands (see below). The commands are:
-
-  catalog
-    Scans music-directory for music files, and creates a database of their
-    metadata in music-directory/catalog.tsv.
-
-  install
-    Installs the web front-end files in music-directory.
+Here is what the commands do:
 
   serve
+    Installs the web app front-end files in music-directory.
+
+    Scans music-directory for music files, and creates an in-memory database of
+    their metadata.
+
     Starts a web server rooted at music-directory, and prints out the URL(s)
     of the Bean Machine web app.
-
-There are 2 additional commands for managing the password authentication for the
-web app:
 
   set-password
     Prompts for a username and password, and sets the password for the given
@@ -198,13 +191,11 @@ func main() {
 	for i := 0; i < flag.NArg(); i++ {
 		command := flag.Arg(i)
 		switch command {
-		case "catalog":
-			buildCatalog(musicRoot)
 		case "help":
 			printHelp()
-		case "install":
-			installFrontEndFiles(musicRoot)
 		case "serve":
+			installFrontEndFiles(musicRoot)
+			buildCatalog(musicRoot)
 			serveApp(musicRoot)
 		case "set-password":
 			setPassword()
