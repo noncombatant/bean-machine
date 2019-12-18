@@ -250,7 +250,7 @@ const searchCatalog = function(query) {
   query = query.trim()
   searchInput.value = query
   localStorage.setItem("query", query)
-  const queryURL = "search?q=" + escape(searchInput.value)
+  const queryURL = "search?q=" + searchInput.value
   fetch(queryURL, {"credentials": "include"})
   .then(r => r.json())
   .then(j => {
