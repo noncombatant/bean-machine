@@ -25,7 +25,7 @@ const preparePlay = function(item, itemID) {
   player.src = blobCache[item.pathname] || item.pathname
   player.itemID = itemID
   localStorage.setItem("itemID", itemID)
-//  player.currentTime = getTimeupdateForItemID(itemID)
+  //player.currentTime = getTimeupdateForItemID(itemID)
   displayNowPlaying(item, nowPlayingTitle)
   searchCatalogFetchBudget++
 }
@@ -239,20 +239,7 @@ const randomCheckboxOnClick = function(e) {
 
 const restoreState = function() {
   randomCheckbox.checked = "true" === localStorage.getItem("random")
-
   searchCatalog(localStorage.getItem("query") || "")
-
-// TODO: since searchCatalog gets its work done asynchronously, the code below
-// will happen too fast. Instead, pass this as a callback to searchCatalog to
-// call in its then function.
-//  let itemID = parseInt(localStorage.getItem("itemID"))
-//  if (itemID > searchHits.length || itemID < 0) {
-//    itemID = 0
-//  }
-//  if (!Number.isNaN(itemID)) {
-//    // TODO: Change this to store the pathname, not the itemID.
-//    preparePlay(searchHits[itemID])
-//  }
 }
 
 let searchCatalogFetchIndex = 0
@@ -327,15 +314,6 @@ const removeAllChildren = function(element) {
   while (element.firstChild) {
     element.removeChild(element.firstChild)
   }
-}
-
-const all = function(array, predicate) {
-  for (let i in array) {
-    if (!predicate(array[i])) {
-      return false
-    }
-  }
-  return true
 }
 
 const any = function(array, predicate) {
@@ -422,7 +400,7 @@ const main = function() {
   nextButton.addEventListener("click", playNext)
   player.addEventListener("ended", playNext)
   player.addEventListener("error", playerOnError)
-//  player.addEventListener("timeupdate", playerOnTimeupdate)
+  //player.addEventListener("timeupdate", playerOnTimeupdate)
   searchInput.addEventListener("blur", executeSearch)
   searchInput.addEventListener("keyup", searchInputOnKeyUp)
   searchButton.addEventListener("click", executeSearch)
