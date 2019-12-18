@@ -11,6 +11,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"math/rand"
 	"net/http"
 	"os"
 	"path"
@@ -87,8 +88,8 @@ func writeItemInfos(w http.ResponseWriter, infos []*ItemInfo) {
 		writeString(w, quote(info.Year))
 		writeString(w, ",\n\"genre\": ")
 		writeString(w, quote(info.Genre))
-		if i == len(infos) - 1 {
-			writeString(w, "}\n")  // Fucking JSON.
+		if i == len(infos)-1 {
+			writeString(w, "}\n") // Fucking JSON.
 		} else {
 			writeString(w, "},\n")
 		}
@@ -210,11 +211,21 @@ func (h AuthenticatingFileHandler) handleLogIn(w http.ResponseWriter, r *http.Re
 func (h AuthenticatingFileHandler) handleSearch(w http.ResponseWriter, r *http.Request) {
 	queries := r.URL.Query()["q"]
 	if queries == nil || len(queries) == 0 {
-		log.Printf("handleSearch: ignoring empty query")
+		log.Print("handleSearch: Ignoring empty search.")
 		return
 	}
+
 	query := strings.TrimSpace(queries[0])
-	words := wordSplitter.Split(query, -1)
+	var words []string
+	if len(query) == 0 || "?" == query {
+		rand.Seed(time.Now().Unix())
+		item := catalog[rand.Intn(len(catalog))]
+		words = wordSplitter.Split(path.Dir(item.Pathname), -1)
+		words = words[len(words)-1:]
+	} else {
+		words = wordSplitter.Split(query, -1)
+	}
+
 	log.Printf("handleSearch: %v", words)
 	results := matchItems(catalog, words)
 	w.Header()["Content-Type"] = []string{"text/json"}
