@@ -28,17 +28,16 @@ var (
 
 		"manifest.json",
 
-		"bean-machine.css",
-		"bean-machine.js",
+		"index.css",
 		"index.html",
+		"index.js",
 
 		"clef-192.png",
 		"clef-144.png",
 		"clef-96.png",
 		"clef-64.png",
 		"favicon.ico",
-		"pause.png",
-		"play.png",
+		// TODO: Have the server return this on a request for cover.png. And make sure cover.png is the 1st variant the client requests.
 		"unknown-album.png",
 	}
 
