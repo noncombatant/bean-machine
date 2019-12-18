@@ -7,14 +7,12 @@ import (
 	"bufio"
 	"compress/gzip"
 	"crypto/rand"
-	"fmt"
 	"io"
 	"io/ioutil"
 	"log"
 	"os"
 	"path"
 	"path/filepath"
-	"strconv"
 	"strings"
 )
 
@@ -211,20 +209,6 @@ func replaceStringAndLog(s, old, new, description string) string {
 		s = strings.Replace(s, old, new, -1)
 	}
 	return s
-}
-
-func replaceTSVMetacharacters(s string) string {
-	s = replaceStringAndLog(s, "\t", " ", "tab")
-	s = replaceStringAndLog(s, "\n", " ", "newline")
-	return s
-}
-
-func parseInt(s string) int64 {
-	i, e := strconv.ParseInt(s, 10, 32)
-	if e != nil {
-		fmt.Fprint(os.Stderr, e, "\n")
-	}
-	return i
 }
 
 func assertValidRootPathname(root string) {
