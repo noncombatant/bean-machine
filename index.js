@@ -58,17 +58,6 @@ const fetchSearchHits = function() {
 
 const requireLongPress = /android/i.test(navigator.userAgent)
 
-const imgOnError = function(e) {
-  const src = e.target.src
-  if (src.endsWith("/cover.jpg")) {
-    e.target.src = src.replace("/cover.jpg", "/cover.png")
-  } else if (src.endsWith("/cover.png")) {
-    e.target.src = src.replace("/cover.png", "/cover.gif")
-  } else {
-    e.target.src = "unknown-album.png"
-  }
-}
-
 const buildItemDiv = function(item, itemID) {
   const div = createElement("div", "itemDiv")
   div.itemID = itemID
@@ -96,8 +85,7 @@ const buildAlbumTitleDiv = function(item, itemID) {
   const coverA = createElement("a")
   const coverImg = createElement("img")
   coverA.href = directory + "/media.html"
-  coverImg.addEventListener("error", imgOnError)
-  coverImg.src = directory + "/cover.jpg"
+  coverImg.src = directory + "/cover"
   coverImg.height = coverImg.width = 64
   coverA.target = "cover"
   coverA.appendChild(coverImg)
@@ -401,7 +389,6 @@ const main = function() {
   player.addEventListener("ended", playNext)
   player.addEventListener("error", playerOnError)
   //player.addEventListener("timeupdate", playerOnTimeupdate)
-  searchInput.addEventListener("blur", executeSearch)
   searchInput.addEventListener("keyup", searchInputOnKeyUp)
   searchButton.addEventListener("click", executeSearch)
   window.addEventListener("scroll", windowOnScroll)

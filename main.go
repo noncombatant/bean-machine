@@ -37,7 +37,6 @@ var (
 		"clef-96.png",
 		"clef-64.png",
 		"favicon.ico",
-		// TODO: Have the server return this on a request for cover.png. And make sure cover.png is the 1st variant the client requests.
 		"unknown-album.png",
 	}
 

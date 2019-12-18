@@ -47,11 +47,10 @@ var (
 		".txt",
 	}
 
-	artExtensions = []string{
+	coverExtensions = []string{
 		".gif",
 		".jpeg",
 		".jpg",
-		".pdf",
 		".png",
 	}
 
@@ -228,7 +227,7 @@ func (h AuthenticatingFileHandler) handleSearch(w http.ResponseWriter, r *http.R
 
 	log.Printf("handleSearch: %v", words)
 	results := matchItems(catalog, words)
-	w.Header()["Content-Type"] = []string{"text/json"}
+	w.Header().Set("Content-Type", "text/json")
 	writeItemInfos(w, results)
 }
 
@@ -239,7 +238,6 @@ func redirectToLogin(w http.ResponseWriter, r *http.Request) {
 func openFileIfPublic(pathname string, shouldTryGzip bool) (FileAndInfoResult, bool) {
 	nonGzResult := openFileAndGetInfo(pathname)
 	if nonGzResult.Error != nil {
-		log.Printf("openFileIfPublic: Could not open %q", pathname)
 		return nonGzResult, false
 	}
 
@@ -282,10 +280,18 @@ func openFileIfPublic(pathname string, shouldTryGzip bool) (FileAndInfoResult, b
 
 func (h AuthenticatingFileHandler) serveFile(w http.ResponseWriter, r *http.Request) {
 	pathname := h.normalizePathname(r.URL.Path)
+	if strings.HasSuffix(pathname, "/cover") {
+		h.serveCover(pathname, w, r)
+		return
+	}
+
 	acceptsGzip := strings.Contains(r.Header.Get("Accept-Encoding"), "gzip")
 	gzippable := isStringInStrings(path.Ext(pathname), gzippableExtensions)
 
 	result, isGzipped := openFileIfPublic(pathname, gzippable && acceptsGzip)
+	if result.File != nil {
+		defer result.File.Close()
+	}
 	if result.Error != nil || result.File == nil || result.Info == nil {
 		log.Print(result.Error)
 		http.NotFound(w, r)
@@ -296,9 +302,31 @@ func (h AuthenticatingFileHandler) serveFile(w http.ResponseWriter, r *http.Requ
 		w.Header().Set("Content-Encoding", "gzip")
 	}
 
-	defer result.File.Close()
 	log.Printf("serveFile: %q", pathname)
 	http.ServeContent(w, r, pathname, result.Info.ModTime(), result.File)
+}
+
+func (h AuthenticatingFileHandler) serveCover(pathname string, w http.ResponseWriter, r *http.Request) {
+	for _, extension := range coverExtensions {
+		result, _ := openFileIfPublic(pathname+extension, false)
+		if result.File != nil {
+			defer result.File.Close()
+		}
+		if result.Error != nil || result.File == nil || result.Info == nil {
+			continue
+		}
+		http.ServeContent(w, r, pathname, result.Info.ModTime(), result.File)
+		return
+	}
+
+	unknown, _ := openFileIfPublic(h.Root+"/unknown-album.png", false)
+	if unknown.File != nil {
+		http.ServeContent(w, r, pathname, unknown.Info.ModTime(), unknown.File)
+		unknown.File.Close()
+	} else {
+		log.Print(unknown.Error)
+		http.NotFound(w, r)
+	}
 }
 
 func (h AuthenticatingFileHandler) normalizePathname(pathname string) string {
