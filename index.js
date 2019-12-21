@@ -149,13 +149,10 @@ const extendCatalog = function() {
   haveRequestedExtendCatalog = false
 }
 
-const albumTitleDivOnClick = function(e) {
-  if (player.itemID !== this.itemID) {
-    preparePlay(searchHits[this.itemID], this.itemID)
-  }
+const itemDivOnClick = function(e) {
+  preparePlay(searchHits[this.itemID], this.itemID)
   player.play()
 }
-const itemDivOnClick = albumTitleDivOnClick
 
 const windowOnScroll = function(e) {
   if (!haveRequestedExtendCatalog) {
