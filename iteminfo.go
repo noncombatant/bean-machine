@@ -80,6 +80,7 @@ func (i *ItemInfo) fillMetadata() {
 		}
 	}
 
+	// TODO: Do this first, then overlay ID3 on top. Simplify logic.
 	i.fillMetadataFromPathname()
 
 	if i.Artist == "" {
@@ -102,8 +103,8 @@ func (i *ItemInfo) fillMetadata() {
 	i.NormalizedAlbum = normalizeStringForSearch(i.Album)
 	i.NormalizedArtist = normalizeStringForSearch(i.Artist)
 	i.NormalizedName = normalizeStringForSearch(i.Name)
-	i.NormalizedDisc = normalizeNumericString(i.Disc)
-	i.NormalizedTrack = normalizeNumericString(i.Track)
-	i.NormalizedYear = normalizeNumericString(i.Year)
+	i.Disc = extractNumericString(i.Disc)
+	i.Track = extractNumericString(i.Track)
+	i.Year = extractNumericString(i.Year)
 	i.NormalizedGenre = normalizeStringForSearch(i.Genre)
 }

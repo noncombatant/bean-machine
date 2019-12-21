@@ -13,6 +13,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"regexp"
 	"strings"
 )
 
@@ -49,6 +50,8 @@ var (
 		".jpg",
 		".png",
 	}
+
+	digitsFinder = regexp.MustCompile(`\D*(\d+)`)
 )
 
 func isAudioPathname(pathname string) bool {
@@ -92,20 +95,12 @@ func copyFile(source, destination string) {
 	}
 }
 
-func normalizeNumericString(numeric string) string {
-	numeric = strings.TrimSpace(numeric)
-	if len(numeric) == 0 {
-		return ""
+func extractNumericString(numeric string) string {
+	results := digitsFinder.FindStringSubmatch(numeric)
+	if len(results) > 0 {
+		return results[0]
 	}
-
-	i := strings.Index(numeric, "/")
-	if i > 0 {
-		numeric = numeric[:i]
-	}
-
-	for i = 0; numeric[i] == '0' && i < len(numeric)-1; i++ {
-	}
-	return numeric[i:]
+	return ""
 }
 
 func shouldSkipFile(pathname string, info os.FileInfo) bool {
