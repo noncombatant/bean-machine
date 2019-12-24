@@ -63,37 +63,17 @@ func writeString(w http.ResponseWriter, s string) (int, error) {
 	return w.Write([]byte(s))
 }
 
-func quote(s string) string {
-	return fmt.Sprintf("%q", s)
-}
-
-// TODO: Ultimately, we should give in and use a real templating system.
 func writeItemInfos(w http.ResponseWriter, infos []*ItemInfo) {
 	writeString(w, "[\n")
 	for i, info := range infos {
-		writeString(w, "{\"pathname\": ")
-		writeString(w, quote(info.Pathname))
-		writeString(w, ",\n\"album\": ")
-		writeString(w, quote(info.Album))
-		writeString(w, ",\n\"artist\": ")
-		writeString(w, quote(info.Artist))
-		writeString(w, ",\n\"name\": ")
-		writeString(w, quote(info.Name))
-		writeString(w, ",\n\"disc\": ")
-		writeString(w, quote(info.Disc))
-		writeString(w, ",\n\"track\": ")
-		writeString(w, quote(info.Track))
-		writeString(w, ",\n\"year\": ")
-		writeString(w, quote(info.Year))
-		writeString(w, ",\n\"genre\": ")
-		writeString(w, quote(info.Genre))
+		writeString(w, info.ToJSON())
 		if i == len(infos)-1 {
-			writeString(w, "}\n") // Fucking JSON.
+			writeString(w, "\n")
 		} else {
-			writeString(w, "},\n")
+			writeString(w, ",\n")
 		}
 	}
-	writeString(w, "]\n")
+	writeString(w, "]")
 }
 
 func getCookieLifetime() time.Time {

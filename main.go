@@ -49,7 +49,6 @@ var (
 )
 
 func installFrontEndFiles(root string) {
-	assertValidRootPathname(root)
 	for _, f := range frontEndFiles {
 		copyFile(f, path.Join(root, string(os.PathSeparator), f))
 	}
@@ -109,7 +108,6 @@ func establishConfiguration() {
 }
 
 func serveApp(root string) {
-	assertValidRootPathname(root)
 	addresses, e := net.InterfaceAddrs()
 	if e != nil || 0 == len(addresses) {
 		log.Fatal("serveApp: Can't find any network interfaces to run the web server on. Giving up.")
@@ -170,8 +168,6 @@ Here is what the commands do:
 }
 
 func main() {
-	establishConfiguration()
-
 	if os.Getenv("IPV6") != "" {
 		bindToIPv6 = true
 	}
@@ -185,6 +181,9 @@ func main() {
 	if *needsHelp1 || *needsHelp2 || flag.NArg() == 0 {
 		printHelp()
 	}
+
+	establishConfiguration()
+	assertValidRootPathname(musicRoot)
 
 	status := 0
 	for i := 0; i < flag.NArg(); i++ {

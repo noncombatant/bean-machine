@@ -4,6 +4,7 @@
 package main
 
 import (
+	"fmt"
 	"id3"
 	"path/filepath"
 	"strings"
@@ -27,8 +28,61 @@ type ItemInfo struct {
 	NormalizedTrack    string
 	NormalizedYear     string
 	NormalizedGenre    string
-	ModTime            time.Time
-	File               *id3.File
+	// TODO: Decide on using this in search, or not. If so, make it a YYYY-MM-DD string; if not, delete it.
+	ModTime time.Time
+	File    *id3.File
+}
+
+func escape(s string) string {
+	s = strings.ReplaceAll(s, "\t", "\\t")
+	s = strings.ReplaceAll(s, "\n", "\\n")
+	return s
+}
+
+// TODO: Replace ToTSV, FromTSV, and escape with something like netstrings, so
+// that no escaping is necessary.
+func (i *ItemInfo) ToTSV() string {
+	return fmt.Sprintf("%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n",
+		escape(i.Pathname), escape(i.Album), escape(i.Artist), escape(i.Name), escape(i.Disc), escape(i.Track), escape(i.Year), escape(i.Genre))
+}
+
+func ItemInfoFromTSV(tsv string) *ItemInfo {
+	if len(tsv) == 0 {
+		return nil
+	}
+
+	if tsv[len(tsv)-1] == '\n' {
+		tsv = tsv[:len(tsv)-1]
+	}
+	fields := strings.Split(tsv, "\t")
+	if len(fields) != 8 {
+		return nil
+	}
+
+	info := ItemInfo{
+		Pathname: fields[0],
+		Album:    fields[1],
+		Artist:   fields[2],
+		Name:     fields[3],
+		Disc:     fields[4],
+		Track:    fields[5],
+		Year:     fields[6],
+		Genre:    fields[7],
+	}
+	info.Normalize()
+	return &info
+}
+
+func (i *ItemInfo) ToJSON() string {
+	return fmt.Sprintf(`{"pathname":%q,
+"album":%q,
+"artist":%q,
+"name":%q,
+"disc":%q,
+"track":%q,
+"year":%q,
+"genre":%q}`,
+		i.Pathname, i.Album, i.Artist, i.Name, i.Disc, i.Track, i.Year, i.Genre)
 }
 
 // Get info from pathname, assuming format:
@@ -80,9 +134,10 @@ func (i *ItemInfo) fillMetadata() {
 		}
 	}
 
-	// TODO: Do this first, then overlay ID3 on top. Simplify logic.
+	// TODO: Do this second, then overlay ID3 on top. Simplify logic.
 	i.fillMetadataFromPathname()
 
+	// TODO: Do this first, then overlay pathname info on top. Simplify logic.
 	if i.Artist == "" {
 		i.Artist = "Unknown Artist"
 	}
@@ -99,6 +154,10 @@ func (i *ItemInfo) fillMetadata() {
 		i.Track = "1"
 	}
 
+	i.Normalize()
+}
+
+func (i *ItemInfo) Normalize() {
 	i.NormalizedPathname = normalizeStringForSearch(i.Pathname)
 	i.NormalizedAlbum = normalizeStringForSearch(i.Album)
 	i.NormalizedArtist = normalizeStringForSearch(i.Artist)

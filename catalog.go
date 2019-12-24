@@ -4,6 +4,7 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"id3"
 	"io/ioutil"
@@ -17,12 +18,33 @@ var (
 	catalog = []*ItemInfo{}
 )
 
-func buildCatalog(root string) {
-	// TODO: We probably have too many redundant calls to this. Normalize that.
-	assertValidRootPathname(root)
-	log.Print("buildCatalog: start.")
+func buildCatalogFromTSV(tsv *os.File) {
+	log.Print("buildCatalogFromTSV: start.")
+	reader := bufio.NewReader(tsv)
+	for {
+		line, e := reader.ReadString('\n')
+		if line == "" || e != nil {
+			return
+		}
+		info := ItemInfoFromTSV(line)
+		if info == nil {
+			log.Printf("Bad record: %q", line)
+			continue
+		}
+		catalog = append(catalog, info)
+	}
+}
 
-	e := filepath.Walk(root,
+func buildCatalogFromWalk(root string) {
+	log.Print("buildCatalogFromWalk: start.")
+
+	tsv, e := os.OpenFile(path.Join(root, string(os.PathSeparator), "catalog.tsv"), os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
+	if e != nil {
+		log.Fatal(e)
+	}
+	defer tsv.Close()
+
+	e = filepath.Walk(root,
 		func(pathname string, info os.FileInfo, e error) error {
 			if e != nil {
 				log.Printf("buildCatalog: %q: %s\n", pathname, e)
@@ -53,6 +75,10 @@ func buildCatalog(root string) {
 				itemInfo.ModTime = info.ModTime()
 				itemInfo.fillMetadata()
 				catalog = append(catalog, &itemInfo)
+				_, e := tsv.WriteString(itemInfo.ToTSV())
+				if e != nil {
+					log.Fatal(e)
+				}
 			}
 
 			return nil
@@ -64,13 +90,23 @@ func buildCatalog(root string) {
 	log.Printf("buildCatalog: completed. %v items.", len(catalog))
 }
 
+func buildCatalog(root string) {
+	tsv, e := os.Open(path.Join(root, string(os.PathSeparator), "catalog.tsv"))
+	if e != nil {
+		buildCatalogFromWalk(root)
+		return
+	}
+	defer tsv.Close()
+	buildCatalogFromTSV(tsv)
+}
+
 func buildMediaIndex(pathname string) {
 	infos, e := ioutil.ReadDir(pathname)
 	if e != nil {
 		log.Fatal(e)
 	}
 
-	index, e := os.OpenFile(pathname+"/media.html", os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
+	index, e := os.OpenFile(path.Join(pathname, string(os.PathSeparator), "media.html"), os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
 	if e != nil {
 		log.Fatal(e)
 	}
