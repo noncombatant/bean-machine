@@ -29,7 +29,7 @@ const (
 
 var (
 	anonymousFiles = []string{
-		"bean-machine.css",
+		"index.css",
 		"favicon.ico",
 		"help.html",
 		"login.html",
