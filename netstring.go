@@ -19,7 +19,11 @@ func ToNetstring(bytes []byte) []byte {
   return netstring
 }
 
-func FromNetstring(bytes []byte) ([]byte, error) {
+func FromNetstring(bytes []byte) ([]byte, int, error) {
+	if bytes == nil || len(bytes) == 0 {
+		return nil, -1, errors.New("Empty netstring")
+	}
+
   colon := -1
   for i, c := range bytes {
     if c == ':' {
@@ -28,18 +32,43 @@ func FromNetstring(bytes []byte) ([]byte, error) {
     }
   }
   if colon == -1 {
-    return nil, errors.New("Malformed netstring: no colon")
+    return nil, -1, errors.New("Malformed netstring: no colon")
   }
 
   length := -1
   n, e := fmt.Sscanf(string(bytes[:colon]), "%d", &length)
   if n != 1 || e != nil || length == -1 {
-    return nil, errors.New("Malformed netstring: bad length")
+    return nil, -1, errors.New(fmt.Sprintf("Malformed netstring: bad length (%v, %v, %v)", n, e, length))
   }
 
   if bytes[colon+1+length] != ',' {
-    return nil, errors.New("Malformed netstring: no comma")
+    return nil, -1, errors.New("Malformed netstring: no comma")
   }
 
-  return bytes[colon+1:colon+1+length], nil
+	comma := colon+1+length
+  return bytes[colon+1:comma], comma, nil
+}
+
+func ArrayFromNetstring(bytes []byte) ([][]byte, error) {
+	decoded, final_comma, e := FromNetstring(bytes)
+	if e != nil {
+		return nil, e
+	}
+	if final_comma != len(bytes) - 1 {
+    return nil, errors.New("Malformed netstring array: no final comma")
+	}
+
+	result := make([][]byte, 0)
+	for {
+		if len(decoded) == 0 {
+			break
+		}
+		d, comma, e := FromNetstring(decoded)
+		if e != nil {
+			return nil, e
+		}
+		result = append(result, d)
+		decoded = decoded[comma+1:]
+	}
+	return result, nil
 }

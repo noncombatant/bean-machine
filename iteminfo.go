@@ -73,6 +73,38 @@ func ItemInfoFromTSV(tsv string) *ItemInfo {
 	return &info
 }
 
+func (i *ItemInfo) ToNetstring() []byte {
+	netstring := make([]byte, 0)
+	netstring = append(netstring, ToNetstring([]byte(i.Pathname))...)
+	netstring = append(netstring, ToNetstring([]byte(i.Album))...)
+	netstring = append(netstring, ToNetstring([]byte(i.Artist))...)
+	netstring = append(netstring, ToNetstring([]byte(i.Name))...)
+	netstring = append(netstring, ToNetstring([]byte(i.Disc))...)
+	netstring = append(netstring, ToNetstring([]byte(i.Track))...)
+	netstring = append(netstring, ToNetstring([]byte(i.Year))...)
+	netstring = append(netstring, ToNetstring([]byte(i.Genre))...)
+	return netstring
+}
+
+func ItemInfoFromNetstring(bytes []byte) (*ItemInfo, error) {
+	fields, e := ArrayFromNetstring(bytes)
+	if e != nil {
+		return nil, e
+	}
+	info := ItemInfo{
+		Pathname: string(fields[0]),
+		Album:    string(fields[1]),
+		Artist:   string(fields[2]),
+		Name:     string(fields[3]),
+		Disc:     string(fields[4]),
+		Track:    string(fields[5]),
+		Year:     string(fields[6]),
+		Genre:    string(fields[7]),
+	}
+	info.Normalize()
+	return &info, nil
+}
+
 func (i *ItemInfo) ToJSON() string {
 	return fmt.Sprintf(`{"pathname":%q,
 "album":%q,
