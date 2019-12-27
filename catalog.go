@@ -35,6 +35,23 @@ func buildCatalogFromTSV(tsv *os.File) {
 	}
 }
 
+func buildCatalogFromNetstrings(netstrings *os.File) {
+	log.Print("buildCatalogFromNetstringNetstrings: start.")
+	reader := bufio.NewReader(netstrings)
+	for {
+		line, e := reader.ReadString('\n')
+		if line == "" || e != nil {
+			return
+		}
+		info := ItemInfoFromTSV(line)
+		if info == nil {
+			log.Printf("Bad record: %q", line)
+			continue
+		}
+		catalog = append(catalog, info)
+	}
+}
+
 func buildCatalogFromWalk(root string) {
 	log.Print("buildCatalogFromWalk: start.")
 
