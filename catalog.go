@@ -4,7 +4,7 @@
 package main
 
 import (
-	"bufio"
+	"encoding/gob"
 	"fmt"
 	"id3"
 	"io/ioutil"
@@ -18,48 +18,33 @@ var (
 	catalog = []*ItemInfo{}
 )
 
-func buildCatalogFromTSV(tsv *os.File) {
-	log.Print("buildCatalogFromTSV: start.")
-	reader := bufio.NewReader(tsv)
-	for {
-		line, e := reader.ReadString('\n')
-		if line == "" || e != nil {
-			return
-		}
-		info := ItemInfoFromTSV(line)
-		if info == nil {
-			log.Printf("Bad record: %q", line)
-			continue
-		}
-		catalog = append(catalog, info)
-	}
-}
+const (
+	catalogFile = "catalog.gobs"
+)
 
-func buildCatalogFromNetstrings(netstrings *os.File) {
-	log.Print("buildCatalogFromNetstringNetstrings: start.")
-	reader := bufio.NewReader(netstrings)
+func buildCatalogFromGobs(gobs *os.File) {
+	log.Print("buildCatalogFromGobs: start.")
+	decoder := gob.NewDecoder(gobs)
 	for {
-		line, e := reader.ReadString('\n')
-		if line == "" || e != nil {
+		var info ItemInfo
+		e := decoder.Decode(&info)
+		if e != nil {
+			log.Print("decode error 1:", e)
 			return
 		}
-		info := ItemInfoFromTSV(line)
-		if info == nil {
-			log.Printf("Bad record: %q", line)
-			continue
-		}
-		catalog = append(catalog, info)
+		catalog = append(catalog, &info)
 	}
 }
 
 func buildCatalogFromWalk(root string) {
 	log.Print("buildCatalogFromWalk: start.")
 
-	tsv, e := os.OpenFile(path.Join(root, string(os.PathSeparator), "catalog.tsv"), os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
+	gobs, e := os.OpenFile(path.Join(root, string(os.PathSeparator), catalogFile), os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
 	if e != nil {
 		log.Fatal(e)
 	}
-	defer tsv.Close()
+	defer gobs.Close()
+	encoder := gob.NewEncoder(gobs)
 
 	e = filepath.Walk(root,
 		func(pathname string, info os.FileInfo, e error) error {
@@ -92,7 +77,7 @@ func buildCatalogFromWalk(root string) {
 				itemInfo.ModTime = info.ModTime()
 				itemInfo.fillMetadata()
 				catalog = append(catalog, &itemInfo)
-				_, e := tsv.WriteString(itemInfo.ToTSV())
+				e := encoder.Encode(itemInfo)
 				if e != nil {
 					log.Fatal(e)
 				}
@@ -108,13 +93,13 @@ func buildCatalogFromWalk(root string) {
 }
 
 func buildCatalog(root string) {
-	tsv, e := os.Open(path.Join(root, string(os.PathSeparator), "catalog.tsv"))
+	gobs, e := os.Open(path.Join(root, string(os.PathSeparator), catalogFile))
 	if e != nil {
 		buildCatalogFromWalk(root)
 		return
 	}
-	defer tsv.Close()
-	buildCatalogFromTSV(tsv)
+	defer gobs.Close()
+	buildCatalogFromGobs(gobs)
 }
 
 func buildMediaIndex(pathname string) {
