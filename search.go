@@ -45,7 +45,8 @@ func matchItem(info *ItemInfo, query []string) bool {
 			strings.Contains(info.NormalizedDisc, term) ||
 			strings.Contains(info.NormalizedTrack, term) ||
 			strings.Contains(info.NormalizedYear, term) ||
-			strings.Contains(info.NormalizedGenre, term) {
+			strings.Contains(info.NormalizedGenre, term) ||
+			strings.Contains(info.ModTime, term) {
 			continue
 		}
 		return false

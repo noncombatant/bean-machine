@@ -8,7 +8,6 @@ import (
 	"id3"
 	"path/filepath"
 	"strings"
-	"time"
 )
 
 type ItemInfo struct {
@@ -28,9 +27,8 @@ type ItemInfo struct {
 	NormalizedTrack    string
 	NormalizedYear     string
 	NormalizedGenre    string
-	// TODO: Decide on using this in search, or not. If so, make it a YYYY-MM-DD string; if not, delete it.
-	ModTime time.Time
-	File    *id3.File
+	ModTime            string
+	File               *id3.File
 }
 
 func escape(s string) string {
