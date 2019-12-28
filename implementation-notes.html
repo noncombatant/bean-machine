@@ -12,26 +12,13 @@
 <p>The client web application uses a deliberately simple (even simplistic)
 design. The user interface is an infinite scroll of media items, with a playback
 control panel at the top of the page. Search and catalog listing are the same
-operation. Search is linear search over a sequence of media item metadata
-records.</p>
+operation.</p>
 
-<p>We represent the database (<var>catalog</var>) as UTF-8 text, with records
-and fields delimited by special characters. (When generating the catalog, the
-server escapes the delimiters if they appear in metadata text.)</p>
+<p>Search is implemented as a linear search over a sequence of media item
+metadata records stored in RAM on the server.</p>
 
-<p>To avoid memory allocation and copying, we search for and retrive metadata
-for each media item by its offset in the database text, which remains unchanged.
-We call the offset the <var>itemID</var>. To avoid UI jank, a Worker thread
-computes search results. We only copy the catalog database from the main thread
-to the Worker on the first search. (It would be nice to avoid this copy.)</p>
-
-<p>The client is implemented as an HTML frame, a stylesheet, and 2 JavaScript
-files (the main UI and the Worker). It uses no JS frameworks or CSS
-preprocessors. The largest non-media resource is the catalog file, which
-compresses well. My installation, with more than 71,000 media items, has a 1.6
-MiB compressed catalog file (10.3 MiB uncompressed). Although this is large and
-significantly impacts startup time, it is about an order of magnitude smaller
-than an MP3 of a 4-minute song.</p>
+<p>The client is implemented as an HTML frame, a stylesheet, and a JavaScript
+file. It uses no JS frameworks or CSS preprocessors.</p>
 
 <p>The client pre-fetches a few items after a search completes, and stores them
 as Blobs. Sending the entire catalog to the client enables the client to search
@@ -54,18 +41,12 @@ server can perform several functions:</p>
 <ul>
 <li>Building the catalog file
 <li>Installing the front-end files in the media store directory
-<li>Serving the application
+<li>Serving the application, including search queries
 <li>Setting user passwords
 <li>Checking user passwords
 <li>Searching the media store for duplicate files
 <li>Searching the media store for empty directories
 </ul>
-
-<p>Very little application work happens on the server side. The server is mostly
-an authenticated file server. The only application logic is in the
-<code>/getArt</code> endpoint. Given a pathname to a subdirectory in the media
-store, <code>/getArt</code> returns to the client a list of PDFs and images in
-that directory. The client can then show these as cover art for media.</p>
 
 <p>The server creates a self-signed x.509 certificate if it doesn’t find a
 certificate in the configuration directory

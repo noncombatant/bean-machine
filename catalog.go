@@ -7,6 +7,7 @@ import (
 	"encoding/gob"
 	"fmt"
 	"id3"
+	"io"
 	"io/ioutil"
 	"log"
 	"os"
@@ -29,15 +30,20 @@ func buildCatalogFromGobs(gobs *os.File) {
 		var info ItemInfo
 		e := decoder.Decode(&info)
 		if e != nil {
-			log.Print("decode error 1:", e)
-			return
+			if e == io.EOF {
+				log.Printf("buildCatalogFromGobs: Completed. %v items.", len(catalog))
+				return
+			} else {
+				log.Fatal("decode error 1:", e)
+			}
 		}
 		catalog = append(catalog, &info)
 	}
 }
 
 func buildCatalogFromWalk(root string) {
-	log.Print("buildCatalogFromWalk: start.")
+	log.Print("buildCatalogFromWalk: Start.")
+	log.Print("buildCatalogFromWalk: This might take a while.")
 
 	gobs, e := os.OpenFile(path.Join(root, string(os.PathSeparator), catalogFile), os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
 	if e != nil {
@@ -46,10 +52,11 @@ func buildCatalogFromWalk(root string) {
 	defer gobs.Close()
 	encoder := gob.NewEncoder(gobs)
 
+	count := 0
 	e = filepath.Walk(root,
 		func(pathname string, info os.FileInfo, e error) error {
 			if e != nil {
-				log.Printf("buildCatalog: %q: %s\n", pathname, e)
+				log.Printf("buildCatalogFromWalk: %q: %s", pathname, e)
 				return nil
 			}
 			if shouldSkipFile(pathname, info) {
@@ -65,7 +72,7 @@ func buildCatalogFromWalk(root string) {
 
 			input, e := os.Open(pathname)
 			if e != nil {
-				log.Printf("buildCatalog: %q: %s\n", pathname, e)
+				log.Printf("buildCatalogFromWalk: %q: %s", pathname, e)
 				return nil
 			}
 			defer input.Close()
@@ -81,15 +88,20 @@ func buildCatalogFromWalk(root string) {
 				if e != nil {
 					log.Fatal(e)
 				}
+
+				count++
+				if count % 1000 == 0 {
+					log.Printf("buildCatalogFromWalk: Processed %v items", count)
+				}
 			}
 
 			return nil
 		})
 
 	if e != nil {
-		log.Printf("buildCatalog: Problem walking %q: %s\n", root, e)
+		log.Printf("buildCatalogFromWalk: Problem walking %q: %s", root, e)
 	}
-	log.Printf("buildCatalog: completed. %v items.", len(catalog))
+	log.Printf("buildCatalogFromWalk: Completed. %v items.", len(catalog))
 }
 
 func buildCatalog(root string) {
