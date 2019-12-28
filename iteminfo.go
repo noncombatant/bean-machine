@@ -31,12 +31,6 @@ type ItemInfo struct {
 	File               *id3.File
 }
 
-func escape(s string) string {
-	s = strings.ReplaceAll(s, "\t", "\\t")
-	s = strings.ReplaceAll(s, "\n", "\\n")
-	return s
-}
-
 func (i *ItemInfo) ToJSON() string {
 	return fmt.Sprintf(`{"pathname":%q,
 "album":%q,
@@ -49,27 +43,45 @@ func (i *ItemInfo) ToJSON() string {
 		i.Pathname, i.Album, i.Artist, i.Name, i.Disc, i.Track, i.Year, i.Genre)
 }
 
+func getDiscAndTrackFromBasename(basename string) (string, string, string) {
+	parts := strings.SplitN(basename, " ", 2)
+	if len(parts) != 2 {
+		return "", "", basename
+	}
+
+	rest := parts[1]
+
+	parts = strings.Split(parts[0], "-")
+	if len(parts) > 2 {
+		return "", "", basename
+	}
+	if len(parts) == 2 {
+		return parts[0], parts[1], rest
+	}
+	return "", parts[0], rest
+}
+
 // Get info from pathname, assuming format:
 // ".../AC_DC/Back In Black/1-01 Hells Bells.m4a"
 //     performer/album/disc#-track# name
 func (i *ItemInfo) fillMetadataFromPathname() {
-	if i.Artist == "" || i.Album == "" || i.Name == "" {
-		parts := strings.Split(i.Pathname, string(filepath.Separator))
-		length := len(parts)
-		if i.Artist == "" && length > 2 {
-			i.Artist = parts[length-3]
-		}
-		if i.Album == "" && length > 1 {
-			i.Album = parts[length-2]
-		}
-		if i.Name == "" && length > 0 {
-			i.Name = removeFileExtension(parts[length-1])
-		}
+	parts := strings.Split(i.Pathname, string(filepath.Separator))
+	length := len(parts)
+	if length > 2 {
+		i.Artist = parts[length-3]
 	}
-	// TODO: Fill in disc and track, too.
+	if length > 1 {
+		i.Album = parts[length-2]
+	}
+	if length > 0 {
+		i.Disc, i.Track, i.Name = getDiscAndTrackFromBasename(parts[length-1])
+		i.Name = removeFileExtension(i.Name)
+	}
 }
 
 func (i *ItemInfo) fillMetadata() {
+	i.fillMetadataFromPathname()
+
 	if i.File != nil {
 		i.File.Album = strings.TrimSpace(i.File.Album)
 		if i.File.Album != "" {
@@ -98,10 +110,6 @@ func (i *ItemInfo) fillMetadata() {
 		}
 	}
 
-	// TODO: Do this second, then overlay ID3 on top. Simplify logic.
-	i.fillMetadataFromPathname()
-
-	// TODO: Do this first, then overlay pathname info on top. Simplify logic.
 	if i.Artist == "" {
 		i.Artist = "Unknown Artist"
 	}

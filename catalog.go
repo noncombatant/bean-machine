@@ -91,7 +91,7 @@ func buildCatalogFromWalk(root string) {
 				}
 
 				count++
-				if count % 1000 == 0 {
+				if count%1000 == 0 {
 					log.Printf("buildCatalogFromWalk: Processed %v items", count)
 				}
 			}
