@@ -23,8 +23,10 @@ const (
 
 var (
 	frontEndFiles = []string{
-		"login.html",
 		"help.html",
+		"implementation-notes.html",
+		"login.html",
+		"readme.html",
 
 		"manifest.json",
 

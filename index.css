@@ -15,7 +15,7 @@ body {
 }
 
 th {
-  text-align: right;
+  text-align: left;
 }
 
 th, td {
@@ -122,7 +122,6 @@ button {
 }
 
 pre {
-  margin-left: 2em;
   border: 0.1em solid #ccc;
   border-radius: 0.3em;
   padding: 0.5em;
