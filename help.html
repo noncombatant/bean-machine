@@ -13,23 +13,23 @@
 
 <ul>
 
-<li><code><strong>james brown</strong></code> will match all items that contain
-both “james” and “brown”, anywhere in their metadata. This includes substrings,
-so a hypothetical artist named Jameson Brownington will also match. This also
-means that a hypothetical record named <em>Brown</em> by the band James would
-match.</li>
+<li>The query <code><strong>james brown</strong></code> will match all items
+that contain both “james” and “brown”, anywhere in their metadata. The matching
+function includes substrings, so this query would also match items by a
+hypothetical artist named Jameson McBrownington. This query would also match
+items from a hypothetical album named <i>Brown</i> by the band James.</li>
 
 <!-- TODO: Make this true again.
 <li><code><strong>"james brown"</strong></code> will match all items that
 contain the quoted phrase anywhere in their metadata. Jameson Brownington and
-<em>Brown</em> by James no longer match, although James Brownington still
+<i>Brown</i> by James no longer match, although James Brownington still
 would.</li>
+-->
 
 <li>You can also prefix terms with <code><strong>-</strong></code> to negate
-them: <code><strong>"james brown" -popcorn</strong></code> matches all items
-that contain the phrase anywhere in their metadata, but will exclude items that
-match “popcorn”.</li>
--->
+them: <code><strong>james brown -popcorn</strong></code> matches all items that
+contain “james” and “brown” anywhere in their metadata, but will exclude items
+that match “popcorn”.</li>
 
 <li>Each item has in its metadata the date it was added to the catalog, in the
 format YYYY-MM-DD. This means you can search for items that were added at a
@@ -52,7 +52,7 @@ when you have a connectivity gap.</p>
 
 <h2>About Bean Machine</h2>
 
-<p>This is Bean Machine version 2019-12-28, written by <a
+<p>This is Bean Machine version 2019-12-30, written by <a
 href="https://noncombatant.org/">Chris Palmer</a>. The command line utility uses
 the <a href="https://github.com/ascherkus/go-id3"><code>id3</code> package by
 Andrew Scherkus</a>, and uses X.509 certificate generation code adapted from an
