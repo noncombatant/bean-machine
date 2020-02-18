@@ -30,7 +30,7 @@ th, td {
   background-color: #ddd;
   border-bottom: 1px #999 solid;
   line-height: 190%;
-  background: linear-gradient(to bottom, #faf, #aaf);
+  background: linear-gradient(to bottom, #ffa, #aaf);
 }
 
 #controlsDiv, table {

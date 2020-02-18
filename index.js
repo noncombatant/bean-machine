@@ -108,6 +108,7 @@ const buildAlbumTitleDiv = function(item, itemID) {
 let previousLastItem = 0
 let currentAlbumPathname = ""
 let haveRequestedExtendCatalog = false
+const maxItemsPerDraw = 500
 
 const buildCatalog = function(start) {
   if (0 === start) {
@@ -123,7 +124,7 @@ const buildCatalog = function(start) {
     itemListDiv.removeChild($("bottom"))
   }
 
-  const limit = Math.min(searchHits.length, 50)
+  const limit = Math.min(searchHits.length, maxItemsPerDraw)
   let i
   for (i = 0; i < limit && start + i < searchHits.length; ++i) {
     const itemID = start + i
@@ -261,6 +262,7 @@ const $ = function(id) {
   return document.getElementById(id)
 }
 
+// TODO: This doesn't seem to return true in all the cases that it should.
 const isElementInViewport = function(element) {
   if (!element) {
     return false
