@@ -115,10 +115,38 @@ func buildCatalog(root string) {
 	buildCatalogFromGobs(gobs)
 }
 
+func shouldBuildMediaIndex(pathname string, infos []os.FileInfo) bool {
+	index, e := os.Open(path.Join(pathname, string(os.PathSeparator), "media.html"))
+	if e != nil {
+		return true
+	}
+	defer index.Close()
+
+	indexStatus, e := index.Stat()
+	if e != nil {
+		log.Fatal(e)
+	}
+
+	time := indexStatus.ModTime()
+	for _, info := range infos {
+		name := info.Name()
+		if isImagePathname(name) || isDocumentPathname(name) {
+			if time.Before(info.ModTime()) {
+				return true
+			}
+		}
+	}
+	return false
+}
+
 func buildMediaIndex(pathname string) {
 	infos, e := ioutil.ReadDir(pathname)
 	if e != nil {
 		log.Fatal(e)
+	}
+
+	if !shouldBuildMediaIndex(pathname, infos) {
+		return
 	}
 
 	index, e := os.OpenFile(path.Join(pathname, string(os.PathSeparator), "media.html"), os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
@@ -148,15 +176,11 @@ img {
 `
 	fmt.Fprintf(index, header, path.Base(pathname))
 
-	for _, f := range infos {
-		name := f.Name()
+	for _, info := range infos {
+		name := info.Name()
 		if isImagePathname(name) {
 			fmt.Fprintf(index, "<img src=\"%s\"/>\n", escapeDoubleQuotes(name))
-		}
-	}
-	for _, f := range infos {
-		name := f.Name()
-		if isDocumentPathname(name) {
+		} else if isDocumentPathname(name) {
 			name = escapeDoubleQuotes(name)
 			fmt.Fprintf(index, "<li><a href=\"%s\">%s</a></li>\n", name, name)
 		}
