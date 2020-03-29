@@ -8,7 +8,6 @@ import (
 	"encoding/hex"
 	"fmt"
 	"golang.org/x/crypto/scrypt"
-	"log"
 	"os"
 	"path"
 	"strings"
@@ -36,7 +35,7 @@ func readPasswordDatabase(pathname string) Credentials {
 		if os.IsNotExist(result.Error) {
 			return credentials
 		}
-		log.Fatalf("readPasswordDatabase: Could not open %q: %v", pathname, result.Error)
+		Logger.Fatalf("Could not open %q: %v", pathname, result.Error)
 	}
 	defer result.File.Close()
 
@@ -68,7 +67,7 @@ func promptForCredentials() (string, string) {
 func obfuscatePassword(password, salt []byte) []byte {
 	obfuscated, e := scrypt.Key(password, salt, scryptN, scryptR, scryptP, scryptLength)
 	if e != nil {
-		log.Fatalf("obfuscatePassword: Could not obfuscate the password: %v", e)
+		Logger.Fatalf("Could not obfuscate the password: %v", e)
 	}
 	return obfuscated
 }
@@ -81,7 +80,7 @@ func setPassword() {
 
 	file, e := os.OpenFile(pathname, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0600)
 	if e != nil {
-		log.Fatalf("setPassword: Could not open %q: %v", pathname, e)
+		Logger.Fatalf("Could not open %q: %v", pathname, e)
 	}
 	defer file.Close()
 
@@ -95,7 +94,7 @@ func setPassword() {
 func mustWriteString(file *os.File, s string) {
 	_, e := file.WriteString(s)
 	if e != nil {
-		log.Fatalf("mustWriteString: Could not write to file: %v", e)
+		Logger.Fatalf("Could not write to file: %v", e)
 	}
 }
 
@@ -111,7 +110,7 @@ func writePasswordDatabase(file *os.File, toBeStored Credentials) {
 func getSaltAndScrypted(storedCredential string) ([]byte, []byte) {
 	decodedCredential, e := hex.DecodeString(storedCredential)
 	if e != nil {
-		log.Fatalf("getSaltAndScrypted: Could not decode stored credential: %v", e)
+		Logger.Fatalf("Could not decode stored credential: %v", e)
 	}
 	return decodedCredential[:saltSize], decodedCredential[saltSize:]
 }

@@ -35,7 +35,7 @@ func normalizeStringForSearch(s string) string {
 	if e != nil {
 		// TODO: I'm probably not using precis right... "precis: disallowed rune
 		// encountered" for every string.
-		//log.Printf("normalizeStringForSearch: %q: %v", s, e)
+		//Logger.Printf("%q: %v", s, e)
 		normalized = s
 	}
 	return strings.ToLower(normalized)

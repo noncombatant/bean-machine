@@ -10,7 +10,6 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"math/rand"
 	"net/http"
 	"os"
@@ -83,7 +82,7 @@ func getCookieLifetime() time.Time {
 func generateAndSaveHmacKey(pathname string) {
 	key := makeRandomBytes(hmacKeyLength)
 	if e := ioutil.WriteFile(pathname, key, 0600); e != nil {
-		log.Fatalf("generateAndSaveHmacKey: Could not save HMAC key to %q: %v", pathname, e)
+		Logger.Fatalf("Could not save HMAC key to %q: %v", pathname, e)
 	}
 }
 
@@ -96,11 +95,11 @@ func getHmacKey() []byte {
 
 	key, e := ioutil.ReadFile(pathname)
 	if e != nil {
-		log.Fatalf("getHmacKey: Could not open %q: %v", pathname, e)
+		Logger.Fatalf("Could not open %q: %v", pathname, e)
 	}
 
 	if len(key) != hmacKeyLength {
-		log.Fatalf("getHmacKey: No valid key in %q: %v", pathname, e)
+		Logger.Fatalf("No valid key in %q: %v", pathname, e)
 	}
 	return key
 }
@@ -135,7 +134,7 @@ func checkToken(username string, receivedToken []byte) bool {
 	passwords := readPasswordDatabase(path.Join(configurationPathname, passwordsBasename))
 	storedCredential, ok := passwords[username]
 	if !ok {
-		log.Printf("checkToken: No such username %q", username)
+		Logger.Printf("No such username %q", username)
 		return false
 	}
 
@@ -174,13 +173,13 @@ func (h AuthenticatingFileHandler) handleLogIn(w http.ResponseWriter, r *http.Re
 	stored := readPasswordDatabase(path.Join(configurationPathname, passwordsBasename))
 
 	if checkPassword(stored, username, password) {
-		log.Printf("handleLogIn: %q successful", username)
+		Logger.Printf("%q successful", username)
 		token := username + ":" + hex.EncodeToString(generateToken(username, stored[username]))
 		cookie := &http.Cookie{Name: "token", Value: token, Secure: true, HttpOnly: true, Expires: getCookieLifetime()}
 		http.SetCookie(w, cookie)
 		http.Redirect(w, r, "/index.html", http.StatusFound)
 	} else {
-		log.Printf("handleLogIn: %q unsuccessful", username)
+		Logger.Printf("%q unsuccessful", username)
 		cookie := &http.Cookie{Name: "token", Value: "", Secure: true, HttpOnly: true}
 		http.SetCookie(w, cookie)
 		redirectToLogin(w, r)
@@ -190,7 +189,7 @@ func (h AuthenticatingFileHandler) handleLogIn(w http.ResponseWriter, r *http.Re
 func (h AuthenticatingFileHandler) handleSearch(w http.ResponseWriter, r *http.Request) {
 	queries := r.URL.Query()["q"]
 	if queries == nil || len(queries) == 0 {
-		log.Print("handleSearch: Ignoring empty search.")
+		Logger.Print("Ignoring empty search.")
 		return
 	}
 
@@ -205,7 +204,7 @@ func (h AuthenticatingFileHandler) handleSearch(w http.ResponseWriter, r *http.R
 		words = wordSplitter.Split(query, -1)
 	}
 
-	log.Printf("handleSearch: %v", words)
+	Logger.Printf("%v", words)
 	results := matchItems(catalog, words)
 	w.Header().Set("Content-Type", "text/json")
 	writeItemInfos(w, results)
@@ -273,7 +272,7 @@ func (h AuthenticatingFileHandler) serveFile(w http.ResponseWriter, r *http.Requ
 		defer result.File.Close()
 	}
 	if result.Error != nil || result.File == nil || result.Info == nil {
-		log.Print(result.Error)
+		Logger.Print(result.Error)
 		http.NotFound(w, r)
 		return
 	}
@@ -282,7 +281,7 @@ func (h AuthenticatingFileHandler) serveFile(w http.ResponseWriter, r *http.Requ
 		w.Header().Set("Content-Encoding", "gzip")
 	}
 
-	log.Printf("serveFile: %q", pathname)
+	Logger.Printf("%q", pathname)
 	http.ServeContent(w, r, pathname, result.Info.ModTime(), result.File)
 }
 
@@ -304,7 +303,7 @@ func (h AuthenticatingFileHandler) serveCover(pathname string, w http.ResponseWr
 		http.ServeContent(w, r, pathname, unknown.Info.ModTime(), unknown.File)
 		unknown.File.Close()
 	} else {
-		log.Print(unknown.Error)
+		Logger.Print(unknown.Error)
 		http.NotFound(w, r)
 	}
 }
@@ -342,7 +341,7 @@ func (h AuthenticatingFileHandler) ServeHTTP(w http.ResponseWriter, r *http.Requ
 	if e == nil {
 		username, decodedToken, e = parseCookie(cookie.Value)
 		if e != nil {
-			log.Printf("ServeHTTP: Refusing %q to client with invalid cookie (%v)", r.URL.Path, e)
+			Logger.Printf("Refusing %q to client with invalid cookie (%v)", r.URL.Path, e)
 			redirectToLogin(w, r)
 			return
 		}
@@ -354,7 +353,7 @@ func (h AuthenticatingFileHandler) ServeHTTP(w http.ResponseWriter, r *http.Requ
 	}
 
 	if !checkToken(username, decodedToken) {
-		log.Printf("ServeHTTP: Refusing %q to %q with invalid token", r.URL.Path, username)
+		Logger.Printf("Refusing %q to %q with invalid token", r.URL.Path, username)
 		redirectToLogin(w, r)
 		return
 	}

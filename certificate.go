@@ -14,7 +14,6 @@ import (
 	"crypto/x509/pkix"
 	"encoding/pem"
 	"io"
-	"log"
 	"math/big"
 	"net"
 	"time"
@@ -23,7 +22,7 @@ import (
 func pemBlockForKey(priv *ecdsa.PrivateKey) *pem.Block {
 	b, err := x509.MarshalECPrivateKey(priv)
 	if err != nil {
-		log.Fatalf("pemBlockForKey: Unable to marshal ECDSA private key: %v", err)
+		Logger.Fatalf("Unable to marshal ECDSA private key: %v", err)
 	}
 	return &pem.Block{Type: "EC PRIVATE KEY", Bytes: b}
 }
@@ -31,7 +30,7 @@ func pemBlockForKey(priv *ecdsa.PrivateKey) *pem.Block {
 func generateCertificate(hosts []string, isCA bool, key, certificate io.Writer) {
 	priv, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 	if err != nil {
-		log.Fatalf("generateCertificate: Failed to generate private key: %s", err)
+		Logger.Fatalf("Failed to generate private key: %s", err)
 	}
 
 	notBefore := time.Now()
@@ -40,7 +39,7 @@ func generateCertificate(hosts []string, isCA bool, key, certificate io.Writer) 
 	serialNumberLimit := new(big.Int).Lsh(big.NewInt(1), 128)
 	serialNumber, err := rand.Int(rand.Reader, serialNumberLimit)
 	if err != nil {
-		log.Fatalf("generateCertificate: Failed to generate serial number: %s", err)
+		Logger.Fatalf("Failed to generate serial number: %s", err)
 	}
 
 	template := x509.Certificate{
@@ -70,15 +69,15 @@ func generateCertificate(hosts []string, isCA bool, key, certificate io.Writer) 
 
 	derBytes, err := x509.CreateCertificate(rand.Reader, &template, &template, &priv.PublicKey, priv)
 	if err != nil {
-		log.Fatalf("generateCertificate: Failed to create certificate: %s", err)
+		Logger.Fatalf("Failed to create certificate: %s", err)
 	}
 
 	err = pem.Encode(certificate, &pem.Block{Type: "CERTIFICATE", Bytes: derBytes})
 	if err != nil {
-		log.Fatalf("generateCertificate: Failed to encode certificate: %s", err)
+		Logger.Fatalf("Failed to encode certificate: %s", err)
 	}
 	err = pem.Encode(key, pemBlockForKey(priv))
 	if err != nil {
-		log.Fatalf("generateCertificate: Failed to encode certificate: %s", err)
+		Logger.Fatalf("Failed to encode certificate: %s", err)
 	}
 }

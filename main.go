@@ -6,7 +6,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"log"
 	"net"
 	"net/http"
 	"os"
@@ -68,12 +67,12 @@ func generateServerCredentials(hosts []string) (string, string) {
 
 	certificateFile, err := os.Create(certificatePathname)
 	if err != nil {
-		log.Fatalf("generateServerCredentials: Failed to open %q for writing: %s", certificatePathname, err)
+		Logger.Fatalf("Failed to open %q for writing: %s", certificatePathname, err)
 	}
 
 	keyFile, err := os.OpenFile(keyPathname, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0600)
 	if err != nil {
-		log.Fatalf("generateServerCredentials: Failed to open %q for writing: %s", keyPathname, err)
+		Logger.Fatalf("Failed to open %q for writing: %s", keyPathname, err)
 	}
 
 	generateCertificate(hosts, false, keyFile, certificateFile)
@@ -95,31 +94,31 @@ func getHomePathname() string {
 		}
 	}
 
-	log.Fatal("getHomePathname: No HOME environment variable is set.")
+	Logger.Fatal("No HOME environment variable is set.")
 	return ""
 }
 
 func establishConfiguration() {
 	if homePathname == "" {
-		log.Fatal("establishConfiguration: No HOME environment variable is set.")
+		Logger.Fatal("No HOME environment variable is set.")
 	}
 
 	if e := os.MkdirAll(configurationPathname, 0755); e != nil {
-		log.Fatalf("establishConfiguration: Could not create %q: %v", configurationPathname, e)
+		Logger.Fatalf("Could not create %q: %v", configurationPathname, e)
 	}
 }
 
 func serveApp(root string) {
 	addresses, e := net.InterfaceAddrs()
 	if e != nil || 0 == len(addresses) {
-		log.Fatal("serveApp: Can't find any network interfaces to run the web server on. Giving up.")
+		Logger.Fatal("Can't find any network interfaces to run the web server on. Giving up.")
 	}
 
 	message := "Starting the web server. Point your browser to any of these addresses:"
 	if 1 == len(addresses) {
 		message = "Starting the web server. Point your browser to this address:"
 	}
-	log.Printf("serveApp: %s", message)
+	Logger.Printf("%s", message)
 
 	var hosts []string
 	for _, address := range addresses {
@@ -130,11 +129,11 @@ func serveApp(root string) {
 			}
 			names, e := net.LookupAddr(a.IP.String())
 			if e != nil || 0 == len(names) {
-				log.Printf("    https://%s%s/", a.IP, httpPort)
+				Logger.Printf("    https://%s%s/", a.IP, httpPort)
 				hosts = append(hosts, fmt.Sprintf("%s", a.IP))
 			} else {
 				for _, name := range names {
-					log.Printf("    https://%s%s/", name, httpPort)
+					Logger.Printf("    https://%s%s/", name, httpPort)
 					hosts = append(hosts, fmt.Sprintf("%s", name))
 				}
 			}
@@ -143,7 +142,7 @@ func serveApp(root string) {
 
 	certificatePathname, keyPathname := generateServerCredentials(hosts)
 	handler := AuthenticatingFileHandler{Root: root}
-	log.Fatal(http.ListenAndServeTLS(httpPort, certificatePathname, keyPathname, handler))
+	Logger.Fatal(http.ListenAndServeTLS(httpPort, certificatePathname, keyPathname, handler))
 }
 
 func printHelp() {

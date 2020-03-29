@@ -9,7 +9,6 @@ import (
 	"id3"
 	"io"
 	"io/ioutil"
-	"log"
 	"os"
 	"path"
 	"path/filepath"
@@ -33,7 +32,7 @@ func buildCatalogFromGobs(gobs *os.File) {
 			if e == io.EOF {
 				return
 			} else {
-				log.Fatal("buildCatalogFromGobs: decode error 1:", e)
+				Logger.Fatal("decode error 1:", e)
 			}
 		}
 		catalog = append(catalog, &info)
@@ -41,11 +40,11 @@ func buildCatalogFromGobs(gobs *os.File) {
 }
 
 func buildCatalogFromWalk(root string) {
-	log.Print("buildCatalogFromWalk: Start. This might take a while.")
+	Logger.Print("Start. This might take a while.")
 
 	gobs, e := os.OpenFile(path.Join(root, string(os.PathSeparator), catalogFile), os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
 	if e != nil {
-		log.Fatal(e)
+		Logger.Fatal(e)
 	}
 	defer gobs.Close()
 	encoder := gob.NewEncoder(gobs)
@@ -59,7 +58,7 @@ func buildCatalogFromWalk(root string) {
 	e = filepath.Walk(root,
 		func(pathname string, info os.FileInfo, e error) error {
 			if e != nil {
-				log.Printf("buildCatalogFromWalk: %q: %s", pathname, e)
+				Logger.Printf("%q: %s", pathname, e)
 				return nil
 			}
 			if shouldSkipFile(pathname, info) {
@@ -75,7 +74,7 @@ func buildCatalogFromWalk(root string) {
 
 			input, e := os.Open(pathname)
 			if e != nil {
-				log.Printf("buildCatalogFromWalk: %q: %s", pathname, e)
+				Logger.Printf("%q: %s", pathname, e)
 				return nil
 			}
 			defer input.Close()
@@ -90,17 +89,17 @@ func buildCatalogFromWalk(root string) {
 				catalog = append(catalog, &itemInfo)
 				e := encoder.Encode(itemInfo)
 				if e != nil {
-					log.Fatal(e)
+					Logger.Fatal(e)
 				}
 
 				count++
 				select {
 				case _, ok := <-timer.C:
 					if ok {
-						log.Printf("buildCatalogFromWalk: Processed %v items", count)
+						Logger.Printf("Processed %v items", count)
 						timer.Reset(timerFrequency)
 					} else {
-						log.Print("buildCatalogFromWalk: Channel closed?!")
+						Logger.Printf("Channel closed?!")
 					}
 				default:
 					// Do nothing.
@@ -111,9 +110,9 @@ func buildCatalogFromWalk(root string) {
 		})
 
 	if e != nil {
-		log.Printf("buildCatalogFromWalk: Problem walking %q: %s", root, e)
+		Logger.Printf("Problem walking %q: %s", root, e)
 	}
-	log.Printf("buildCatalogFromWalk: Completed. %v items.", len(catalog))
+	Logger.Printf("Completed. %v items.", len(catalog))
 }
 
 func buildCatalog(root string) {
@@ -135,7 +134,7 @@ func shouldBuildMediaIndex(pathname string, infos []os.FileInfo) bool {
 
 	indexStatus, e := index.Stat()
 	if e != nil {
-		log.Fatal(e)
+		Logger.Fatal(e)
 	}
 
 	time := indexStatus.ModTime()
@@ -153,7 +152,7 @@ func shouldBuildMediaIndex(pathname string, infos []os.FileInfo) bool {
 func buildMediaIndex(pathname string) {
 	infos, e := ioutil.ReadDir(pathname)
 	if e != nil {
-		log.Fatal(e)
+		Logger.Fatal(e)
 	}
 
 	if !shouldBuildMediaIndex(pathname, infos) {
@@ -162,7 +161,7 @@ func buildMediaIndex(pathname string) {
 
 	index, e := os.OpenFile(path.Join(pathname, string(os.PathSeparator), "media.html"), os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
 	if e != nil {
-		log.Fatal(e)
+		Logger.Fatal(e)
 	}
 	defer index.Close()
 
