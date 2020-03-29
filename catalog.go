@@ -82,7 +82,7 @@ func buildCatalogFromWalk(root string) {
 				itemInfo := ItemInfo{Pathname: webPathname}
 				itemInfo.File, _ = id3.Read(input)
 				time := info.ModTime()
-				itemInfo.ModTime = fmt.Sprintf("%d-%d-%d", time.Year(), time.Month(), time.Day())
+				itemInfo.ModTime = fmt.Sprintf("%04d-%02d-%02d", time.Year(), time.Month(), time.Day())
 				itemInfo.fillMetadata()
 				catalog = append(catalog, &itemInfo)
 				e := encoder.Encode(itemInfo)
