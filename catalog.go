@@ -13,6 +13,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"time"
 )
 
 var (
@@ -24,17 +25,15 @@ const (
 )
 
 func buildCatalogFromGobs(gobs *os.File) {
-	log.Print("buildCatalogFromGobs: start.")
 	decoder := gob.NewDecoder(gobs)
 	for {
 		var info ItemInfo
 		e := decoder.Decode(&info)
 		if e != nil {
 			if e == io.EOF {
-				log.Printf("buildCatalogFromGobs: Completed. %v items.", len(catalog))
 				return
 			} else {
-				log.Fatal("decode error 1:", e)
+				log.Fatal("buildCatalogFromGobs: decode error 1:", e)
 			}
 		}
 		catalog = append(catalog, &info)
@@ -42,8 +41,7 @@ func buildCatalogFromGobs(gobs *os.File) {
 }
 
 func buildCatalogFromWalk(root string) {
-	log.Print("buildCatalogFromWalk: Start.")
-	log.Print("buildCatalogFromWalk: This might take a while.")
+	log.Print("buildCatalogFromWalk: Start. This might take a while.")
 
 	gobs, e := os.OpenFile(path.Join(root, string(os.PathSeparator), catalogFile), os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
 	if e != nil {
@@ -52,7 +50,12 @@ func buildCatalogFromWalk(root string) {
 	defer gobs.Close()
 	encoder := gob.NewEncoder(gobs)
 
+	// Log the walk progress periodically so that the person knows what’s going
+	// on.
 	count := 0
+	timerFrequency := 1 * time.Second
+	timer := time.NewTimer(timerFrequency)
+
 	e = filepath.Walk(root,
 		func(pathname string, info os.FileInfo, e error) error {
 			if e != nil {
@@ -91,8 +94,16 @@ func buildCatalogFromWalk(root string) {
 				}
 
 				count++
-				if count%1000 == 0 {
-					log.Printf("buildCatalogFromWalk: Processed %v items", count)
+				select {
+				case _, ok := <-timer.C:
+					if ok {
+						log.Printf("buildCatalogFromWalk: Processed %v items", count)
+						timer.Reset(timerFrequency)
+					} else {
+						log.Print("buildCatalogFromWalk: Channel closed?!")
+					}
+				default:
+					// Do nothing.
 				}
 			}
 
