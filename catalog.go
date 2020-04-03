@@ -39,7 +39,19 @@ func buildCatalogFromGobs(gobs *os.File) {
 	}
 }
 
+// `buildCatalogFromWalk` could be invoked (indirectly) through either
+// `buildCatalog` or `serveApp`. To avoid having multiple invocations walk
+// twice and stomp on the `catalogFile`, we maintain this sentinel.
+var buildCatalogFromWalkInProgress = false
+
 func buildCatalogFromWalk(root string) {
+	if buildCatalogFromWalkInProgress {
+		return
+	}
+	buildCatalogFromWalkInProgress = true
+	defer func() {
+		buildCatalogFromWalkInProgress = false
+	}()
 	Logger.Print("Start. This might take a while.")
 
 	gobs, e := os.OpenFile(path.Join(root, string(os.PathSeparator), catalogFile), os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
@@ -55,6 +67,7 @@ func buildCatalogFromWalk(root string) {
 	timerFrequency := 1 * time.Second
 	timer := time.NewTimer(timerFrequency)
 
+	newCatalog := []*ItemInfo{}
 	e = filepath.Walk(root,
 		func(pathname string, info os.FileInfo, e error) error {
 			if e != nil {
@@ -86,7 +99,7 @@ func buildCatalogFromWalk(root string) {
 				time := info.ModTime()
 				itemInfo.ModTime = fmt.Sprintf("%04d-%02d-%02d", time.Year(), time.Month(), time.Day())
 				itemInfo.fillMetadata()
-				catalog = append(catalog, &itemInfo)
+				newCatalog = append(catalog, &itemInfo)
 				e := encoder.Encode(itemInfo)
 				if e != nil {
 					Logger.Fatal(e)
@@ -112,6 +125,7 @@ func buildCatalogFromWalk(root string) {
 	if e != nil {
 		Logger.Printf("Problem walking %q: %s", root, e)
 	}
+	catalog = newCatalog
 	Logger.Printf("Completed. %v items.", len(catalog))
 }
 
@@ -145,8 +159,13 @@ func buildCatalog(root string) {
 	if !isFileNewestInDirectory(root, catalogFile) {
 		buildCatalogFromWalk(root)
 		return
+	} else if len(catalog) > 0 {
+		// The `catalogFile` was up to date, and we have a populated catalog. Our
+		// work here is done.
+		return
 	}
 
+	// Otherwise, read it (or rebuild it).
 	gobs, e := os.Open(path.Join(root, string(os.PathSeparator), catalogFile))
 	if e != nil {
 		buildCatalogFromWalk(root)

@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"os"
 	"path"
+	"time"
 )
 
 const (
@@ -139,6 +140,14 @@ func serveApp(root string) {
 			}
 		}
 	}
+
+	// Monitor the catalog.gobs file to see if it has changed.
+	go func() {
+		for {
+			time.Sleep(2 * time.Minute)
+			buildCatalog(musicRoot)
+		}
+	}()
 
 	certificatePathname, keyPathname := generateServerCredentials(hosts)
 	handler := AuthenticatingFileHandler{Root: root}
