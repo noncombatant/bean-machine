@@ -115,7 +115,38 @@ func buildCatalogFromWalk(root string) {
 	Logger.Printf("Completed. %v items.", len(catalog))
 }
 
+func isFileNewestInDirectory(directoryName, baseName string) bool {
+	file, e := os.Open(path.Join(directoryName, string(os.PathSeparator), baseName))
+	if e != nil {
+		return false
+	}
+	defer file.Close()
+
+	status, e := file.Stat()
+	if e != nil {
+		return false
+	}
+	modTime := status.ModTime()
+
+	infos, e := ioutil.ReadDir(directoryName)
+	if e != nil {
+		return false
+	}
+
+	for _, info := range infos {
+		if info.IsDir() && modTime.Before(info.ModTime()) {
+			return false
+		}
+	}
+	return true
+}
+
 func buildCatalog(root string) {
+	if !isFileNewestInDirectory(root, catalogFile) {
+		buildCatalogFromWalk(root)
+		return
+	}
+
 	gobs, e := os.Open(path.Join(root, string(os.PathSeparator), catalogFile))
 	if e != nil {
 		buildCatalogFromWalk(root)
