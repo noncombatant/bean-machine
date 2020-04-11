@@ -109,6 +109,13 @@ func establishConfiguration() {
 	}
 }
 
+func monitorCatalogForUpdates() {
+	for {
+		time.Sleep(2 * time.Minute)
+		buildCatalog(musicRoot)
+	}
+}
+
 func serveApp(root string) {
 	addresses, e := net.InterfaceAddrs()
 	if e != nil || 0 == len(addresses) {
@@ -141,15 +148,8 @@ func serveApp(root string) {
 		}
 	}
 
-	// Monitor the catalog.gobs file to see if it has changed.
-	go func() {
-		for {
-			time.Sleep(2 * time.Minute)
-			buildCatalog(musicRoot)
-		}
-	}()
-
 	certificatePathname, keyPathname := generateServerCredentials(hosts)
+	go monitorCatalogForUpdates()
 	handler := AuthenticatingFileHandler{Root: root}
 	Logger.Fatal(http.ListenAndServeTLS(httpPort, certificatePathname, keyPathname, handler))
 }
