@@ -16,7 +16,7 @@ import (
 )
 
 var (
-	catalog = []*ItemInfo{}
+	catalog         = []*ItemInfo{}
 	lastReadCatalog = time.Time{}
 	// `buildCatalogFromWalk` could be invoked (indirectly) through either
 	// `buildCatalog` or `serveApp`. To avoid having multiple invocations walk
