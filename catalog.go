@@ -17,14 +17,21 @@ import (
 
 var (
 	catalog = []*ItemInfo{}
+	lastReadCatalog = time.Time{}
+	// `buildCatalogFromWalk` could be invoked (indirectly) through either
+	// `buildCatalog` or `serveApp`. To avoid having multiple invocations walk
+	// twice and stomp on the `catalogFile`, we maintain this sentinel.
+	buildCatalogFromWalkInProgress = false
 )
 
 const (
 	catalogFile = "catalog.gobs"
 )
 
-func buildCatalogFromGobs(gobs *os.File) {
+func buildCatalogFromGobs(gobs *os.File, modTime time.Time) {
+	Logger.Print("running")
 	decoder := gob.NewDecoder(gobs)
+	newCatalog := []*ItemInfo{}
 	for {
 		var info ItemInfo
 		e := decoder.Decode(&info)
@@ -35,14 +42,11 @@ func buildCatalogFromGobs(gobs *os.File) {
 				Logger.Fatal("decode error 1:", e)
 			}
 		}
-		catalog = append(catalog, &info)
+		newCatalog = append(newCatalog, &info)
 	}
+	catalog = newCatalog
+	lastReadCatalog = modTime
 }
-
-// `buildCatalogFromWalk` could be invoked (indirectly) through either
-// `buildCatalog` or `serveApp`. To avoid having multiple invocations walk
-// twice and stomp on the `catalogFile`, we maintain this sentinel.
-var buildCatalogFromWalkInProgress = false
 
 func buildCatalogFromWalk(root string) {
 	if buildCatalogFromWalkInProgress {
@@ -59,6 +63,14 @@ func buildCatalogFromWalk(root string) {
 		Logger.Fatal(e)
 	}
 	defer gobs.Close()
+
+	status, e := gobs.Stat()
+	if e != nil {
+		Logger.Printf("Can't Stat %q: %v", catalogFile, e)
+	} else {
+		lastReadCatalog = status.ModTime()
+	}
+
 	encoder := gob.NewEncoder(gobs)
 
 	// Log the walk progress periodically so that the person knows what’s going
@@ -159,20 +171,26 @@ func buildCatalog(root string) {
 	if !isFileNewestInDirectory(root, catalogFile) {
 		buildCatalogFromWalk(root)
 		return
-	} else if len(catalog) > 0 {
-		// The `catalogFile` was up to date, and we have a populated catalog. Our
-		// work here is done.
-		return
 	}
 
-	// Otherwise, read it (or rebuild it).
-	gobs, e := os.Open(path.Join(root, string(os.PathSeparator), catalogFile))
+	gobs, e := os.Open(path.Join(root, catalogFile))
 	if e != nil {
 		buildCatalogFromWalk(root)
 		return
 	}
 	defer gobs.Close()
-	buildCatalogFromGobs(gobs)
+
+	status, e := gobs.Stat()
+	if e != nil {
+		buildCatalogFromWalk(root)
+		return
+	}
+
+	modTime := status.ModTime()
+	if lastReadCatalog.IsZero() || lastReadCatalog.Before(modTime) {
+		buildCatalogFromGobs(gobs, modTime)
+		return
+	}
 }
 
 func shouldBuildMediaIndex(pathname string, infos []os.FileInfo) bool {
