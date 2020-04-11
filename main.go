@@ -52,7 +52,7 @@ var (
 
 func installFrontEndFiles(root string) {
 	for _, f := range frontEndFiles {
-		copyFile(f, path.Join(root, string(os.PathSeparator), f))
+		copyFile(f, path.Join(root, f))
 	}
 }
 

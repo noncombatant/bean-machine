@@ -58,7 +58,7 @@ func buildCatalogFromWalk(root string) {
 	}()
 	Logger.Print("Start. This might take a while.")
 
-	gobs, e := os.OpenFile(path.Join(root, string(os.PathSeparator), catalogFile), os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
+	gobs, e := os.OpenFile(path.Join(root, catalogFile), os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
 	if e != nil {
 		Logger.Fatal(e)
 	}
@@ -142,7 +142,7 @@ func buildCatalogFromWalk(root string) {
 }
 
 func isFileNewestInDirectory(directoryName, baseName string) bool {
-	file, e := os.Open(path.Join(directoryName, string(os.PathSeparator), baseName))
+	file, e := os.Open(path.Join(directoryName, baseName))
 	if e != nil {
 		return false
 	}
@@ -194,7 +194,7 @@ func buildCatalog(root string) {
 }
 
 func shouldBuildMediaIndex(pathname string, infos []os.FileInfo) bool {
-	index, e := os.Open(path.Join(pathname, string(os.PathSeparator), "media.html"))
+	index, e := os.Open(path.Join(pathname, "media.html"))
 	if e != nil {
 		return true
 	}
@@ -227,7 +227,7 @@ func buildMediaIndex(pathname string) {
 		return
 	}
 
-	index, e := os.OpenFile(path.Join(pathname, string(os.PathSeparator), "media.html"), os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
+	index, e := os.OpenFile(path.Join(pathname, "media.html"), os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
 	if e != nil {
 		Logger.Fatal(e)
 	}
