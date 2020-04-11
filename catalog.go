@@ -37,7 +37,7 @@ func buildCatalogFromGobs(gobs *os.File, modTime time.Time) {
 		e := decoder.Decode(&info)
 		if e != nil {
 			if e == io.EOF {
-				return
+				break
 			} else {
 				Logger.Fatal("decode error 1:", e)
 			}
