@@ -99,7 +99,7 @@ func buildCatalogFromWalk(root string) {
 				time := info.ModTime()
 				itemInfo.ModTime = fmt.Sprintf("%04d-%02d-%02d", time.Year(), time.Month(), time.Day())
 				itemInfo.fillMetadata()
-				newCatalog = append(catalog, &itemInfo)
+				newCatalog = append(newCatalog, &itemInfo)
 				e := encoder.Encode(itemInfo)
 				if e != nil {
 					Logger.Fatal(e)
