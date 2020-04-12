@@ -263,8 +263,10 @@ const playButtonOnClick = function(e) {
 }
 
 const shuffleButtonOnClick = function(e) {
+  const shuffleOn = "true" === localStorage.getItem("shuffle")
+  localStorage.setItem("shuffle", shuffleOn ? "false" : "true")
+  shuffleButton.src = shuffleOn ? "shuffle.png" : "repeat.png"
   buildCatalog(0)
-  localStorage.setItem("shuffle", "true" === localStorage.getItem("shuffle") ? "false" : "true")
 }
 
 

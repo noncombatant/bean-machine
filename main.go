@@ -41,6 +41,7 @@ var (
 		"favicon.ico",
 		"play.png",
 		"pause.png",
+		"repeat.png",
 		"shuffle.png",
 		"skip.png",
 		"unknown-album.png",
