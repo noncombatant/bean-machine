@@ -183,11 +183,17 @@ const playNext = function(e) {
   player.play()
 }
 
-const togglePlayback = function(e) {
+const bodyOnKeyup = function(e) {
   e.stopPropagation()
   if ("p" !== e.key) {
     return
   }
+  playButtonOnClick(e)
+}
+
+const togglePlayback = function() {
+  playButton.src = player.paused ? "pause.png" : "play.png"
+  playButton.alt = player.paused ? "Pause" : "Play"
   player[player.paused ? "play" : "pause"]()
 }
 
@@ -266,9 +272,7 @@ const playButtonOnClick = function(e) {
     player.itemID = 0
     preparePlay(searchHits[0], 0)
   }
-  playButton.src = player.paused ? "pause.png" : "play.png"
-  playButton.alt = player.paused ? "Pause" : "Play"
-  player[player.paused ? "play" : "pause"]()
+  togglePlayback()
 }
 
 const shuffleButtonOnClick = function(e) {
@@ -420,7 +424,7 @@ const main = function() {
   searchInput.addEventListener("keyup", searchInputOnKeyUp)
   searchButton.addEventListener("click", executeSearch)
   window.addEventListener("scroll", windowOnScroll)
-  document.body.addEventListener("keyup", togglePlayback)
+  document.body.addEventListener("keyup", bodyOnKeyup)
   restoreState()
   setInterval(fetchSearchHits, 2000)
 }
