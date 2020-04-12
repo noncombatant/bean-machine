@@ -22,6 +22,7 @@ const setAudioVideoControls = function(item) {
 const preparePlay = function(item, itemID) {
   player.pause()
   setAudioVideoControls(item)
+  positionRange.value = 0
   player.src = blobCache[item.pathname] || item.pathname
   player.itemID = itemID
   localStorage.setItem("itemID", itemID)
@@ -115,7 +116,7 @@ const buildCatalog = function(start) {
     removeAllChildren(itemListDiv)
     currentAlbumPathname = ""
     haveRequestedExtendCatalog = false
-    if (randomCheckbox.checked) {
+    if ("true" === localStorage.getItem("shuffle")) {
       shuffle(searchHits)
     } else {
       searchHits.sort((a, b) => a.pathname.localeCompare(b.pathname))
@@ -218,13 +219,7 @@ const shuffle = function(array) {
   }
 }
 
-const randomCheckboxOnClick = function(e) {
-  buildCatalog(0)
-  localStorage.setItem("random", randomCheckbox.checked)
-}
-
 const restoreState = function() {
-  randomCheckbox.checked = "true" === localStorage.getItem("random")
   searchCatalog(localStorage.getItem("query") || "")
 }
 
@@ -256,6 +251,25 @@ const searchInputOnKeyUp = function(e) {
   if ("Enter" === e.code) {
     searchCatalog(this.value)
   }
+}
+
+const playButtonOnClick = function(e) {
+  if (undefined === player.itemID) {
+    player.itemID = 0
+    preparePlay(searchHits[0], 0)
+  }
+  playButton.src = player.paused ? "pause.png" : "play.png"
+  player[player.paused ? "play" : "pause"]()
+}
+
+const shuffleButtonOnClick = function(e) {
+  buildCatalog(0)
+  localStorage.setItem("shuffle", "true" === localStorage.getItem("shuffle") ? "false" : "true")
+}
+
+
+const positionRangeOnChange = function(e) {
+  player.currentTime = player.duration * (positionRange.value / 100.0);
 }
 
 const $ = function(id) {
@@ -384,15 +398,17 @@ const isVideoPathname = function(pathname) {
 }
 
 const main = function() {
-  nextButton.addEventListener("click", playNext)
   player.addEventListener("ended", playNext)
   player.addEventListener("error", playerOnError)
+  playButton.addEventListener("click", playButtonOnClick)
+  nextButton.addEventListener("click", playNext)
+  shuffleButton.addEventListener("click", shuffleButtonOnClick)
+  positionRange.addEventListener("change", positionRangeOnChange)
   //player.addEventListener("timeupdate", playerOnTimeupdate)
   searchInput.addEventListener("keyup", searchInputOnKeyUp)
   searchButton.addEventListener("click", executeSearch)
   window.addEventListener("scroll", windowOnScroll)
   document.body.addEventListener("keyup", togglePlayback)
-  randomCheckbox.addEventListener("click", randomCheckboxOnClick)
   restoreState()
   setInterval(fetchSearchHits, 2000)
 }

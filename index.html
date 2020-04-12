@@ -11,22 +11,25 @@
 <tr>
   <td>
       <span id="nowPlayingTitle">Click on any track or album to play.</span>
-      <div><span id="artSpan"></span></div>
   </td>
-  <td class="narrow"><label><input type="checkbox" id="randomCheckbox"/> Shuffle</label></td>
 <tr>
 
 <tr>
   <td>
-    <audio id="audioPlayer" controls preload="auto"></audio>
+    <audio id="audioPlayer" preload="auto"></audio>
     <video id="videoPlayer" controls width="400" height="300" class="hidden"></video>
+    <input type="image" src="play.png" width="32" height="32" id="playButton" alt="Play"/>
+    <input type="range" min="0" max="100" step="0.1" value="0" id="positionRange">
+    <input type="image" src="skip.png" width="32" height="32" id="nextButton" alt="Skip"/>
+    <input type="image" src="shuffle.png" width="32" height="32" id="shuffleButton" alt="Shuffle"/>
   </td>
-  <td class="narrow"><button id="nextButton">Next</button></td>
 </tr>
 
 <tr>
-  <td><input type="text" name="search" id="searchInput" placeholder="search or ? for random"/></td>
-  <td class="narrow"><button id="searchButton">Search</button></td>
+  <td>
+    <input type="text" name="search" id="searchInput" placeholder="search or ? for random"/>
+    <button id="searchButton">Search</button>
+  </td>
 </tr>
 </table></div>
 

@@ -39,6 +39,10 @@ var (
 		"clef-96.png",
 		"clef-64.png",
 		"favicon.ico",
+		"play.png",
+		"pause.png",
+		"shuffle.png",
+		"skip.png",
 		"unknown-album.png",
 	}
 
