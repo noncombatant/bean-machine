@@ -12,11 +12,11 @@ import (
 	"runtime"
 )
 
+type LogWriter struct{}
+
 var (
 	Logger = log.New(LogWriter{}, "", 0)
 )
-
-type LogWriter struct{}
 
 func (f LogWriter) Write(bytes []byte) (int, error) {
 	pc, _, _, _ := runtime.Caller(3)
