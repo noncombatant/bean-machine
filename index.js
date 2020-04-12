@@ -154,6 +154,7 @@ const extendCatalog = function() {
 const itemDivOnClick = function(e) {
   preparePlay(searchHits[this.itemID], this.itemID)
   playButton.src = "pause.png"
+  playButton.alt = "Pause"
   player.play()
 }
 
@@ -263,6 +264,7 @@ const playButtonOnClick = function(e) {
     preparePlay(searchHits[0], 0)
   }
   playButton.src = player.paused ? "pause.png" : "play.png"
+  playButton.alt = player.paused ? "Pause" : "Play"
   player[player.paused ? "play" : "pause"]()
 }
 
@@ -270,6 +272,7 @@ const shuffleButtonOnClick = function(e) {
   const shuffleOn = "true" === localStorage.getItem("shuffle")
   localStorage.setItem("shuffle", shuffleOn ? "false" : "true")
   shuffleButton.src = shuffleOn ? "shuffle.png" : "repeat.png"
+  shuffleButton.alt = shuffleOn ? "Shuffle" : "Sorted"
   buildCatalog(0)
 }
 
