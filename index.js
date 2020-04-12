@@ -201,11 +201,14 @@ const getTimeupdateForItemID = function(itemID) {
 }
 
 const playerOnTimeupdate = function(e) {
-  const time = getTimeupdateForItemID(player.itemID)
-  if (player.currentTime < time || (player.currentTime - time) > 5) {
-    const key = "timeupdate" + player.itemID
-    localStorage.setItem(key, player.currentTime)
-  }
+  positionRange.value = (player.currentTime / player.duration) * 100
+
+  // TODO: Try to make this work.
+  //const time = getTimeupdateForItemID(player.itemID)
+  //if (player.currentTime < time || (player.currentTime - time) > 5) {
+  //  const key = "timeupdate" + player.itemID
+  //  localStorage.setItem(key, player.currentTime)
+  //}
 }
 
 // https://stackoverflow.com/questions/2450954/how-to-randomize-shuffle-a-javascript-array
@@ -403,11 +406,11 @@ const isVideoPathname = function(pathname) {
 const main = function() {
   player.addEventListener("ended", playNext)
   player.addEventListener("error", playerOnError)
+  player.addEventListener("timeupdate", playerOnTimeupdate)
   playButton.addEventListener("click", playButtonOnClick)
   nextButton.addEventListener("click", playNext)
   shuffleButton.addEventListener("click", shuffleButtonOnClick)
   positionRange.addEventListener("change", positionRangeOnChange)
-  //player.addEventListener("timeupdate", playerOnTimeupdate)
   searchInput.addEventListener("keyup", searchInputOnKeyUp)
   searchButton.addEventListener("click", executeSearch)
   window.addEventListener("scroll", windowOnScroll)
