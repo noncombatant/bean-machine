@@ -7,31 +7,23 @@
 
 <noscript><strong>Bean Machine requires JavaScript to work.</strong></noscript>
 
-<div id="controlsDiv"><table>
-<tr>
-  <td>
-      <span id="nowPlayingTitle">Click on any track or album to play.</span>
-  </td>
-<tr>
+<div id="controlsDiv">
+  <div id="nowPlayingTitle">Click on any track or album to play.</div>
 
-<tr>
-  <td>
+  <div>
     <audio id="audioPlayer" preload="auto"></audio>
     <video id="videoPlayer" controls width="400" height="300" class="hidden"></video>
     <input type="image" src="play.png" width="32" height="32" id="playButton" alt="Play"/>
     <input type="range" min="0" max="100" step="0.1" value="0" id="positionRange">
     <input type="image" src="skip.png" width="32" height="32" id="nextButton" alt="Skip"/>
     <input type="image" src="shuffle.png" width="32" height="32" id="shuffleButton" alt="Shuffle"/>
-  </td>
-</tr>
+  </div>
 
-<tr>
-  <td>
+  <div>
     <input type="text" name="search" id="searchInput" placeholder="search or ? for random"/>
     <button id="searchButton">Search</button>
-  </td>
-</tr>
-</table></div>
+  </div>
+</div>
 
 <div id="itemListDiv"></div>
 
