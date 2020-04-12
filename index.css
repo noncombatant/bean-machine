@@ -50,27 +50,27 @@ th, td {
   display: table;
   width: 100%;
   background-size: cover;
+  background: linear-gradient(to bottom, #cbc0ff, #abe793);
 }
 
 .itemDiv {
   display: row;
   color: #111;
+  background-color: rgb(255, 255, 255, 0.9);
   padding: 0.5em;
-  margin: 0.2em;
-  border-bottom: 1px solid #ddd;
 }
 
-.itemDiv:hover, .albumTitleDiv:hover {
+.itemDiv:hover {
   color: #000;
+  background-color: rgb(255, 255, 255, 1);
   box-shadow: 0px 1px 1px gray;
 }
 
 .albumTitleDiv {
   font-size: 110%;
-  background-color: #ededed;
+  background-color: rgb(255, 255, 255, 0.6);
   display: row;
   padding: 0.5em;
-  margin: 0.2em;
 }
 
 audio, #searchInput {
