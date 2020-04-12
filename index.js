@@ -202,7 +202,10 @@ const getTimeupdateForItemID = function(itemID) {
 }
 
 const playerOnTimeupdate = function(e) {
-  positionRange.value = (player.currentTime / player.duration) * 100
+  // Hypothesis: the graphic jankiness when updating the thumb position (in
+  // Chrome for Android) is due to too much 'precision' in this value. Use
+  // `floor` to get rid of it.
+  positionRange.value = Math.floor((player.currentTime / player.duration) * 100)
 
   // TODO: Try to make this work.
   //const time = getTimeupdateForItemID(player.itemID)
@@ -278,7 +281,7 @@ const shuffleButtonOnClick = function(e) {
 
 
 const positionRangeOnChange = function(e) {
-  player.currentTime = player.duration * (positionRange.value / 100.0);
+  player.currentTime = player.duration * (positionRange.value / 100.0)
 }
 
 const $ = function(id) {
