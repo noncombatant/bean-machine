@@ -153,6 +153,7 @@ const extendCatalog = function() {
 
 const itemDivOnClick = function(e) {
   preparePlay(searchHits[this.itemID], this.itemID)
+  playButton.src = "pause.png"
   player.play()
 }
 
