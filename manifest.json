@@ -6,6 +6,8 @@
   "display": "fullscreen",
   "orientation": "portrait",
   "theme_color": "#acf",
+  "background_color": "#317EFB",
+  "theme_color": "#317EFB",
   "icons": [
     {
       "src": "clef-192.png",

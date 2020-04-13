@@ -414,6 +414,10 @@ const isVideoPathname = function(pathname) {
 }
 
 const main = function() {
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register("sw.js");
+  }
+
   player.addEventListener("ended", playNext)
   player.addEventListener("error", playerOnError)
   player.addEventListener("timeupdate", playerOnTimeupdate)
