@@ -40,6 +40,7 @@ var (
 		"clef-96.png",
 		"clef-64.png",
 		"favicon.ico",
+		"help.png",
 		"play.png",
 		"pause.png",
 		"repeat.png",

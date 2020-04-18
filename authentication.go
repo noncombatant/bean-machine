@@ -34,6 +34,19 @@ var (
 		"login.html",
 		"manifest.json",
 		"readme.html",
+
+		"clef-192.png",
+		"clef-144.png",
+		"clef-96.png",
+		"clef-64.png",
+		"favicon.ico",
+		"help.png",
+		"play.png",
+		"pause.png",
+		"repeat.png",
+		"shuffle.png",
+		"skip.png",
+		"unknown-album.png",
 	}
 
 	gzippableExtensions = []string{
