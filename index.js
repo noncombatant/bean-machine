@@ -34,7 +34,7 @@ const preparePlay = function(item, itemID) {
 let fetchSearchHitsInProgress = false
 const blobCache = {}
 const fetchSearchHits = function() {
-  if (fetchSearchHitsInProgress || 0 === searchCatalogFetchBudget) {
+  if (fetchSearchHitsInProgress || 0 === searchCatalogFetchBudget || 0 === searchHits.length) {
     return
   }
 
