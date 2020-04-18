@@ -242,7 +242,6 @@ const restoreState = function() {
 
 let searchCatalogFetchIndex = 0
 let searchCatalogFetchBudget = 0
-let haveSentCatalogToWorker = false
 
 const searchCatalog = function(query) {
   query = query.trim()
