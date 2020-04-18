@@ -54,7 +54,7 @@ self.addEventListener('fetch', event => {
   }
 
   // Just do a stupid pass-through, no caching.
-  return fetch(event.request).then(response => {
+  return fetch(event.request, {"credentials": "include"}).then(response => {
     return response
   })
 
