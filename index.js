@@ -19,12 +19,14 @@ const setAudioVideoControls = function(item) {
   player.className = "normal"
 }
 
+// TODO: item is a function of itemID; change this to take only itemID.
 const preparePlay = function(item, itemID) {
   player.pause()
   setAudioVideoControls(item)
   positionRange.value = 0
   player.src = blobCache[item.pathname] || item.pathname
   player.itemID = itemID
+  // TODO: The next 2 lines are dead; remove them.
   localStorage.setItem("itemID", itemID)
   //player.currentTime = getTimeupdateForItemID(itemID)
   displayNowPlaying(item, nowPlayingTitle)
@@ -209,6 +211,10 @@ const bodyOnKeyup = function(e) {
     case "s":
       shuffleButtonOnClick()
       break
+    case "/":
+      searchInput.focus()
+      searchInput.select()
+      break
     case "?":
       // TODO: Show help screen (i.e. help.html in a `div`).
       break
@@ -217,7 +223,7 @@ const bodyOnKeyup = function(e) {
 
 const togglePlayback = function() {
   playButton.src = player.paused ? "pause.png" : "play.png"
-  playButton.alt = player.paused ? "Pause" : "Play"
+  playButton.alt = playButton.title = player.paused ? "Pause" : "Play (p)"
   player[player.paused ? "play" : "pause"]()
 }
 
@@ -225,6 +231,7 @@ const playerOnError = function(e) {
   this.dispatchEvent(new Event("ended"))
 }
 
+// TODO: This may be dead/hopeless code.
 const getTimeupdateForItemID = function(itemID) {
   const key = "timeupdate" + itemID
   const time = parseInt(localStorage.getItem(key))
@@ -260,7 +267,7 @@ const shuffle = function(array) {
 const restoreState = function() {
   const shuffleOn = "true" === localStorage.getItem("shuffle")
   shuffleButton.src = shuffleOn ? "repeat.png" : "shuffle.png"
-  shuffleButton.alt = shuffleButton.title = shuffleOn ? "Sort" : "Shuffle"
+  shuffleButton.alt = shuffleButton.title = shuffleOn ? "Sort (s)" : "Shuffle (s)"
   searchCatalog(localStorage.getItem("query") || "")
 }
 
@@ -295,7 +302,6 @@ const searchInputOnKeyUp = function(e) {
 
 const playButtonOnClick = function(e) {
   if (undefined === player.itemID) {
-    player.itemID = 0
     preparePlay(searchHits[0], 0)
   }
   togglePlayback()
@@ -304,7 +310,7 @@ const playButtonOnClick = function(e) {
 const shuffleButtonOnClick = function(e) {
   const shuffleOn = "true" === localStorage.getItem("shuffle")
   shuffleButton.src = shuffleOn ? "shuffle.png" : "repeat.png"
-  shuffleButton.alt = shuffleButton.title = shuffleOn ? "Shuffle" : "Sort"
+  shuffleButton.alt = shuffleButton.title = shuffleOn ? "Shuffle (s)" : "Sort (s)"
   localStorage.setItem("shuffle", shuffleOn ? "false" : "true")
   buildCatalog(0)
 }
