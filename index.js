@@ -19,9 +19,9 @@ const setAudioVideoControls = function(item) {
   player.className = "normal"
 }
 
-// TODO: item is a function of itemID; change this to take only itemID.
-const preparePlay = function(item, itemID) {
+const preparePlay = function(itemID) {
   player.pause()
+  const item = searchHits[itemID]
   setAudioVideoControls(item)
   positionRange.value = 0
   player.src = blobCache[item.pathname] || item.pathname
@@ -154,7 +154,7 @@ const extendCatalog = function() {
 }
 
 const itemDivOnClick = function(e) {
-  preparePlay(searchHits[this.itemID], this.itemID)
+  preparePlay(this.itemID)
   playButton.src = "pause.png"
   playButton.alt = "Pause"
   player.play()
@@ -181,7 +181,7 @@ const playNext = function(e) {
     return
   }
   const itemID = (player.itemID + 1) % searchHits.length
-  preparePlay(searchHits[itemID], itemID)
+  preparePlay(itemID)
   player.play()
 }
 
@@ -197,7 +197,8 @@ const bodyOnKeyup = function(e) {
   switch (e.key) {
     case "n":
       if (undefined === player.itemID) {
-        player.itemID = 0
+        playButtonOnClick(e)
+        break
       }
       playNext()
       break
@@ -206,7 +207,7 @@ const bodyOnKeyup = function(e) {
       playButtonOnClick(e)
       break
     case "s":
-      shuffleButtonOnClick()
+      shuffleButtonOnClick(e)
       break
     case "/":
       searchInput.focus()
@@ -285,7 +286,7 @@ const searchInputOnKeyUp = function(e) {
 
 const playButtonOnClick = function(e) {
   if (undefined === player.itemID) {
-    preparePlay(searchHits[0], 0)
+    preparePlay(0)
   }
   togglePlayback()
 }
