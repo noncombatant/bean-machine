@@ -156,7 +156,10 @@ const extendCatalog = function() {
 const itemDivOnClick = function(e) {
   preparePlay(this.itemID)
   playButton.src = "pause.png"
-  playButton.alt = "Pause"
+  // TODO: This pattern of code is repeated too many times, and it's redundant
+  // (and the instances of it can thus get out of sync). Abstract these into
+  // functions like `setPlayButton`, `setShuffleButton`, et c.
+  playButton.alt = playButton.title = "Pause (p)"
   player.play()
 }
 
@@ -221,7 +224,7 @@ const bodyOnKeyup = function(e) {
 
 const togglePlayback = function() {
   playButton.src = player.paused ? "pause.png" : "play.png"
-  playButton.alt = playButton.title = player.paused ? "Pause" : "Play (p)"
+  playButton.alt = playButton.title = player.paused ? "Pause (p)" : "Play (p)"
   player[player.paused ? "play" : "pause"]()
 }
 
