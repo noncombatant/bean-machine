@@ -26,9 +26,6 @@ const preparePlay = function(item, itemID) {
   positionRange.value = 0
   player.src = blobCache[item.pathname] || item.pathname
   player.itemID = itemID
-  // TODO: The next 2 lines are dead; remove them.
-  localStorage.setItem("itemID", itemID)
-  //player.currentTime = getTimeupdateForItemID(itemID)
   displayNowPlaying(item, nowPlayingTitle)
   searchCatalogFetchBudget++
 }
@@ -231,25 +228,11 @@ const playerOnError = function(e) {
   this.dispatchEvent(new Event("ended"))
 }
 
-// TODO: This may be dead/hopeless code.
-const getTimeupdateForItemID = function(itemID) {
-  const key = "timeupdate" + itemID
-  const time = parseInt(localStorage.getItem(key))
-  return Number.isNaN(time) ? 0 : time
-}
-
 const playerOnTimeupdate = function(e) {
   // Hypothesis: the graphic jankiness when updating the thumb position (in
   // Chrome for Android) is due to too much 'precision' in this value. Use
   // `floor` to get rid of it.
   positionRange.value = Math.floor((player.currentTime / player.duration) * 100)
-
-  // TODO: Try to make this work.
-  //const time = getTimeupdateForItemID(player.itemID)
-  //if (player.currentTime < time || (player.currentTime - time) > 5) {
-  //  const key = "timeupdate" + player.itemID
-  //  localStorage.setItem(key, player.currentTime)
-  //}
 }
 
 // https://stackoverflow.com/questions/2450954/how-to-randomize-shuffle-a-javascript-array
