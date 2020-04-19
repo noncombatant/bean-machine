@@ -69,11 +69,14 @@ const buildItemDiv = function(item, itemID) {
     div.addEventListener("click", itemDivOnClick)
   }
 
-  const trackSpan = createElement("span", "itemDivCell trackNumber", (item.disc || "1") + "-" + (item.track || "1"))
+  const trackSpan = createElement("span", "itemDivCell secondaryMetadata", (item.disc || "1") + "-" + (item.track || "1"))
   div.appendChild(trackSpan)
 
   const nameSpan = createElement("span", "itemDivCell", getName(item))
   div.appendChild(nameSpan)
+
+  const genreSpan = createElement("span", "itemDivCell secondaryMetadata", getGenre(item))
+  div.appendChild(genreSpan)
 
   return div
 }
@@ -175,7 +178,7 @@ const displayNowPlaying = function(item, element) {
 }
 
 const playNext = function(e) {
-  if (0 === searchHits.length) {
+  if (0 === searchHits.length || undefined === player.itemID) {
     return
   }
   const itemID = (player.itemID + 1) % searchHits.length
@@ -183,12 +186,33 @@ const playNext = function(e) {
   player.play()
 }
 
+window.onkeydown = function(e) {
+  // Return false on space, so that we don't scroll down. We reserve space for
+  // `playButtonOnClick` in `bodyOnKeyup`. We have to set this as *the* event
+  // listener, not use `addEventListener`.
+  return !(" " === e.key && e.target === document.body)
+}
+
+// TODO: Document all these hotkeys in help.html.
 const bodyOnKeyup = function(e) {
-  e.stopPropagation()
-  if ("p" !== e.key) {
-    return
+  switch (e.key) {
+    case "n":
+      if (undefined === player.itemID) {
+        player.itemID = 0
+      }
+      playNext()
+      break
+    case "p":
+    case " ":
+      playButtonOnClick(e)
+      break
+    case "s":
+      shuffleButtonOnClick()
+      break
+    case "?":
+      // TODO: Show help screen (i.e. help.html in a `div`).
+      break
   }
-  playButtonOnClick(e)
 }
 
 const togglePlayback = function() {
@@ -377,6 +401,10 @@ const getAlbum = function(item) {
 
 const getArtist = function(item) {
   return item.artist || decodeURIComponent(basename(dirname(dirname(item.pathname))))
+}
+
+const getGenre = function(item) {
+  return item.genre || ""
 }
 
 const isPathnameInExtensions = function(pathname, extensions) {

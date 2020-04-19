@@ -94,11 +94,10 @@ th, td {
   margin-right: 1.5em;
 }
 
-.trackNumber {
-  width: 3em;
-  padding-right: 0.5em;
+.secondaryMetadata {
   text-align: right;
-  color: #333;
+  color: #888;
+  font-style: italic;
 }
 
 button, input {
