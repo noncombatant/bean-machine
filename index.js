@@ -224,7 +224,7 @@ const bodyOnKeyup = function(e) {
 
 const togglePlayback = function() {
   playButton.src = player.paused ? "pause.png" : "play.png"
-  playButton.alt = playButton.title = player.paused ? "Pause (p)" : "Play (p)"
+  playButton.alt = playButton.title = player.paused ? "Pause (p or Space)" : "Play (p or Space)"
   player[player.paused ? "play" : "pause"]()
 }
 
