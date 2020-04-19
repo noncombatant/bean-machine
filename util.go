@@ -31,6 +31,7 @@ var (
 	}
 	videoFormatExtensions = []string{
 		".avi",
+		".m4v",
 		".mkv",
 		".mov",
 		".mp4",

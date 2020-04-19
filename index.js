@@ -419,6 +419,7 @@ const audioFormatExtensions = [
 ]
 const videoFormatExtensions = [
   ".avi",
+  ".m4v",
   ".mkv",
   ".mov",
   ".mp4",
