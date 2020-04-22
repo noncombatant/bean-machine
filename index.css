@@ -34,18 +34,6 @@ th, td {
   padding: 0.5em;
 }
 
-#controlsDiv, table {
-  width: 100%;
-}
-
-.narrow {
-  width: 7em;
-}
-
-.right {
-  text-align: right;
-}
-
 #itemListDiv {
   cursor: pointer;
   display: table;
