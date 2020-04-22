@@ -66,7 +66,7 @@ var (
 		".png",
 	}
 
-	cookieLifetime, _ = time.ParseDuration("2400h")
+	cookieLifetime, _ = time.ParseDuration("24000h")
 
 	wordSplitter = regexp.MustCompile(`\s+`)
 )
@@ -185,15 +185,15 @@ func (h AuthenticatingFileHandler) handleLogIn(w http.ResponseWriter, r *http.Re
 	password := r.FormValue("password")
 	stored := readPasswordDatabase(path.Join(configurationPathname, passwordsBasename))
 
+	cookie := &http.Cookie{Name: "token", Value: "", Secure: true, HttpOnly: true, Expires: getCookieLifetime(), Path: "/"}
 	if checkPassword(stored, username, password) {
 		Logger.Printf("%q successful", username)
 		token := username + ":" + hex.EncodeToString(generateToken(username, stored[username]))
-		cookie := &http.Cookie{Name: "token", Value: token, Secure: true, HttpOnly: true, Expires: getCookieLifetime()}
+		cookie.Value = token
 		http.SetCookie(w, cookie)
 		http.Redirect(w, r, "/index.html", http.StatusFound)
 	} else {
 		Logger.Printf("%q unsuccessful", username)
-		cookie := &http.Cookie{Name: "token", Value: "", Secure: true, HttpOnly: true}
 		http.SetCookie(w, cookie)
 		redirectToLogin(w, r)
 	}
@@ -369,11 +369,6 @@ func (h AuthenticatingFileHandler) ServeHTTP(w http.ResponseWriter, r *http.Requ
 		Logger.Printf("Refusing %q to %q with invalid token", r.URL.Path, username)
 		redirectToLogin(w, r)
 		return
-	}
-
-	if cookie != nil {
-		cookie.Expires = getCookieLifetime()
-		http.SetCookie(w, cookie)
 	}
 
 	if r.URL.Path == "/search" {
