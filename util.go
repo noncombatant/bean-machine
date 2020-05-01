@@ -191,14 +191,6 @@ func openFileAndGetInfo(pathname string) FileAndInfoResult {
 	return FileAndInfoResult{File: file, Info: info, Error: nil}
 }
 
-func replaceStringAndLog(s, old, new, description string) string {
-	if -1 != strings.Index(s, old) {
-		Logger.Printf("%q contains a %s", s, description)
-		s = strings.Replace(s, old, new, -1)
-	}
-	return s
-}
-
 func assertValidRootPathname(root string) {
 	info, e := os.Stat(root)
 	if e != nil || !info.IsDir() {

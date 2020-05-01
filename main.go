@@ -172,8 +172,8 @@ Here is what the commands do:
   serve
     Installs the web app front-end files in music-directory.
 
-    Scans music-directory for music files, and creates an in-memory database of
-    their metadata.
+    Scans music-directory for music files, and creates a database of their
+    metadata.
 
     Starts a web server rooted at music-directory, and prints out the URL(s)
     of the Bean Machine web app.
