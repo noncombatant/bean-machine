@@ -90,6 +90,7 @@ const buildAlbumTitleDiv = function(item, itemID) {
   coverA.href = directory + "/media.html"
   coverImg.src = directory + "/cover"
   coverImg.height = coverImg.width = 64
+  coverImg.loading = "lazy"
   coverA.target = "cover"
   coverA.appendChild(coverImg)
   div.appendChild(coverA)
