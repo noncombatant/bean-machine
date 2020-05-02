@@ -31,16 +31,18 @@ type ItemInfo struct {
 	File               *id3.File
 }
 
+type Catalog []*ItemInfo
+
 func (i *ItemInfo) ToJSON() string {
 	return fmt.Sprintf(`{"pathname":%q,
 "album":%q,
 "artist":%q,
 "name":%q,
-"disc":%q,
-"track":%q,
-"year":%q,
+"disc":%d,
+"track":%d,
+"year":%d,
 "genre":%q}`,
-		i.Pathname, i.Album, i.Artist, i.Name, i.Disc, i.Track, i.Year, i.Genre)
+		i.Pathname, i.Album, i.Artist, i.Name, atoi(i.NormalizedDisc), atoi(i.NormalizedTrack), atoi(i.NormalizedYear), i.Genre)
 }
 
 func getDiscAndTrackFromBasename(basename string) (string, string, string) {
@@ -134,8 +136,8 @@ func (i *ItemInfo) Normalize() {
 	i.NormalizedAlbum = normalizeStringForSearch(i.Album)
 	i.NormalizedArtist = normalizeStringForSearch(i.Artist)
 	i.NormalizedName = normalizeStringForSearch(i.Name)
-	i.Disc = extractNumericString(i.Disc)
-	i.Track = extractNumericString(i.Track)
-	i.Year = extractNumericString(i.Year)
+	i.NormalizedDisc = extractNumericString(i.Disc)
+	i.NormalizedTrack = extractNumericString(i.Track)
+	i.NormalizedYear = extractNumericString(i.Year)
 	i.NormalizedGenre = normalizeStringForSearch(i.Genre)
 }

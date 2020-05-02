@@ -13,6 +13,7 @@ import (
 	"path"
 	"path/filepath"
 	"regexp"
+	"strconv"
 	"strings"
 )
 
@@ -196,4 +197,12 @@ func assertValidRootPathname(root string) {
 	if e != nil || !info.IsDir() {
 		Logger.Fatal("Cannot continue without a valid music-directory.")
 	}
+}
+
+func atoi(s string) int {
+	i, e := strconv.Atoi(s)
+	if e != nil {
+		return 0
+	}
+	return i
 }
