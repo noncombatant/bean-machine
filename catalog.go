@@ -25,7 +25,8 @@ var (
 )
 
 const (
-	catalogFile = "catalog.gobs"
+	catalogFile     = "catalog.gobs"
+	catalogFileTemp = "catalog.gobs.tmp"
 )
 
 func buildCatalogFromGobs(gobs *os.File, modTime time.Time) {
@@ -58,16 +59,17 @@ func buildCatalogFromWalk(root string) {
 	}()
 	Logger.Print("Start. This might take a while.")
 
-	// TODO: Write to a different file, and then move the new one into place at the end.
-	gobs, e := os.OpenFile(path.Join(root, catalogFile), os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
+	catalogFileTempPath := path.Join(root, catalogFileTemp)
+	catalogFilePath := path.Join(root, catalogFile)
+	gobs, e := os.OpenFile(catalogFileTempPath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
 	if e != nil {
 		Logger.Fatal(e)
 	}
-	defer gobs.Close()
+	// We do `gobs.Close()` explicitly at the end.
 
 	status, e := gobs.Stat()
 	if e != nil {
-		Logger.Printf("Can't Stat %q: %v", catalogFile, e)
+		Logger.Printf("Can't Stat %q: %v", catalogFileTemp, e)
 	} else {
 		lastReadCatalog = status.ModTime()
 	}
@@ -137,6 +139,12 @@ func buildCatalogFromWalk(root string) {
 
 	if e != nil {
 		Logger.Printf("Problem walking %q: %s", root, e)
+	}
+	buildCatalogFromWalkInProgress = false
+	gobs.Close()
+	e = os.Rename(catalogFileTempPath, catalogFilePath)
+	if e != nil {
+		Logger.Fatal(e)
 	}
 	catalog = newCatalog
 	Logger.Printf("Completed. %v items.", len(catalog))
