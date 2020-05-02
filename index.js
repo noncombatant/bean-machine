@@ -199,6 +199,7 @@ window.onkeydown = function(e) {
 // TODO: Document all these hotkeys in help.html.
 const bodyOnKeyup = function(e) {
   switch (e.key) {
+    case "ArrowRight":
     case "n":
       if (undefined === player.itemID) {
         playButtonOnClick(e)
