@@ -58,6 +58,7 @@ func buildCatalogFromWalk(root string) {
 	}()
 	Logger.Print("Start. This might take a while.")
 
+	// TODO: Write to a different file, and then move the new one into place at the end.
 	gobs, e := os.OpenFile(path.Join(root, catalogFile), os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
 	if e != nil {
 		Logger.Fatal(e)
