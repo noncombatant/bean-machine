@@ -294,6 +294,12 @@ const playButtonOnClick = function(e) {
     preparePlay(0)
   }
   togglePlayback()
+  playButton.blur()
+}
+
+const nextButtonOnClick = function(e) {
+  playNext()
+  nextButton.blur()
 }
 
 const shuffleButtonOnClick = function(e) {
@@ -302,6 +308,7 @@ const shuffleButtonOnClick = function(e) {
   shuffleButton.alt = shuffleButton.title = shuffleOn ? "Shuffle (s)" : "Sort (s)"
   localStorage.setItem("shuffle", shuffleOn ? "false" : "true")
   buildCatalog(0)
+  shuffleButton.blur()
 }
 
 
@@ -448,7 +455,7 @@ const main = function() {
   player.addEventListener("error", playerOnError)
   player.addEventListener("timeupdate", playerOnTimeupdate)
   playButton.addEventListener("click", playButtonOnClick)
-  nextButton.addEventListener("click", playNext)
+  nextButton.addEventListener("click", nextButtonOnClick)
   shuffleButton.addEventListener("click", shuffleButtonOnClick)
   positionRange.addEventListener("change", positionRangeOnChange)
   searchInput.addEventListener("keyup", searchInputOnKeyUp)
