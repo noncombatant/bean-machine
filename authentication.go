@@ -217,7 +217,6 @@ func (h AuthenticatingFileHandler) handleSearch(w http.ResponseWriter, r *http.R
 		query = words[len(words)-1]
 	}
 
-	Logger.Printf("%v", query)
 	matches := matchItems(catalog, query)
 	w.Header().Set("Content-Type", "text/json")
 	writeItemInfos(w, matches)

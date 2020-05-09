@@ -36,20 +36,39 @@ func normalizeStringForSearch(s string) string {
 	return strings.ToLower(normalized)
 }
 
-// TODO: Take Query.Keyword into account!
 func matchItem(info *ItemInfo, queries []Query) bool {
 	for _, query := range queries {
 		matched := false
-		if strings.Contains(info.NormalizedPathname, query.Term) ||
-			strings.Contains(info.NormalizedAlbum, query.Term) ||
-			strings.Contains(info.NormalizedArtist, query.Term) ||
-			strings.Contains(info.NormalizedName, query.Term) ||
-			strings.Contains(info.NormalizedDisc, query.Term) ||
-			strings.Contains(info.NormalizedTrack, query.Term) ||
-			strings.Contains(info.NormalizedYear, query.Term) ||
-			strings.Contains(info.NormalizedGenre, query.Term) ||
-			strings.Contains(info.ModTime, query.Term) {
-			matched = true
+		if query.Keyword == "path" || query.Keyword == "pathname" {
+			matched = strings.Contains(info.NormalizedPathname, query.Term)
+		} else if query.Keyword == "album" {
+			matched = strings.Contains(info.NormalizedAlbum, query.Term)
+		} else if query.Keyword == "artist" {
+			matched = strings.Contains(info.NormalizedArtist, query.Term)
+		} else if query.Keyword == "name" {
+			matched = strings.Contains(info.NormalizedName, query.Term)
+		} else if query.Keyword == "disc" {
+			matched = strings.Contains(info.NormalizedDisc, query.Term)
+		} else if query.Keyword == "track" {
+			matched = strings.Contains(info.NormalizedTrack, query.Term)
+		} else if query.Keyword == "year" {
+			matched = strings.Contains(info.NormalizedYear, query.Term)
+		} else if query.Keyword == "genre" {
+			matched = strings.Contains(info.NormalizedGenre, query.Term)
+		} else if query.Keyword == "mtime" || query.Keyword == "added" {
+			matched = strings.Contains(info.ModTime, query.Term)
+		} else {
+			if strings.Contains(info.NormalizedPathname, query.Term) ||
+				strings.Contains(info.NormalizedAlbum, query.Term) ||
+				strings.Contains(info.NormalizedArtist, query.Term) ||
+				strings.Contains(info.NormalizedName, query.Term) ||
+				strings.Contains(info.NormalizedDisc, query.Term) ||
+				strings.Contains(info.NormalizedTrack, query.Term) ||
+				strings.Contains(info.NormalizedYear, query.Term) ||
+				strings.Contains(info.NormalizedGenre, query.Term) ||
+				strings.Contains(info.ModTime, query.Term) {
+				matched = true
+			}
 		}
 		if (matched && query.Negated) || (!matched && !query.Negated) {
 			return false
