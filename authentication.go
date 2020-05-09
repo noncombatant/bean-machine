@@ -210,20 +210,17 @@ func (h AuthenticatingFileHandler) handleSearch(w http.ResponseWriter, r *http.R
 	}
 
 	query := strings.TrimSpace(queries[0])
-	var words []string
 	if len(query) == 0 || "?" == query {
 		rand.Seed(time.Now().Unix())
 		item := catalog[rand.Intn(len(catalog))]
-		words = wordSplitter.Split(path.Dir(item.Pathname), -1)
-		words = words[len(words)-1:]
-	} else {
-		words = wordSplitter.Split(query, -1)
+		words := wordSplitter.Split(path.Dir(item.Pathname), -1)
+		query = words[len(words)-1]
 	}
 
-	Logger.Printf("%v", words)
-	results := matchItems(catalog, words)
+	Logger.Printf("%v", query)
+	matches := matchItems(catalog, query)
 	w.Header().Set("Content-Type", "text/json")
-	writeItemInfos(w, results)
+	writeItemInfos(w, matches)
 }
 
 func redirectToLogin(w http.ResponseWriter, r *http.Request) {

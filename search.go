@@ -12,11 +12,6 @@ import (
 	"golang.org/x/text/unicode/norm"
 )
 
-type Query struct {
-	Term    string
-	Negated bool
-}
-
 var (
 	// Borrowed from
 	// https://stackoverflow.com/questions/26722450/remove-diacritics-using-go.
@@ -41,6 +36,7 @@ func normalizeStringForSearch(s string) string {
 	return strings.ToLower(normalized)
 }
 
+// TODO: Take Query.Keyword into account!
 func matchItem(info *ItemInfo, queries []Query) bool {
 	for _, query := range queries {
 		matched := false
@@ -62,16 +58,10 @@ func matchItem(info *ItemInfo, queries []Query) bool {
 	return true
 }
 
-func matchItems(infos []*ItemInfo, query []string) []*ItemInfo {
-	queries := make([]Query, len(query))
-	for i, term := range query {
-		if term[0] == '-' {
-			term = term[1:]
-			queries[i] = Query{Term: normalizeStringForSearch(term), Negated: true}
-		} else {
-			queries[i] = Query{Term: normalizeStringForSearch(term), Negated: false}
-		}
-	}
+func matchItems(infos []*ItemInfo, rawQuery string) []*ItemInfo {
+	rawQuery = strings.TrimSpace(normalizeStringForSearch(rawQuery))
+	queries := ReconstructQueries(ParseTerms(rawQuery))
+	Logger.Print(queries)
 
 	results := []*ItemInfo{}
 	for _, info := range infos {
