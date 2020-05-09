@@ -137,7 +137,7 @@ func getHmacKey() []byte {
 //
 func generateToken(username string, storedCredential string) []byte {
 	mac := hmac.New(sha256.New, getHmacKey())
-	mac.Write([]byte(username))
+	mac.Write([]byte(strings.ToLower(username)))
 	mac.Write([]byte("\x00"))
 	mac.Write([]byte(storedCredential))
 	return mac.Sum(nil)
@@ -145,6 +145,7 @@ func generateToken(username string, storedCredential string) []byte {
 
 func checkToken(username string, receivedToken []byte) bool {
 	passwords := readPasswordDatabase(path.Join(configurationPathname, passwordsBasename))
+	username = strings.ToLower(username)
 	storedCredential, ok := passwords[username]
 	if !ok {
 		Logger.Printf("No such username %q", username)
@@ -181,7 +182,9 @@ type AuthenticatingFileHandler struct {
 }
 
 func (h AuthenticatingFileHandler) handleLogIn(w http.ResponseWriter, r *http.Request) {
-	username := r.FormValue("name")
+	// TODO: Factor the username normalization in a minimal, robust way. In this
+	// file and in passwords.go, we're just sprinkling `ToLower` everywhere.
+	username := strings.ToLower(r.FormValue("name"))
 	password := r.FormValue("password")
 	stored := readPasswordDatabase(path.Join(configurationPathname, passwordsBasename))
 

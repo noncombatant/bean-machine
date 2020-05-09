@@ -47,7 +47,7 @@ func readPasswordDatabase(pathname string) Credentials {
 			if e != nil {
 				break
 			}
-			credentials[username] = password
+			credentials[strings.ToLower(username)] = password
 		}
 		lastCredentialRead = result.Info.ModTime()
 	}
@@ -61,7 +61,7 @@ func promptForCredentials() (string, string) {
 	fmt.Scanln(&username)
 	fmt.Print("Password: ")
 	fmt.Scanln(&password)
-	return username, password
+	return strings.ToLower(username), password
 }
 
 func obfuscatePassword(password, salt []byte) []byte {
