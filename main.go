@@ -200,7 +200,6 @@ func main() {
 	}
 
 	establishConfiguration()
-	assertValidRootPathname(musicRoot)
 
 	status := 0
 	for i := 0; i < flag.NArg(); i++ {
@@ -209,6 +208,7 @@ func main() {
 		case "help":
 			printHelp()
 		case "serve":
+			assertValidRootPathname(musicRoot)
 			installFrontEndFiles(musicRoot)
 			buildCatalog(musicRoot)
 			serveApp(musicRoot)
