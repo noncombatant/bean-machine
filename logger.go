@@ -10,6 +10,7 @@ package main
 import (
 	"log"
 	"runtime"
+	"strings"
 )
 
 type LogWriter struct{}
@@ -25,6 +26,6 @@ func (f LogWriter) Write(bytes []byte) (int, error) {
 	if function != nil {
 		name = function.Name()
 	}
-	log.Printf("%s: %s", name, bytes)
+	log.Printf("%s: %s", strings.TrimPrefix(name, "main."), bytes)
 	return len(bytes), nil
 }
