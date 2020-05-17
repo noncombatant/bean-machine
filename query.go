@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"strings"
 	"text/scanner"
 )
@@ -9,6 +10,10 @@ type Query struct {
 	Keyword string
 	Term    string
 	Negated bool
+}
+
+func (q Query) String() string {
+	return fmt.Sprintf("{Keyword: %q, Term: %q, Negated: %t}", q.Keyword, q.Term, q.Negated)
 }
 
 func ParseTerms(query string) []string {
