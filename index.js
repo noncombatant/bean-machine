@@ -154,7 +154,7 @@ const extendCatalog = function() {
   haveRequestedExtendCatalog = false
 }
 
-const itemDivOnClick = function(e) {
+const itemDivOnClick = function(event) {
   preparePlay(this.itemID)
   playButton.src = "pause.png"
   // TODO: This pattern of code is repeated too many times, and it's redundant
@@ -164,7 +164,7 @@ const itemDivOnClick = function(e) {
   player.play()
 }
 
-const windowOnScroll = function(e) {
+const windowOnScroll = function(event) {
   if (!haveRequestedExtendCatalog) {
     window.requestAnimationFrame(extendCatalog)
   }
@@ -180,7 +180,7 @@ const displayNowPlaying = function(item, element) {
   document.title = element.textContent
 }
 
-const playNext = function(e) {
+const playNext = function(event) {
   if (0 === searchHits.length || undefined === player.itemID) {
     return
   }
@@ -189,30 +189,30 @@ const playNext = function(e) {
   player.play()
 }
 
-window.onkeydown = function(e) {
+window.onkeydown = function(event) {
   // Return false on space, so that we don't scroll down. We reserve space for
   // `playButtonOnClick` in `bodyOnKeyup`. We have to set this as *the* event
   // listener, not use `addEventListener`.
-  return !(" " === e.key && e.target === document.body)
+  return !(" " === event.key && event.target === document.body)
 }
 
 // TODO: Document all these hotkeys in help.html.
-const bodyOnKeyup = function(e) {
-  switch (e.key) {
+const bodyOnKeyup = function(event) {
+  switch (event.key) {
     case "ArrowRight":
     case "n":
       if (undefined === player.itemID) {
-        playButtonOnClick(e)
+        playButtonOnClick(event)
         break
       }
       playNext()
       break
     case "p":
     case " ":
-      playButtonOnClick(e)
+      playButtonOnClick(event)
       break
     case "s":
-      shuffleButtonOnClick(e)
+      shuffleButtonOnClick(event)
       break
     case "/":
       searchInput.focus()
@@ -230,11 +230,11 @@ const togglePlayback = function() {
   player[player.paused ? "play" : "pause"]()
 }
 
-const playerOnError = function(e) {
+const playerOnError = function(event) {
   this.dispatchEvent(new Event("ended"))
 }
 
-const playerOnTimeupdate = function(e) {
+const playerOnTimeupdate = function(event) {
   // Hypothesis: the graphic jankiness when updating the thumb position (in
   // Chrome for Android) is due to too much 'precision' in this value. Use
   // `floor` to get rid of it.
@@ -278,18 +278,18 @@ const searchCatalog = function(query) {
   })
 }
 
-const executeSearch = function(e) {
+const executeSearch = function(event) {
   searchCatalog(searchInput.value)
 }
 
-const searchInputOnKeyUp = function(e) {
-  e.stopPropagation()
-  if ("Enter" === e.code) {
+const searchInputOnKeyUp = function(event) {
+  event.stopPropagation()
+  if ("Enter" === event.code) {
     searchCatalog(this.value)
   }
 }
 
-const playButtonOnClick = function(e) {
+const playButtonOnClick = function(event) {
   if (undefined === player.itemID) {
     preparePlay(0)
   }
@@ -297,12 +297,12 @@ const playButtonOnClick = function(e) {
   playButton.blur()
 }
 
-const nextButtonOnClick = function(e) {
+const nextButtonOnClick = function(event) {
   playNext()
   nextButton.blur()
 }
 
-const shuffleButtonOnClick = function(e) {
+const shuffleButtonOnClick = function(event) {
   const shuffleOn = "true" === localStorage.getItem("shuffle")
   shuffleButton.src = shuffleOn ? "shuffle.png" : "repeat.png"
   shuffleButton.alt = shuffleButton.title = shuffleOn ? "Shuffle (s)" : "Sort (s)"
@@ -312,7 +312,7 @@ const shuffleButtonOnClick = function(e) {
 }
 
 
-const positionRangeOnChange = function(e) {
+const positionRangeOnChange = function(event) {
   player.currentTime = player.duration * (positionRange.value / 100.0)
 }
 
@@ -462,6 +462,10 @@ const main = function() {
   searchButton.addEventListener("click", executeSearch)
   window.addEventListener("scroll", windowOnScroll)
   document.body.addEventListener("keyup", bodyOnKeyup)
+
+  if (requireLongPress) {
+    nowPlayingTitle.innerText = "Long-press on any track to play."
+  }
   restoreState()
   setInterval(fetchSearchHits, 2000)
 }
