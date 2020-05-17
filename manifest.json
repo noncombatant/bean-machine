@@ -5,28 +5,13 @@
   "start_url": "./",
   "display": "fullscreen",
   "orientation": "portrait",
-  "theme_color": "#acf",
+  "theme_color": "#317EFB",
   "background_color": "#317EFB",
   "theme_color": "#317EFB",
   "icons": [
     {
-      "src": "clef-192.png",
-      "sizes": "192x192",
-      "type": "image/png"
-    },
-    {
-      "src": "clef-144.png",
-      "sizes": "144x144",
-      "type": "image/png"
-    },
-    {
-      "src": "clef-96.png",
-      "sizes": "96x96",
-      "type": "image/png"
-    },
-    {
-      "src": "clef-64.png",
-      "sizes": "64x64",
+      "src": "clef-512.png",
+      "sizes": "512x512",
       "type": "image/png"
     }
   ]

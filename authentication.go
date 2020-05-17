@@ -35,10 +35,7 @@ var (
 		"manifest.json",
 		"readme.html",
 
-		"clef-192.png",
-		"clef-144.png",
-		"clef-96.png",
-		"clef-64.png",
+		"clef-512.png",
 		"favicon.ico",
 		"help.png",
 		"play.png",
