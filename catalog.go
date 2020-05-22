@@ -15,8 +15,10 @@ import (
 	"time"
 )
 
+// TODO: These 3 things should be encapsulated in a `Catalog` type with real
+// methods instead of separate globals.
 var (
-	catalog         = Catalog{}
+	catalog         = ItemInfos{}
 	lastReadCatalog = time.Time{}
 	// `buildCatalogFromWalk` could be invoked (indirectly) through either
 	// `buildCatalog` or `serveApp`. To avoid having multiple invocations walk
@@ -29,10 +31,11 @@ const (
 	catalogFileTemp = "catalog.gobs.tmp"
 )
 
+// TODO: This should be a method on `Catalog`.
 func buildCatalogFromGobs(gobs *os.File, modTime time.Time) {
 	Logger.Print("running")
 	decoder := gob.NewDecoder(gobs)
-	newCatalog := Catalog{}
+	newCatalog := ItemInfos{}
 	for {
 		var info ItemInfo
 		e := decoder.Decode(&info)
@@ -40,7 +43,7 @@ func buildCatalogFromGobs(gobs *os.File, modTime time.Time) {
 			if e == io.EOF {
 				break
 			} else {
-				Logger.Fatal("decode error 1:", e)
+				Logger.Fatal("decode error:", e)
 			}
 		}
 		newCatalog = append(newCatalog, &info)
@@ -49,6 +52,7 @@ func buildCatalogFromGobs(gobs *os.File, modTime time.Time) {
 	lastReadCatalog = modTime
 }
 
+// TODO: This should be a method on `Catalog`.
 func buildCatalogFromWalk(root string) {
 	if buildCatalogFromWalkInProgress {
 		return
@@ -176,6 +180,7 @@ func isFileNewestInDirectory(directoryName, baseName string) bool {
 	return true
 }
 
+// TODO: Should be a method on `Catalog`.
 func buildCatalog(root string) {
 	if !isFileNewestInDirectory(root, catalogFile) {
 		buildCatalogFromWalk(root)

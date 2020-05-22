@@ -31,7 +31,7 @@ type ItemInfo struct {
 	File               *id3.File
 }
 
-type Catalog []*ItemInfo
+type ItemInfos []*ItemInfo
 
 func (i *ItemInfo) ToJSON() string {
 	return fmt.Sprintf(`{"pathname":%q,
