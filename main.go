@@ -33,6 +33,7 @@ var (
 		"index.css",
 		"index.html",
 		"index.js",
+		"media.css",
 		"sw.js",
 
 		"clef-512.png",

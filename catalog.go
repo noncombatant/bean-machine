@@ -233,6 +233,7 @@ func shouldBuildMediaIndex(pathname string, infos []os.FileInfo) bool {
 	return false
 }
 
+// TODO: Consider generating these dynamically instead of statically.
 func buildMediaIndex(pathname string) {
 	infos, e := ioutil.ReadDir(pathname)
 	if e != nil {
@@ -249,25 +250,11 @@ func buildMediaIndex(pathname string) {
 	}
 	defer index.Close()
 
-	// TODO: Fold this CSS into index.css.
-	header := `
-<!DOCTYPE html>
+	header := `<!DOCTYPE html>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
+<link rel="stylesheet" href="/media.css"/>
 <title>%s</title>
-<style>
-body {
-  line-height: 1.6;
-  font-size: 16px;
-  color: #222;
-  font-family: system-ui;
-}
-img {
-  border: 1px solid black;
-  max-width: 100%%;
-  height: auto;
-}
-</style>
 `
 	fmt.Fprintf(index, header, path.Base(pathname))
 

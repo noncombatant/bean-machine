@@ -1,0 +1,12 @@
+body {
+  line-height: 1.6;
+  font-size: 16px;
+  color: #222;
+  font-family: system-ui;
+}
+
+img {
+  border: 1px solid black;
+  max-width: 100%;
+  height: auto;
+}
