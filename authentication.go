@@ -209,12 +209,12 @@ func (h AuthenticatingFileHandler) handleSearch(w http.ResponseWriter, r *http.R
 	query := strings.TrimSpace(queries[0])
 	if len(query) == 0 || "?" == query {
 		rand.Seed(time.Now().Unix())
-		item := catalog[rand.Intn(len(catalog))]
+		item := catalog.ItemInfos[rand.Intn(len(catalog.ItemInfos))]
 		words := wordSplitter.Split(path.Dir(item.Pathname), -1)
 		query = words[len(words)-1]
 	}
 
-	matches := matchItems(catalog, query)
+	matches := matchItems(catalog.ItemInfos, query)
 	w.Header().Set("Content-Type", "text/json")
 	writeItemInfos(w, matches)
 }

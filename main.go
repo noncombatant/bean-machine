@@ -116,7 +116,7 @@ func establishConfiguration() {
 func monitorCatalogForUpdates() {
 	for {
 		time.Sleep(2 * time.Minute)
-		buildCatalog(musicRoot)
+		catalog.BuildCatalog(musicRoot)
 	}
 }
 
@@ -207,7 +207,7 @@ func main() {
 		case "serve":
 			assertValidRootPathname(musicRoot)
 			installFrontEndFiles(musicRoot)
-			buildCatalog(musicRoot)
+			catalog.BuildCatalog(musicRoot)
 			serveApp(musicRoot)
 		case "set-password":
 			setPassword()

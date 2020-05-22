@@ -15,15 +15,21 @@ import (
 	"time"
 )
 
-// TODO: These 3 things should be encapsulated in a `Catalog` type with real
-// methods instead of separate globals.
+type Catalog struct {
+	ItemInfos
+
+	// Time at which this Catalog's ItemInfos were last updated from the
+	// filesystem.
+	LastUpdate time.Time
+
+	// `buildCatalogFromWalk` could be invoked through either `buildCatalog` or
+	// `serveApp`. This sentinel avoids having multiple invocations walk twice
+	// and stomp on the `catalogFile`.
+	buildCatalogFromWalkInProgress bool
+}
+
 var (
-	catalog         = ItemInfos{}
-	lastReadCatalog = time.Time{}
-	// `buildCatalogFromWalk` could be invoked (indirectly) through either
-	// `buildCatalog` or `serveApp`. To avoid having multiple invocations walk
-	// twice and stomp on the `catalogFile`, we maintain this sentinel.
-	buildCatalogFromWalkInProgress = false
+	catalog = Catalog{}
 )
 
 const (
@@ -31,11 +37,9 @@ const (
 	catalogFileTemp = "catalog.gobs.tmp"
 )
 
-// TODO: This should be a method on `Catalog`.
-func buildCatalogFromGobs(gobs *os.File, modTime time.Time) {
-	Logger.Print("running")
+func (c *Catalog) buildCatalogFromGobs(gobs *os.File, modTime time.Time) {
 	decoder := gob.NewDecoder(gobs)
-	newCatalog := ItemInfos{}
+	newInfos := ItemInfos{}
 	for {
 		var info ItemInfo
 		e := decoder.Decode(&info)
@@ -46,20 +50,19 @@ func buildCatalogFromGobs(gobs *os.File, modTime time.Time) {
 				Logger.Fatal("decode error:", e)
 			}
 		}
-		newCatalog = append(newCatalog, &info)
+		newInfos = append(newInfos, &info)
 	}
-	catalog = newCatalog
-	lastReadCatalog = modTime
+	c.ItemInfos = newInfos
+	c.LastUpdate = modTime
 }
 
-// TODO: This should be a method on `Catalog`.
-func buildCatalogFromWalk(root string) {
-	if buildCatalogFromWalkInProgress {
+func (c *Catalog) buildCatalogFromWalk(root string) {
+	if c.buildCatalogFromWalkInProgress {
 		return
 	}
-	buildCatalogFromWalkInProgress = true
+	c.buildCatalogFromWalkInProgress = true
 	defer func() {
-		buildCatalogFromWalkInProgress = false
+		c.buildCatalogFromWalkInProgress = false
 	}()
 	Logger.Print("Start. This might take a while.")
 
@@ -75,7 +78,7 @@ func buildCatalogFromWalk(root string) {
 	if e != nil {
 		Logger.Printf("Can't Stat %q: %v", catalogFileTemp, e)
 	} else {
-		lastReadCatalog = status.ModTime()
+		c.LastUpdate = status.ModTime()
 	}
 
 	encoder := gob.NewEncoder(gobs)
@@ -86,7 +89,7 @@ func buildCatalogFromWalk(root string) {
 	timerFrequency := 1 * time.Second
 	timer := time.NewTimer(timerFrequency)
 
-	newCatalog := []*ItemInfo{}
+	newItems := ItemInfos{}
 	e = filepath.Walk(root,
 		func(pathname string, info os.FileInfo, e error) error {
 			if e != nil {
@@ -118,7 +121,7 @@ func buildCatalogFromWalk(root string) {
 				time := info.ModTime()
 				itemInfo.ModTime = fmt.Sprintf("%04d-%02d-%02d", time.Year(), time.Month(), time.Day())
 				itemInfo.fillMetadata()
-				newCatalog = append(newCatalog, &itemInfo)
+				newItems = append(newItems, &itemInfo)
 				e := encoder.Encode(itemInfo)
 				if e != nil {
 					Logger.Fatal(e)
@@ -144,14 +147,14 @@ func buildCatalogFromWalk(root string) {
 	if e != nil {
 		Logger.Printf("Problem walking %q: %s", root, e)
 	}
-	buildCatalogFromWalkInProgress = false
+	c.buildCatalogFromWalkInProgress = false
 	gobs.Close()
 	e = os.Rename(catalogFileTempPath, catalogFilePath)
 	if e != nil {
 		Logger.Fatal(e)
 	}
-	catalog = newCatalog
-	Logger.Printf("Completed. %v items.", len(catalog))
+	c.ItemInfos = newItems
+	Logger.Printf("Completed. %v items.", len(c.ItemInfos))
 }
 
 func isFileNewestInDirectory(directoryName, baseName string) bool {
@@ -180,29 +183,28 @@ func isFileNewestInDirectory(directoryName, baseName string) bool {
 	return true
 }
 
-// TODO: Should be a method on `Catalog`.
-func buildCatalog(root string) {
+func (c *Catalog) BuildCatalog(root string) {
 	if !isFileNewestInDirectory(root, catalogFile) {
-		buildCatalogFromWalk(root)
+		c.buildCatalogFromWalk(root)
 		return
 	}
 
 	gobs, e := os.Open(path.Join(root, catalogFile))
 	if e != nil {
-		buildCatalogFromWalk(root)
+		c.buildCatalogFromWalk(root)
 		return
 	}
 	defer gobs.Close()
 
 	status, e := gobs.Stat()
 	if e != nil {
-		buildCatalogFromWalk(root)
+		c.buildCatalogFromWalk(root)
 		return
 	}
 
 	modTime := status.ModTime()
-	if lastReadCatalog.IsZero() || lastReadCatalog.Before(modTime) {
-		buildCatalogFromGobs(gobs, modTime)
+	if c.LastUpdate.IsZero() || c.LastUpdate.Before(modTime) {
+		c.buildCatalogFromGobs(gobs, modTime)
 		return
 	}
 }
@@ -247,6 +249,7 @@ func buildMediaIndex(pathname string) {
 	}
 	defer index.Close()
 
+	// TODO: Fold this CSS into index.css.
 	header := `
 <!DOCTYPE html>
 <meta charset="UTF-8"/>
