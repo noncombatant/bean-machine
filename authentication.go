@@ -206,6 +206,7 @@ func (h AuthenticatingFileHandler) handleSearch(w http.ResponseWriter, r *http.R
 		return
 	}
 
+	// TODO: If empty query, show new entries for this year or month.
 	query := strings.TrimSpace(queries[0])
 	if len(query) == 0 || "?" == query {
 		rand.Seed(time.Now().Unix())
@@ -307,14 +308,7 @@ func (h AuthenticatingFileHandler) serveCover(pathname string, w http.ResponseWr
 		return
 	}
 
-	unknown, _ := openFileIfPublic(h.Root+"/unknown-album.png", false)
-	if unknown.File != nil {
-		http.ServeContent(w, r, pathname, unknown.Info.ModTime(), unknown.File)
-		unknown.File.Close()
-	} else {
-		Logger.Print(unknown.Error)
-		http.NotFound(w, r)
-	}
+	http.Redirect(w, r, "/unknown-album.png", http.StatusFound)
 }
 
 func (h AuthenticatingFileHandler) normalizePathname(pathname string) string {
