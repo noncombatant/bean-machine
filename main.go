@@ -21,6 +21,9 @@ const (
 	httpPort                  = ":1234"
 )
 
+
+// Move the web front-end into a web/ subdirectory. Change install and serving
+// logic in Go accordingly.
 var (
 	frontEndFiles = []string{
 		"help.html",
