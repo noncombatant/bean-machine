@@ -267,6 +267,27 @@ func openFileIfPublic(pathname string, shouldTryGzip bool) (FileAndInfoResult, b
 	return nonGzResult, false
 }
 
+func (h AuthenticatingFileHandler) serveFileContents(pathname string, w http.ResponseWriter, r *http.Request) {
+	acceptsGzip := strings.Contains(r.Header.Get("Accept-Encoding"), "gzip")
+	gzippable := isStringInStrings(path.Ext(pathname), gzippableExtensions)
+
+	result, isGzipped := openFileIfPublic(pathname, gzippable && acceptsGzip)
+	if result.Error != nil || result.File == nil || result.Info == nil {
+		Logger.Print(result.Error)
+		http.NotFound(w, r)
+		return
+	}
+	defer result.File.Close()
+
+	if isGzipped {
+		w.Header().Set("Content-Encoding", "gzip")
+	}
+
+	// TODO: Do something to help the browser cache resources. ETag seems most likely?
+	http.ServeContent(w, r, pathname, result.Info.ModTime(), result.File)
+	Logger.Printf("%q", pathname)
+}
+
 func (h AuthenticatingFileHandler) serveFile(w http.ResponseWriter, r *http.Request) {
 	pathname := h.normalizePathname(r.URL.Path)
 	if strings.HasSuffix(pathname, "/cover") {
@@ -274,25 +295,7 @@ func (h AuthenticatingFileHandler) serveFile(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	acceptsGzip := strings.Contains(r.Header.Get("Accept-Encoding"), "gzip")
-	gzippable := isStringInStrings(path.Ext(pathname), gzippableExtensions)
-
-	result, isGzipped := openFileIfPublic(pathname, gzippable && acceptsGzip)
-	if result.File != nil {
-		defer result.File.Close()
-	}
-	if result.Error != nil || result.File == nil || result.Info == nil {
-		Logger.Print(result.Error)
-		http.NotFound(w, r)
-		return
-	}
-
-	if isGzipped {
-		w.Header().Set("Content-Encoding", "gzip")
-	}
-
-	Logger.Printf("%q", pathname)
-	http.ServeContent(w, r, pathname, result.Info.ModTime(), result.File)
+	h.serveFileContents(pathname, w, r)
 }
 
 func (h AuthenticatingFileHandler) serveCover(pathname string, w http.ResponseWriter, r *http.Request) {
@@ -304,7 +307,10 @@ func (h AuthenticatingFileHandler) serveCover(pathname string, w http.ResponseWr
 		if result.Error != nil || result.File == nil || result.Info == nil {
 			continue
 		}
+
+		// TODO: Unify this in serveFileContents.
 		http.ServeContent(w, r, pathname, result.Info.ModTime(), result.File)
+		Logger.Printf("%q", pathname)
 		return
 	}
 
