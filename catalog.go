@@ -20,7 +20,7 @@ type Catalog struct {
 
 	// Time at which this Catalog's ItemInfos were last updated from the
 	// filesystem.
-	LastUpdate time.Time
+	Modified time.Time
 
 	// `buildCatalogFromWalk` could be invoked through either `buildCatalog` or
 	// `serveApp`. This sentinel avoids having multiple invocations walk twice
@@ -37,7 +37,7 @@ const (
 	catalogFileTemp = "catalog.gobs.tmp"
 )
 
-func (c *Catalog) buildCatalogFromGobs(gobs *os.File, modTime time.Time) {
+func (c *Catalog) buildCatalogFromGobs(gobs *os.File, modified time.Time) {
 	decoder := gob.NewDecoder(gobs)
 	newInfos := ItemInfos{}
 	for {
@@ -53,7 +53,7 @@ func (c *Catalog) buildCatalogFromGobs(gobs *os.File, modTime time.Time) {
 		newInfos = append(newInfos, &info)
 	}
 	c.ItemInfos = newInfos
-	c.LastUpdate = modTime
+	c.Modified = modified
 }
 
 func (c *Catalog) buildCatalogFromWalk(root string) {
@@ -78,7 +78,7 @@ func (c *Catalog) buildCatalogFromWalk(root string) {
 	if e != nil {
 		Logger.Printf("Can't Stat %q: %v", catalogFileTemp, e)
 	} else {
-		c.LastUpdate = status.ModTime()
+		c.Modified = status.ModTime()
 	}
 
 	encoder := gob.NewEncoder(gobs)
@@ -168,7 +168,7 @@ func isFileNewestInDirectory(directoryName, baseName string) bool {
 	if e != nil {
 		return false
 	}
-	modTime := status.ModTime()
+	modified := status.ModTime()
 
 	infos, e := ioutil.ReadDir(directoryName)
 	if e != nil {
@@ -176,7 +176,7 @@ func isFileNewestInDirectory(directoryName, baseName string) bool {
 	}
 
 	for _, info := range infos {
-		if info.IsDir() && modTime.Before(info.ModTime()) {
+		if info.IsDir() && modified.Before(info.ModTime()) {
 			return false
 		}
 	}
@@ -202,9 +202,9 @@ func (c *Catalog) BuildCatalog(root string) {
 		return
 	}
 
-	modTime := status.ModTime()
-	if c.LastUpdate.IsZero() || c.LastUpdate.Before(modTime) {
-		c.buildCatalogFromGobs(gobs, modTime)
+	modified := status.ModTime()
+	if c.Modified.IsZero() || c.Modified.Before(modified) {
+		c.buildCatalogFromGobs(gobs, modified)
 		return
 	}
 }
