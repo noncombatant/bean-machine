@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 	"text/scanner"
+	"unicode"
 )
 
 type Query struct {
@@ -14,6 +15,107 @@ type Query struct {
 
 func (q Query) String() string {
 	return fmt.Sprintf("{Keyword: %q, Term: %q, Negated: %t}", q.Keyword, q.Term, q.Negated)
+}
+
+func NewParseTerms(query string) []string {
+	inBareword := false
+	inQuoted := false
+	inBoundary := false
+	currentTerm := ""
+	var terms []string
+
+	for _, r := range query {
+		if inBareword {
+			if unicode.IsSpace(r) {
+				inBareword = false
+				inBoundary = true
+				if "" != currentTerm {
+					terms = append(terms, currentTerm)
+					currentTerm = ""
+				}
+			} else if ':' == r {
+				inBareword = false
+				inQuoted = false
+				inBoundary = true
+				if "" != currentTerm {
+					terms = append(terms, currentTerm)
+					currentTerm = ""
+				}
+				terms = append(terms, string(r))
+			} else {
+				currentTerm += string(r)
+			}
+		} else if inQuoted {
+			if '"' == r {
+				inQuoted = false
+				inBoundary = false
+				if "" != currentTerm {
+					terms = append(terms, currentTerm)
+					currentTerm = ""
+				}
+			} else {
+				currentTerm += string(r)
+			}
+		} else if inBoundary {
+			if '"' == r {
+				inQuoted = true
+				inBoundary = false
+			} else if '-' == r || ':' == r {
+				inBareword = false
+				inQuoted = false
+				inBoundary = true
+				if "" != currentTerm {
+					terms = append(terms, currentTerm)
+					currentTerm = ""
+				}
+				terms = append(terms, string(r))
+			} else {
+				inBareword = true
+				inBoundary = false
+				if !unicode.IsSpace(r) {
+					currentTerm += string(r)
+				}
+			}
+		} else {
+			if unicode.IsSpace(r) {
+				inBareword = false
+				inQuoted = false
+				inBoundary = true
+				if "" != currentTerm {
+					terms = append(terms, currentTerm)
+					currentTerm = ""
+				}
+			} else if '"' == r {
+				inBareword = false
+				inQuoted = true
+				inBoundary = false
+				if "" != currentTerm {
+					terms = append(terms, currentTerm)
+					currentTerm = ""
+				}
+			} else if '-' == r || ':' == r {
+				inBareword = false
+				inQuoted = false
+				inBoundary = true
+				if "" != currentTerm {
+					terms = append(terms, currentTerm)
+					currentTerm = ""
+				}
+				terms = append(terms, string(r))
+			} else {
+				inBareword = true
+				inQuoted = false
+				inBoundary = false
+				currentTerm += string(r)
+			}
+		}
+	}
+
+	if "" != currentTerm {
+		terms = append(terms, currentTerm)
+	}
+
+	return terms
 }
 
 func ParseTerms(query string) []string {
