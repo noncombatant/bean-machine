@@ -1,3 +1,6 @@
+// Copyright 2020 by Chris Palmer (https://noncombatant.org), and released under
+// the terms of the GNU GPL3. See help.html for more information.
+
 package main
 
 import (
