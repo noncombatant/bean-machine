@@ -2,8 +2,6 @@ package main
 
 import (
 	"fmt"
-	"strings"
-	"text/scanner"
 	"unicode"
 )
 
@@ -17,26 +15,28 @@ func (q Query) String() string {
 	return fmt.Sprintf("{Keyword: %q, Term: %q, Negated: %t}", q.Keyword, q.Term, q.Negated)
 }
 
-func NewParseTerms(query string) []string {
-	inBareword := false
-	inQuoted := false
-	inBoundary := false
+func ParseTerms(query string) []string {
+	const (
+		Start = iota
+		Bareword
+		Quoted
+		Boundary
+	)
+
+	state := Start
 	currentTerm := ""
 	var terms []string
 
 	for _, r := range query {
-		if inBareword {
+		if state == Bareword {
 			if unicode.IsSpace(r) {
-				inBareword = false
-				inBoundary = true
+				state = Boundary
 				if "" != currentTerm {
 					terms = append(terms, currentTerm)
 					currentTerm = ""
 				}
 			} else if ':' == r {
-				inBareword = false
-				inQuoted = false
-				inBoundary = true
+				state = Boundary
 				if "" != currentTerm {
 					terms = append(terms, currentTerm)
 					currentTerm = ""
@@ -45,10 +45,9 @@ func NewParseTerms(query string) []string {
 			} else {
 				currentTerm += string(r)
 			}
-		} else if inQuoted {
+		} else if state == Quoted {
 			if '"' == r {
-				inQuoted = false
-				inBoundary = false
+				state = Boundary
 				if "" != currentTerm {
 					terms = append(terms, currentTerm)
 					currentTerm = ""
@@ -56,56 +55,41 @@ func NewParseTerms(query string) []string {
 			} else {
 				currentTerm += string(r)
 			}
-		} else if inBoundary {
+		} else if state == Boundary {
 			if '"' == r {
-				inQuoted = true
-				inBoundary = false
+				state = Quoted
 			} else if '-' == r || ':' == r {
-				inBareword = false
-				inQuoted = false
-				inBoundary = true
 				if "" != currentTerm {
 					terms = append(terms, currentTerm)
 					currentTerm = ""
 				}
 				terms = append(terms, string(r))
-			} else {
-				inBareword = true
-				inBoundary = false
-				if !unicode.IsSpace(r) {
-					currentTerm += string(r)
-				}
+			} else if !unicode.IsSpace(r) {
+				state = Bareword
+				currentTerm += string(r)
 			}
 		} else {
 			if unicode.IsSpace(r) {
-				inBareword = false
-				inQuoted = false
-				inBoundary = true
+				state = Boundary
 				if "" != currentTerm {
 					terms = append(terms, currentTerm)
 					currentTerm = ""
 				}
 			} else if '"' == r {
-				inBareword = false
-				inQuoted = true
-				inBoundary = false
+				state = Quoted
 				if "" != currentTerm {
 					terms = append(terms, currentTerm)
 					currentTerm = ""
 				}
 			} else if '-' == r || ':' == r {
-				inBareword = false
-				inQuoted = false
-				inBoundary = true
+				state = Boundary
 				if "" != currentTerm {
 					terms = append(terms, currentTerm)
 					currentTerm = ""
 				}
 				terms = append(terms, string(r))
 			} else {
-				inBareword = true
-				inQuoted = false
-				inBoundary = false
+				state = Bareword
 				currentTerm += string(r)
 			}
 		}
@@ -115,16 +99,6 @@ func NewParseTerms(query string) []string {
 		terms = append(terms, currentTerm)
 	}
 
-	return terms
-}
-
-func ParseTerms(query string) []string {
-	var s scanner.Scanner
-	s.Init(strings.NewReader(query))
-	terms := make([]string, 0)
-	for t := s.Scan(); t != scanner.EOF; t = s.Scan() {
-		terms = append(terms, strings.Trim(s.TokenText(), "\""))
-	}
 	return terms
 }
 
