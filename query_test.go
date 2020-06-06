@@ -4,6 +4,8 @@ import (
 	"testing"
 )
 
+// TODO: add test for "-noodle" and -thing:"noodle" and thing:"-noodle"
+
 var (
 	rawTerms = `Foo bar kw:term kw2 : term2 -greeb graggle kw3: -"term 3"`
 
