@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"os"
 	"path"
+	"path/filepath"
 	"time"
 )
 
@@ -20,7 +21,6 @@ const (
 	passwordsBasename         = "passwords"
 	httpPort                  = ":1234"
 )
-
 
 // Move the web front-end into a web/ subdirectory. Change install and serving
 // logic in Go accordingly.
@@ -61,6 +61,57 @@ var (
 func installFrontEndFiles(root string) {
 	for _, f := range frontEndFiles {
 		copyFile(f, path.Join(root, f))
+	}
+}
+
+func Lint(root string) {
+	e := filepath.Walk(root,
+		func(pathname string, info os.FileInfo, e error) error {
+			if e != nil {
+				Logger.Printf("%q: %s", pathname, e)
+				return nil
+			}
+
+			basename := path.Base(pathname)
+			if basename == ".AppleFileInfo" && info.IsDir() {
+				Logger.Print(pathname)
+				return nil
+				//return os.RemoveAll(pathname)
+			} else if basename == ".DS_Store" && !info.IsDir() {
+				Logger.Print(pathname)
+				return nil
+				//return os.Remove(pathname)
+			} else if basename[0] == '.' {
+				Logger.Print("Hidden:", pathname)
+			}
+
+			// TODO: Remove empty files.
+
+			if info.IsDir() {
+				// TODO: Check if it's empty; if so, remove it and return nil.
+				empty, e := IsDirectoryEmpty(pathname)
+				if e != nil {
+					Logger.Print(e)
+					return e
+				}
+				if empty {
+					Logger.Print("Empty: %q", pathname)
+					return nil
+					//return os.Remove(pathname)
+				}
+
+				// TODO: Set its permissions to 0755.
+			} else if info.Mode().IsRegular() {
+				// TODO: Set its permissions to 0644.
+			}
+
+			// TODO: Remove xattrs.
+
+			return nil
+		})
+
+	if e != nil {
+		Logger.Printf("Problem walking %q: %s", root, e)
 	}
 }
 
@@ -166,6 +217,7 @@ func printHelp() {
 	fmt.Println(`Usage:
 
   bean-machine -m music-directory serve
+  bean-machine -m music-directory lint
   bean-machine set-password
 
 Here is what the commands do:
@@ -178,6 +230,10 @@ Here is what the commands do:
 
     Starts a web server rooted at music-directory, and prints out the URL(s)
     of the Bean Machine web app.
+
+  lint
+		Scans music-directory for junk files and tells you about them. TODO: Will
+    automatically fix things in a future version.
 
   set-password
     Prompts for a username and password, and sets the password for the given
@@ -206,6 +262,8 @@ func main() {
 	for i := 0; i < flag.NArg(); i++ {
 		command := flag.Arg(i)
 		switch command {
+		case "lint":
+			Lint(musicRoot)
 		case "help":
 			printHelp()
 		case "serve":

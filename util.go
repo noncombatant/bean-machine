@@ -3,6 +3,9 @@
 
 package main
 
+// TODO: Write tests for all of these.
+// TOOD: Maybe make it a separate module.
+
 import (
 	"bufio"
 	"compress/gzip"
@@ -205,4 +208,14 @@ func atoi(s string) int {
 		return 0
 	}
 	return i
+}
+
+func IsDirectoryEmpty(pathname string) (bool, error) {
+	f, e := os.Open(pathname)
+	if e != nil {
+		return false, e
+	}
+	defer f.Close()
+	_, e = f.Readdir(1)
+	return e == io.EOF, e
 }
