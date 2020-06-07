@@ -77,7 +77,7 @@ func (i *ItemInfo) fillMetadataFromPathname() {
 	}
 	if length > 0 {
 		i.Disc, i.Track, i.Name = getDiscAndTrackFromBasename(parts[length-1])
-		i.Name = RemoveFileExtension(i.Name)
+		i.Name = RemoveBasenameExtension(i.Name)
 	}
 }
 

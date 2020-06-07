@@ -7,12 +7,13 @@ import (
 	"testing"
 )
 
+type StringToStringExpectation struct {
+	Input string
+	Output string
+}
+
 func TestExtractDigits(t *testing.T) {
-	type Expectation struct {
-		Input string
-		Output string
-	}
-	expectations := []Expectation{
+	expectations := []StringToStringExpectation{
 		{"123409", "123409"},
 		{"Hello 123409", "123409"},
 		{"Hello 123409goat", "123409"},
@@ -31,11 +32,7 @@ func TestExtractDigits(t *testing.T) {
 }
 
 func TestGetBasenameExtension(t *testing.T) {
-	type Expectation struct {
-		Input string
-		Output string
-	}
-	expectations := []Expectation{
+	expectations := []StringToStringExpectation{
 		{"/usr/bin/goat.leg", ".leg"},
 		{"/usr/bin/goat.lEg", ".leg"},
 		{"/usr/bin/goat.BAT", ".bat"},
@@ -44,18 +41,38 @@ func TestGetBasenameExtension(t *testing.T) {
 		{"~/bin/zip.sh", ".sh"},
 		{"zip.pdf.sh", ".sh"},
 		{"/usr/local/goat.beard/thing.stuff.txt", ".txt"},
+		// TODO: Consider this:
+		//{".hidden", ""},
+		//{"~/whatever/.hidden", ""},
 	}
 
 	for _, e := range expectations {
 		r := GetBasenameExtension(e.Input)
 		if e.Output != r {
-			t.Errorf("%q != ExtractDigits(%q) (%q)\n", e.Output, e.Input, r)
+			t.Errorf("%q != GetBasenameExtension(%q) (%q)\n", e.Output, e.Input, r)
 		}
 	}
 }
 
-func TestRemoveFileExtension(t *testing.T) {
-	// TODO
+func TestRemoveBasenameExtension(t *testing.T) {
+	expectations := []StringToStringExpectation{
+		{"/usr/bin/goat.leg", "/usr/bin/goat"},
+		{"/usr/bin/goat.lEg", "/usr/bin/goat"},
+		{"/usr/BIN/goat.BAT", "/usr/BIN/goat"},
+		{"c:\\win32\\goatpad.EXE", "c:\\win32\\goatpad"},
+		{"zip", "zip"},
+		{"~/bin/zip.sh", "~/bin/zip"},
+		{"zip.pdf.sh", "zip.pdf"},
+		{"/usr/local/goat.beard/thing.stuff.txt", "/usr/local/goat.beard/thing.stuff"},
+		{"/usr/local/goat.beard/thing", "/usr/local/goat.beard/thing"},
+	}
+
+	for _, e := range expectations {
+		r := RemoveBasenameExtension(e.Input)
+		if e.Output != r {
+			t.Errorf("%q != RemoveBasenameExtension(%q) (%q)\n", e.Output, e.Input, r)
+		}
+	}
 }
 
 func TestEscapeDoubleQuotes(t *testing.T) {

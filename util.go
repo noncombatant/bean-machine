@@ -110,11 +110,19 @@ func GetBasenameExtension(pathname string) string {
 	return strings.ToLower(filepath.Ext(pathname))
 }
 
-func RemoveFileExtension(pathname string) string {
+func RemoveBasenameExtension(pathname string) string {
 	dot := strings.LastIndex(pathname, ".")
 	if -1 == dot {
 		return pathname
 	}
+
+	slash := strings.LastIndex(pathname, string(os.PathSeparator))
+	if slash > dot {
+		// There may be a dot, but it's not in the basename. In that case, return
+		// the whole pathname.
+		return pathname
+	}
+
 	return pathname[:dot]
 }
 
