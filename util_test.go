@@ -8,7 +8,7 @@ import (
 )
 
 type StringToStringExpectation struct {
-	Input string
+	Input  string
 	Output string
 }
 
@@ -76,7 +76,17 @@ func TestRemoveBasenameExtension(t *testing.T) {
 }
 
 func TestEscapeDoubleQuotes(t *testing.T) {
-	// TODO
+	expectations := []StringToStringExpectation{
+		{"\"Hello,\" they said. \"Blorp!\"",
+			"\\\"Hello,\\\" they said. \\\"Blorp!\\\""},
+	}
+
+	for _, e := range expectations {
+		r := EscapeDoubleQuotes(e.Input)
+		if e.Output != r {
+			t.Errorf("%q != EscapeDoubleQuotes(%q) (%q)\n", e.Output, e.Input, r)
+		}
+	}
 }
 
 func TestIsStringInStrings(t *testing.T) {
@@ -97,7 +107,7 @@ func TestIsStringInStrings(t *testing.T) {
 
 func TestMustGetRandomBytes(t *testing.T) {
 	bytes := make([]byte, 100)
-	for i, _ := range bytes {
+	for i := range bytes {
 		bytes[i] = 42
 	}
 
@@ -114,7 +124,7 @@ func TestMustGetRandomBytes(t *testing.T) {
 
 func TestParseIntegerOr0(t *testing.T) {
 	type Expectation struct {
-		Input string
+		Input  string
 		Output int
 	}
 	expectations := []Expectation{
