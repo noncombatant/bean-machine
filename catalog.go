@@ -56,6 +56,11 @@ func (c *Catalog) buildCatalogFromGobs(gobs *os.File, modified time.Time) {
 	c.Modified = modified
 }
 
+func shouldSkipFile(pathname string, info os.FileInfo) bool {
+	basename := path.Base(pathname)
+	return "" == basename || '.' == basename[0] || 0 == info.Size()
+}
+
 func (c *Catalog) buildCatalogFromWalk(root string) {
 	if c.buildCatalogFromWalkInProgress {
 		return

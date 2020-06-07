@@ -107,11 +107,6 @@ func ExtractDigits(s string) string {
 	return ""
 }
 
-func shouldSkipFile(pathname string, info os.FileInfo) bool {
-	basename := path.Base(pathname)
-	return "" == basename || '.' == basename[0] || 0 == info.Size()
-}
-
 func GetFileExtension(pathname string) string {
 	return strings.ToLower(filepath.Ext(pathname))
 }
