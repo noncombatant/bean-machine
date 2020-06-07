@@ -113,6 +113,8 @@ func MustCopyFileByName(destination, source string) {
 	}
 }
 
+// Returns the first substring of decimal digits in `s`, or an empty string if
+// there is no such substring.
 func ExtractDigits(s string) string {
 	results := digitsFinder.FindStringSubmatch(s)
 	if len(results) > 0 {
@@ -121,10 +123,14 @@ func ExtractDigits(s string) string {
 	return ""
 }
 
+// Returns the basename's extension, including the '.', normalized to
+// lowercase. If the basename has no extension, returns an empty string.
 func GetBasenameExtension(pathname string) string {
 	return strings.ToLower(filepath.Ext(pathname))
 }
 
+// Returns the pathname with the basename's extension (including its '.')
+// removed. If the basename has no extension, returns the pathname.
 func RemoveBasenameExtension(pathname string) string {
 	dot := strings.LastIndex(pathname, ".")
 	if -1 == dot {
@@ -141,10 +147,12 @@ func RemoveBasenameExtension(pathname string) string {
 	return pathname[:dot]
 }
 
+// Returns a copy of `s`, with all double quotes escaped with a backslash.
 func EscapeDoubleQuotes(s string) string {
 	return strings.ReplaceAll(s, "\"", "\\\"")
 }
 
+// Returns true if `haystack` contains `needle`.
 func IsStringInStrings(needle string, haystack []string) bool {
 	for _, s := range haystack {
 		if needle == s {
@@ -154,6 +162,10 @@ func IsStringInStrings(needle string, haystack []string) bool {
 	return false
 }
 
+// Fills `bytes` with cryptographically random data. If an error occurs, logs
+// fatal.
+//
+// See also `MustMakeRandomBytes`.
 func MustGetRandomBytes(bytes []byte) {
 	_, e := rand.Read(bytes)
 	if e != nil {
@@ -161,8 +173,12 @@ func MustGetRandomBytes(bytes []byte) {
 	}
 }
 
-func MustMakeRandomBytes(length int) []byte {
-	bytes := make([]byte, length)
+// Returns `count` cryptographically random bytes. If an error occurs, logs
+// fatal.
+//
+// See also `MustGetRandomBytes`.
+func MustMakeRandomBytes(count int) []byte {
+	bytes := make([]byte, count)
 	MustGetRandomBytes(bytes)
 	return bytes
 }
