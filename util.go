@@ -58,23 +58,24 @@ var (
 	digitsFinder = regexp.MustCompile(`\D*(\d+)`)
 )
 
-func isAudioPathname(pathname string) bool {
-	return isStringInStrings(getFileExtension(pathname), audioFormatExtensions)
+func IsAudioPathname(pathname string) bool {
+	return IsStringInStrings(GetFileExtension(pathname), audioFormatExtensions)
 }
 
-func isVideoPathname(pathname string) bool {
-	return isStringInStrings(getFileExtension(pathname), videoFormatExtensions)
+func IsVideoPathname(pathname string) bool {
+	return IsStringInStrings(GetFileExtension(pathname), videoFormatExtensions)
 }
 
-func isDocumentPathname(pathname string) bool {
-	return isStringInStrings(getFileExtension(pathname), documentFormatExtensions)
+func IsDocumentPathname(pathname string) bool {
+	return IsStringInStrings(GetFileExtension(pathname), documentFormatExtensions)
 }
 
-func isImagePathname(pathname string) bool {
-	return isStringInStrings(getFileExtension(pathname), imageFormatExtensions)
+func IsImagePathname(pathname string) bool {
+	return IsStringInStrings(GetFileExtension(pathname), imageFormatExtensions)
 }
 
-func copyFile(source, destination string) {
+// TODO: Rename to CopyFileByName
+func CopyFile(source, destination string) {
 	source = filepath.Clean(source)
 	destination = filepath.Clean(destination)
 	if source == destination {
@@ -99,7 +100,7 @@ func copyFile(source, destination string) {
 	}
 }
 
-func extractNumericString(numeric string) string {
+func ExtractNumericString(numeric string) string {
 	results := digitsFinder.FindStringSubmatch(numeric)
 	if len(results) > 0 {
 		return results[0]
@@ -112,11 +113,11 @@ func shouldSkipFile(pathname string, info os.FileInfo) bool {
 	return "" == basename || '.' == basename[0] || 0 == info.Size()
 }
 
-func getFileExtension(pathname string) string {
+func GetFileExtension(pathname string) string {
 	return strings.ToLower(filepath.Ext(pathname))
 }
 
-func removeFileExtension(pathname string) string {
+func RemoveFileExtension(pathname string) string {
 	dot := strings.LastIndex(pathname, ".")
 	if -1 == dot {
 		return pathname
@@ -124,11 +125,11 @@ func removeFileExtension(pathname string) string {
 	return pathname[:dot]
 }
 
-func escapeDoubleQuotes(s string) string {
+func EscapeDoubleQuotes(s string) string {
 	return strings.ReplaceAll(s, "\"", "\\\"")
 }
 
-func isStringInStrings(needle string, haystack []string) bool {
+func IsStringInStrings(needle string, haystack []string) bool {
 	for _, s := range haystack {
 		if needle == s {
 			return true
@@ -137,16 +138,20 @@ func isStringInStrings(needle string, haystack []string) bool {
 	return false
 }
 
-func makeRandomBytes(length int) []byte {
-	bytes := make([]byte, length)
+func MustGetRandomBytes(bytes []byte) {
 	_, e := rand.Read(bytes)
 	if e != nil {
 		Logger.Fatalf("Could not get random bytes: %v", e)
 	}
+}
+
+func MustMakeRandomBytes(length int) []byte {
+	bytes := make([]byte, length)
+	MustGetRandomBytes(bytes)
 	return bytes
 }
 
-func compressFile(gzPathname string, file io.Reader) error {
+func GzipFile(gzPathname string, file io.Reader) error {
 	bytes, e := ioutil.ReadAll(file)
 	if e != nil {
 		return e
@@ -180,7 +185,7 @@ type FileAndInfoResult struct {
 	Error error
 }
 
-func openFileAndGetInfo(pathname string) FileAndInfoResult {
+func OpenFileAndGetInfo(pathname string) FileAndInfoResult {
 	file, e := os.Open(pathname)
 	if e != nil {
 		return FileAndInfoResult{File: nil, Error: e}
@@ -202,12 +207,15 @@ func assertValidRootPathname(root string) {
 	}
 }
 
-func atoi(s string) int {
-	i, e := strconv.Atoi(s)
+// Parses `s` as a signed 32-bit integer, represented in any base up to base
+// 36, and returns the result. (The functionality is equivalent to
+// `strconv.ParseInt(s, 0, 32)`.) If any error occurs, returns 0.
+func ParseIntegerOr0(s string) int {
+	i, e := strconv.ParseInt(s, 0, 32)
 	if e != nil {
 		return 0
 	}
-	return i
+	return int(i)
 }
 
 func IsDirectoryEmpty(pathname string) (bool, error) {

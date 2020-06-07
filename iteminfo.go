@@ -42,7 +42,7 @@ func (i *ItemInfo) ToJSON() string {
 "track":%d,
 "year":%d,
 "genre":%q}`,
-		i.Pathname, i.Album, i.Artist, i.Name, atoi(i.NormalizedDisc), atoi(i.NormalizedTrack), atoi(i.NormalizedYear), i.Genre)
+		i.Pathname, i.Album, i.Artist, i.Name, ParseIntegerOr0(i.NormalizedDisc), ParseIntegerOr0(i.NormalizedTrack), ParseIntegerOr0(i.NormalizedYear), i.Genre)
 }
 
 func getDiscAndTrackFromBasename(basename string) (string, string, string) {
@@ -77,7 +77,7 @@ func (i *ItemInfo) fillMetadataFromPathname() {
 	}
 	if length > 0 {
 		i.Disc, i.Track, i.Name = getDiscAndTrackFromBasename(parts[length-1])
-		i.Name = removeFileExtension(i.Name)
+		i.Name = RemoveFileExtension(i.Name)
 	}
 }
 
@@ -136,8 +136,8 @@ func (i *ItemInfo) Normalize() {
 	i.NormalizedAlbum = normalizeStringForSearch(i.Album)
 	i.NormalizedArtist = normalizeStringForSearch(i.Artist)
 	i.NormalizedName = normalizeStringForSearch(i.Name)
-	i.NormalizedDisc = extractNumericString(i.Disc)
-	i.NormalizedTrack = extractNumericString(i.Track)
-	i.NormalizedYear = extractNumericString(i.Year)
+	i.NormalizedDisc = ExtractNumericString(i.Disc)
+	i.NormalizedTrack = ExtractNumericString(i.Track)
+	i.NormalizedYear = ExtractNumericString(i.Year)
 	i.NormalizedGenre = normalizeStringForSearch(i.Genre)
 }

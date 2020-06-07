@@ -30,7 +30,7 @@ var (
 )
 
 func readPasswordDatabase(pathname string) Credentials {
-	result := openFileAndGetInfo(pathname)
+	result := OpenFileAndGetInfo(pathname)
 	if result.Error != nil {
 		if os.IsNotExist(result.Error) {
 			return credentials
@@ -73,7 +73,7 @@ func obfuscatePassword(password, salt []byte) []byte {
 }
 
 func setPassword() {
-	salt := makeRandomBytes(saltSize)
+	salt := MustMakeRandomBytes(saltSize)
 
 	pathname := path.Join(configurationPathname, passwordsBasename)
 	stored := readPasswordDatabase(pathname)

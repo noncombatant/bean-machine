@@ -60,7 +60,7 @@ var (
 
 func installFrontEndFiles(root string) {
 	for _, f := range frontEndFiles {
-		copyFile(f, path.Join(root, f))
+		CopyFile(f, path.Join(root, f))
 	}
 }
 
@@ -95,7 +95,7 @@ func Lint(root string) {
 					return e
 				}
 				if empty {
-					Logger.Print("Empty: %q", pathname)
+					Logger.Printf("Empty: %q", pathname)
 					return nil
 					//return os.Remove(pathname)
 				}

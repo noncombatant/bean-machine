@@ -90,7 +90,7 @@ func getCookieLifetime() time.Time {
 }
 
 func generateAndSaveHmacKey(pathname string) {
-	key := makeRandomBytes(hmacKeyLength)
+	key := MustMakeRandomBytes(hmacKeyLength)
 	if e := ioutil.WriteFile(pathname, key, 0600); e != nil {
 		Logger.Fatalf("Could not save HMAC key to %q: %v", pathname, e)
 	}
@@ -225,7 +225,7 @@ func redirectToLogin(w http.ResponseWriter, r *http.Request) {
 }
 
 func openFileIfPublic(pathname string, shouldTryGzip bool) (FileAndInfoResult, bool) {
-	nonGzResult := openFileAndGetInfo(pathname)
+	nonGzResult := OpenFileAndGetInfo(pathname)
 	if nonGzResult.Error != nil {
 		return nonGzResult, false
 	}
@@ -237,7 +237,7 @@ func openFileIfPublic(pathname string, shouldTryGzip bool) (FileAndInfoResult, b
 
 	if shouldTryGzip {
 		gzPathname := pathname + ".gz"
-		gzResult := openFileAndGetInfo(gzPathname)
+		gzResult := OpenFileAndGetInfo(gzPathname)
 
 		// Handle the common case first.
 		if gzResult.Error == nil && gzResult.Info.ModTime().After(nonGzResult.Info.ModTime()) {
@@ -252,13 +252,13 @@ func openFileIfPublic(pathname string, shouldTryGzip bool) (FileAndInfoResult, b
 		}
 		_ = os.Remove(gzPathname)
 
-		e := compressFile(gzPathname, nonGzResult.File)
+		e := GzipFile(gzPathname, nonGzResult.File)
 		if e != nil {
 			nonGzResult.File.Seek(0, os.SEEK_SET)
 			return nonGzResult, false
 		}
 
-		gzResult = openFileAndGetInfo(gzPathname)
+		gzResult = OpenFileAndGetInfo(gzPathname)
 		if gzResult.Error == nil {
 			return gzResult, true
 		}
@@ -269,7 +269,7 @@ func openFileIfPublic(pathname string, shouldTryGzip bool) (FileAndInfoResult, b
 
 func (h AuthenticatingFileHandler) serveFileContents(pathname string, w http.ResponseWriter, r *http.Request) {
 	acceptsGzip := strings.Contains(r.Header.Get("Accept-Encoding"), "gzip")
-	gzippable := isStringInStrings(path.Ext(pathname), gzippableExtensions)
+	gzippable := IsStringInStrings(path.Ext(pathname), gzippableExtensions)
 
 	result, isGzipped := openFileIfPublic(pathname, gzippable && acceptsGzip)
 	if result.Error != nil || result.File == nil || result.Info == nil {
@@ -329,7 +329,7 @@ func (h AuthenticatingFileHandler) normalizePathname(pathname string) string {
 }
 
 func shouldServeFileToAnonymousClients(pathname string) bool {
-	return isStringInStrings(path.Base(pathname), anonymousFiles)
+	return IsStringInStrings(path.Base(pathname), anonymousFiles)
 }
 
 func (h AuthenticatingFileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {

@@ -114,7 +114,7 @@ func (c *Catalog) buildCatalogFromWalk(root string) {
 			}
 			defer input.Close()
 
-			if isAudioPathname(pathname) || isVideoPathname(pathname) {
+			if IsAudioPathname(pathname) || IsVideoPathname(pathname) {
 				webPathname := pathname[len(root)+1:]
 				itemInfo := ItemInfo{Pathname: webPathname}
 				itemInfo.File, _ = id3.Read(input)
@@ -224,7 +224,7 @@ func shouldBuildMediaIndex(pathname string, infos []os.FileInfo) bool {
 	time := indexStatus.ModTime()
 	for _, info := range infos {
 		name := info.Name()
-		if isImagePathname(name) || isDocumentPathname(name) {
+		if IsImagePathname(name) || IsDocumentPathname(name) {
 			if time.Before(info.ModTime()) {
 				return true
 			}
@@ -260,10 +260,10 @@ func buildMediaIndex(pathname string) {
 
 	for _, info := range infos {
 		name := info.Name()
-		if isImagePathname(name) {
-			fmt.Fprintf(index, "<img src=\"%s\"/>\n", escapeDoubleQuotes(name))
-		} else if isDocumentPathname(name) {
-			name = escapeDoubleQuotes(name)
+		if IsImagePathname(name) {
+			fmt.Fprintf(index, "<img src=\"%s\"/>\n", EscapeDoubleQuotes(name))
+		} else if IsDocumentPathname(name) {
+			name = EscapeDoubleQuotes(name)
 			fmt.Fprintf(index, "<li><a href=\"%s\">%s</a></li>\n", name, name)
 		}
 	}
