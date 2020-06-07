@@ -54,9 +54,10 @@ var (
 		".png",
 	}
 
-	digitsFinder = regexp.MustCompile(`\D*(\d+)`)
+	digitsFinder = regexp.MustCompile(`(\d+)`)
 )
 
+// TODO: These are not application-generic; move them out.
 func IsAudioPathname(pathname string) bool {
 	return IsStringInStrings(GetFileExtension(pathname), audioFormatExtensions)
 }
@@ -98,8 +99,8 @@ func CopyFileByName(source, destination string) {
 	}
 }
 
-func ExtractNumericString(numeric string) string {
-	results := digitsFinder.FindStringSubmatch(numeric)
+func ExtractDigits(s string) string {
+	results := digitsFinder.FindStringSubmatch(s)
 	if len(results) > 0 {
 		return results[0]
 	}

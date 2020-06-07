@@ -136,8 +136,8 @@ func (i *ItemInfo) Normalize() {
 	i.NormalizedAlbum = normalizeStringForSearch(i.Album)
 	i.NormalizedArtist = normalizeStringForSearch(i.Artist)
 	i.NormalizedName = normalizeStringForSearch(i.Name)
-	i.NormalizedDisc = ExtractNumericString(i.Disc)
-	i.NormalizedTrack = ExtractNumericString(i.Track)
-	i.NormalizedYear = ExtractNumericString(i.Year)
+	i.NormalizedDisc = ExtractDigits(i.Disc)
+	i.NormalizedTrack = ExtractDigits(i.Track)
+	i.NormalizedYear = ExtractDigits(i.Year)
 	i.NormalizedGenre = normalizeStringForSearch(i.Genre)
 }
