@@ -1,9 +1,11 @@
 // Copyright 2016 by Chris Palmer (https://noncombatant.org), and released under
 // the terms of the GNU GPL3. See help.html for more information.
 
-package main
-
+// Assorted utility functions.
+//
 // TODO: Maybe make this a separate module.
+
+package main
 
 import (
 	"bufio"
@@ -73,28 +75,41 @@ func IsImagePathname(pathname string) bool {
 	return IsStringInStrings(GetBasenameExtension(pathname), imageFormatExtensions)
 }
 
-func CopyFileByName(source, destination string) {
+// Copies the file named by `source` into the file named by `destination`.
+// Returns an error, if any.
+//
+// See also `MustCopyFileByName`.
+func CopyFileByName(destination, source string) error {
 	source = filepath.Clean(source)
 	destination = filepath.Clean(destination)
 	if source == destination {
-		return
+		return nil
 	}
 
 	s, e := os.Open(source)
 	if e != nil {
-		Logger.Fatalf("Could not read %q: %s\n", source, e)
+		return e
 	}
 	defer s.Close()
 
 	d, e := os.Create(destination)
 	if e != nil {
-		Logger.Fatalf("Could not write %q: %s\n", destination, e)
+		return e
 	}
 	defer d.Close()
 
 	_, e = io.Copy(d, s)
+	return e
+}
+
+// Copies the file named by `source` into the file named by `destination`. If
+// an error occurs, logs fatal.
+//
+// See also `CopyFileByName`.
+func MustCopyFileByName(destination, source string) {
+	e := CopyFileByName(destination, source)
 	if e != nil {
-		Logger.Fatalf("Could not copy %q to %q: %s\n", source, destination, e)
+		Logger.Fatalf("Could not CopyFileByName(%q, %q): %v\n", destination, source, e)
 	}
 }
 

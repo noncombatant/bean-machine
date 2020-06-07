@@ -60,7 +60,7 @@ var (
 
 func installFrontEndFiles(root string) {
 	for _, f := range frontEndFiles {
-		CopyFileByName(f, path.Join(root, f))
+		MustCopyFileByName(path.Join(root, f), f)
 	}
 }
 
