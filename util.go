@@ -3,8 +3,7 @@
 
 package main
 
-// TODO: Write tests for all of these.
-// TOOD: Maybe make it a separate module.
+// TODO: Maybe make this a separate module.
 
 import (
 	"bufio"
@@ -74,8 +73,7 @@ func IsImagePathname(pathname string) bool {
 	return IsStringInStrings(GetFileExtension(pathname), imageFormatExtensions)
 }
 
-// TODO: Rename to CopyFileByName
-func CopyFile(source, destination string) {
+func CopyFileByName(source, destination string) {
 	source = filepath.Clean(source)
 	destination = filepath.Clean(destination)
 	if source == destination {
@@ -179,25 +177,19 @@ func GzipFile(gzPathname string, file io.Reader) error {
 	return e
 }
 
-type FileAndInfoResult struct {
-	File  *os.File
-	Info  os.FileInfo
-	Error error
-}
-
-func OpenFileAndGetInfo(pathname string) FileAndInfoResult {
+func OpenFileAndInfo(pathname string) (*os.File, os.FileInfo, error) {
 	file, e := os.Open(pathname)
 	if e != nil {
-		return FileAndInfoResult{File: nil, Error: e}
+		return nil, nil, e
 	}
 
 	info, e := file.Stat()
 	if e != nil {
 		file.Close()
-		return FileAndInfoResult{File: nil, Error: e}
+		return nil, nil, e
 	}
 
-	return FileAndInfoResult{File: file, Info: info, Error: nil}
+	return file, info, nil
 }
 
 func assertValidRootPathname(root string) {

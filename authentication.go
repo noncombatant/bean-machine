@@ -224,67 +224,67 @@ func redirectToLogin(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/login.html", http.StatusFound)
 }
 
-func openFileIfPublic(pathname string, shouldTryGzip bool) (FileAndInfoResult, bool) {
-	nonGzResult := OpenFileAndGetInfo(pathname)
-	if nonGzResult.Error != nil {
-		return nonGzResult, false
+func openFileIfPublic(pathname string, shouldTryGzip bool) (*os.File, os.FileInfo, error, bool) {
+	nonGzFile, nonGzInfo, e := OpenFileAndInfo(pathname)
+	if e != nil {
+		return nonGzFile, nonGzInfo, e, false
 	}
 
-	if nonGzResult.Info.Mode()&0004 == 0 {
-		nonGzResult.File.Close()
-		return FileAndInfoResult{File: nil, Error: errors.New(fmt.Sprintf("openFileIfPublic: %q not public", pathname))}, false
+	if nonGzInfo.Mode()&0004 == 0 {
+		nonGzFile.Close()
+		return nil, nil, errors.New(fmt.Sprintf("openFileIfPublic: %q not public", pathname)), false
 	}
 
 	if shouldTryGzip {
 		gzPathname := pathname + ".gz"
-		gzResult := OpenFileAndGetInfo(gzPathname)
+		gzFile, gzInfo, e := OpenFileAndInfo(gzPathname)
 
 		// Handle the common case first.
-		if gzResult.Error == nil && gzResult.Info.ModTime().After(nonGzResult.Info.ModTime()) {
-			nonGzResult.File.Close()
-			return gzResult, true
+		if e == nil && gzInfo.ModTime().After(nonGzInfo.ModTime()) {
+			nonGzFile.Close()
+			return gzFile, gzInfo, e, true
 		}
 
 		// Clean up, remove the old gzPathname if it exists, create a new one, and
 		// return it.
-		if gzResult.File != nil {
-			gzResult.File.Close()
+		if gzFile != nil {
+			gzFile.Close()
 		}
 		_ = os.Remove(gzPathname)
 
-		e := GzipFile(gzPathname, nonGzResult.File)
+		e = GzipFile(gzPathname, nonGzFile)
 		if e != nil {
-			nonGzResult.File.Seek(0, os.SEEK_SET)
-			return nonGzResult, false
+			nonGzFile.Seek(0, os.SEEK_SET)
+			return nonGzFile, nonGzInfo, e, false
 		}
 
-		gzResult = OpenFileAndGetInfo(gzPathname)
-		if gzResult.Error == nil {
-			return gzResult, true
+		gzFile, gzInfo, e = OpenFileAndInfo(gzPathname)
+		if e == nil {
+			return gzFile, gzInfo, e, true
 		}
 	}
 
-	return nonGzResult, false
+	return nonGzFile, nonGzInfo, e, false
 }
 
 func (h AuthenticatingFileHandler) serveFileContents(pathname string, w http.ResponseWriter, r *http.Request) {
 	acceptsGzip := strings.Contains(r.Header.Get("Accept-Encoding"), "gzip")
 	gzippable := IsStringInStrings(path.Ext(pathname), gzippableExtensions)
 
-	result, isGzipped := openFileIfPublic(pathname, gzippable && acceptsGzip)
-	if result.Error != nil || result.File == nil || result.Info == nil {
-		Logger.Print(result.Error)
+	file, info, e, isGzipped := openFileIfPublic(pathname, gzippable && acceptsGzip)
+	if e != nil || file == nil || info == nil {
+		Logger.Print(e)
 		http.NotFound(w, r)
 		return
 	}
-	defer result.File.Close()
+	defer file.Close()
 
 	if isGzipped {
 		w.Header().Set("Content-Encoding", "gzip")
 	}
 
 	// TODO: Do something to help the browser cache resources. ETag seems most likely?
-	http.ServeContent(w, r, pathname, result.Info.ModTime(), result.File)
+	http.ServeContent(w, r, pathname, info.ModTime(), file)
 	Logger.Printf("%q", pathname)
 }
 
@@ -300,16 +300,17 @@ func (h AuthenticatingFileHandler) serveFile(w http.ResponseWriter, r *http.Requ
 
 func (h AuthenticatingFileHandler) serveCover(pathname string, w http.ResponseWriter, r *http.Request) {
 	for _, extension := range coverExtensions {
-		result, _ := openFileIfPublic(pathname+extension, false)
-		if result.File != nil {
-			defer result.File.Close()
+		file, info, e, _ := openFileIfPublic(pathname+extension, false)
+		// TODO: Reshape this!
+		if file != nil {
+			defer file.Close()
 		}
-		if result.Error != nil || result.File == nil || result.Info == nil {
+		if e != nil || file == nil || info == nil {
 			continue
 		}
 
 		// TODO: Unify this in serveFileContents.
-		http.ServeContent(w, r, pathname, result.Info.ModTime(), result.File)
+		http.ServeContent(w, r, pathname, info.ModTime(), file)
 		Logger.Printf("%q", pathname)
 		return
 	}

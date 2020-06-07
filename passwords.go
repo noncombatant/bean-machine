@@ -3,6 +3,8 @@
 
 package main
 
+// TODO: Make this an in-memory database class.
+
 import (
 	"crypto/subtle"
 	"encoding/hex"
@@ -30,26 +32,26 @@ var (
 )
 
 func readPasswordDatabase(pathname string) Credentials {
-	result := OpenFileAndGetInfo(pathname)
-	if result.Error != nil {
-		if os.IsNotExist(result.Error) {
+	file, info, e := OpenFileAndInfo(pathname)
+	if e != nil {
+		if os.IsNotExist(e) {
 			return credentials
 		}
-		Logger.Fatalf("Could not open %q: %v", pathname, result.Error)
+		Logger.Fatalf("Could not open %q: %v", pathname, e)
 	}
-	defer result.File.Close()
+	defer file.Close()
 
-	if result.Info.ModTime().After(lastCredentialRead) {
+	if info.ModTime().After(lastCredentialRead) {
 		credentials = make(Credentials)
 		var username, password string
 		for {
-			_, e := fmt.Fscanf(result.File, "%s %s\n", &username, &password)
+			_, e := fmt.Fscanf(file, "%s %s\n", &username, &password)
 			if e != nil {
 				break
 			}
 			credentials[strings.ToLower(username)] = password
 		}
-		lastCredentialRead = result.Info.ModTime()
+		lastCredentialRead = info.ModTime()
 	}
 
 	return credentials
