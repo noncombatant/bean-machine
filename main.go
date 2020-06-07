@@ -241,6 +241,13 @@ Here is what the commands do:
 	os.Exit(1)
 }
 
+func assertValidRootPathname(root string) {
+	info, e := os.Stat(root)
+	if e != nil || !info.IsDir() {
+		Logger.Fatal("Cannot continue without a valid music-directory.")
+	}
+}
+
 func main() {
 	if os.Getenv("IPV6") != "" {
 		bindToIPv6 = true

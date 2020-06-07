@@ -192,13 +192,6 @@ func OpenFileAndInfo(pathname string) (*os.File, os.FileInfo, error) {
 	return file, info, nil
 }
 
-func assertValidRootPathname(root string) {
-	info, e := os.Stat(root)
-	if e != nil || !info.IsDir() {
-		Logger.Fatal("Cannot continue without a valid music-directory.")
-	}
-}
-
 // Parses `s` as a signed 32-bit integer, represented in any base up to base
 // 36, and returns the result. (The functionality is equivalent to
 // `strconv.ParseInt(s, 0, 32)`.) If any error occurs, returns 0.
