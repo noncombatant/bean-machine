@@ -12,7 +12,6 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
-	"path"
 	"path/filepath"
 	"regexp"
 	"strconv"
@@ -59,19 +58,19 @@ var (
 
 // TODO: These are not application-generic; move them out.
 func IsAudioPathname(pathname string) bool {
-	return IsStringInStrings(GetFileExtension(pathname), audioFormatExtensions)
+	return IsStringInStrings(GetBasenameExtension(pathname), audioFormatExtensions)
 }
 
 func IsVideoPathname(pathname string) bool {
-	return IsStringInStrings(GetFileExtension(pathname), videoFormatExtensions)
+	return IsStringInStrings(GetBasenameExtension(pathname), videoFormatExtensions)
 }
 
 func IsDocumentPathname(pathname string) bool {
-	return IsStringInStrings(GetFileExtension(pathname), documentFormatExtensions)
+	return IsStringInStrings(GetBasenameExtension(pathname), documentFormatExtensions)
 }
 
 func IsImagePathname(pathname string) bool {
-	return IsStringInStrings(GetFileExtension(pathname), imageFormatExtensions)
+	return IsStringInStrings(GetBasenameExtension(pathname), imageFormatExtensions)
 }
 
 func CopyFileByName(source, destination string) {
@@ -107,7 +106,7 @@ func ExtractDigits(s string) string {
 	return ""
 }
 
-func GetFileExtension(pathname string) string {
+func GetBasenameExtension(pathname string) string {
 	return strings.ToLower(filepath.Ext(pathname))
 }
 

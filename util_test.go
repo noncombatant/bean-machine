@@ -30,8 +30,28 @@ func TestExtractDigits(t *testing.T) {
 	}
 }
 
-func TestGetFileExtension(t *testing.T) {
-	// TODO
+func TestGetBasenameExtension(t *testing.T) {
+	type Expectation struct {
+		Input string
+		Output string
+	}
+	expectations := []Expectation{
+		{"/usr/bin/goat.leg", ".leg"},
+		{"/usr/bin/goat.lEg", ".leg"},
+		{"/usr/bin/goat.BAT", ".bat"},
+		{"c:\\win32\\goatpad.EXE", ".exe"},
+		{"zip", ""},
+		{"~/bin/zip.sh", ".sh"},
+		{"zip.pdf.sh", ".sh"},
+		{"/usr/local/goat.beard/thing.stuff.txt", ".txt"},
+	}
+
+	for _, e := range expectations {
+		r := GetBasenameExtension(e.Input)
+		if e.Output != r {
+			t.Errorf("%q != ExtractDigits(%q) (%q)\n", e.Output, e.Input, r)
+		}
+	}
 }
 
 func TestRemoveFileExtension(t *testing.T) {
