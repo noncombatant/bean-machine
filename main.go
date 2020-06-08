@@ -265,7 +265,6 @@ func main() {
 
 	establishConfiguration()
 
-	status := 0
 	for i := 0; i < flag.NArg(); i++ {
 		command := flag.Arg(i)
 		switch command {
@@ -284,5 +283,5 @@ func main() {
 			printHelp()
 		}
 	}
-	os.Exit(status)
+	os.Exit(0)
 }
