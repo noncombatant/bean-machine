@@ -246,3 +246,7 @@ func IsDirectoryEmpty(pathname string) (bool, error) {
 	_, e = f.Readdir(1)
 	return e == io.EOF, e
 }
+
+func IsFileWorldReadable(info os.FileInfo) bool {
+	return info.Mode()&0004 == 04
+}

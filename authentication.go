@@ -98,7 +98,6 @@ func generateAndSaveHmacKey(pathname string) {
 
 func getHmacKey() []byte {
 	pathname := path.Join(configurationPathname, hmacBasename)
-
 	if _, e := os.Stat(pathname); os.IsNotExist(e) {
 		generateAndSaveHmacKey(pathname)
 	}
@@ -224,14 +223,17 @@ func redirectToLogin(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/login.html", http.StatusFound)
 }
 
+// TODO: This function is just too complex, since it combines gzipping and
+// if-public. We need a transparent `MaybeGzippedFile` type, or similar.
 func openFileIfPublic(pathname string, shouldTryGzip bool) (*os.File, os.FileInfo, error, bool) {
-	nonGzFile, nonGzInfo, e := OpenFileAndInfo(pathname)
+	file, info, e := OpenFileAndInfo(pathname)
 	if e != nil {
-		return nonGzFile, nonGzInfo, e, false
+		return file, info, e, false
 	}
 
-	if nonGzInfo.Mode()&0004 == 0 {
-		nonGzFile.Close()
+	if !IsFileWorldReadable(info) {
+		file.Close()
+		Logger.Printf("NOTE: %q not world-readable", pathname)
 		return nil, nil, errors.New(fmt.Sprintf("openFileIfPublic: %q not public", pathname)), false
 	}
 
@@ -239,32 +241,38 @@ func openFileIfPublic(pathname string, shouldTryGzip bool) (*os.File, os.FileInf
 		gzPathname := pathname + ".gz"
 		gzFile, gzInfo, e := OpenFileAndInfo(gzPathname)
 
-		// Handle the common case first.
-		if e == nil && gzInfo.ModTime().After(nonGzInfo.ModTime()) {
-			nonGzFile.Close()
-			return gzFile, gzInfo, e, true
-		}
+		if IsFileWorldReadable(gzInfo) {
+			// Handle the common case first.
+			if e == nil && gzInfo.ModTime().After(info.ModTime()) {
+				file.Close()
+				return gzFile, gzInfo, e, true
+			}
 
-		// Clean up, remove the old gzPathname if it exists, create a new one, and
-		// return it.
-		if gzFile != nil {
-			gzFile.Close()
-		}
-		_ = os.Remove(gzPathname)
+			// Clean up, remove the old gzPathname if it exists, create a new one,
+			// and return it.
+			if gzFile != nil {
+				gzFile.Close()
+			}
+			_ = os.Remove(gzPathname)
 
-		e = GzipFile(gzPathname, nonGzFile)
-		if e != nil {
-			nonGzFile.Seek(0, os.SEEK_SET)
-			return nonGzFile, nonGzInfo, e, false
-		}
+			e = GzipFile(gzPathname, file)
+			if e != nil {
+				file.Seek(0, os.SEEK_SET)
+				return file, info, e, false
+			}
 
-		gzFile, gzInfo, e = OpenFileAndInfo(gzPathname)
-		if e == nil {
-			return gzFile, gzInfo, e, true
+			gzFile, gzInfo, e = OpenFileAndInfo(gzPathname)
+			if e == nil {
+				return gzFile, gzInfo, e, true
+			} else {
+				gzFile.Close()
+			}
+		} else {
+			Logger.Printf("NOTE: %q not world-readable", gzPathname)
 		}
 	}
 
-	return nonGzFile, nonGzInfo, e, false
+	return file, info, e, false
 }
 
 func (h AuthenticatingFileHandler) serveFileContents(pathname string, w http.ResponseWriter, r *http.Request) {
