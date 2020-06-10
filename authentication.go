@@ -253,19 +253,23 @@ func openFileIfPublic(pathname string, shouldTryGzip bool) (*os.File, os.FileInf
 			if gzFile != nil {
 				gzFile.Close()
 			}
-			_ = os.Remove(gzPathname)
 
-			e = GzipFile(gzPathname, file)
-			if e != nil {
-				file.Seek(0, os.SEEK_SET)
-				return file, info, e, false
-			}
-
-			gzFile, gzInfo, e = OpenFileAndInfo(gzPathname)
+			e = os.Remove(gzPathname)
 			if e == nil {
-				return gzFile, gzInfo, e, true
+				e = GzipFile(gzPathname, file)
+				if e != nil {
+					file.Seek(0, os.SEEK_SET)
+					return file, info, e, false
+				}
+
+				gzFile, gzInfo, e = OpenFileAndInfo(gzPathname)
+				if e == nil {
+					return gzFile, gzInfo, e, true
+				} else {
+					gzFile.Close()
+				}
 			} else {
-				gzFile.Close()
+				Logger.Printf("Could not remove %q: %v", gzPathname, e)
 			}
 		} else {
 			Logger.Printf("NOTE: %q not world-readable", gzPathname)
