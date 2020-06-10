@@ -77,12 +77,12 @@ func matchItem(info *ItemInfo, queries []Query) bool {
 	return true
 }
 
-func matchItems(infos []*ItemInfo, rawQuery string) []*ItemInfo {
+func matchItems(infos ItemInfos, rawQuery string) ItemInfos {
 	rawQuery = strings.TrimSpace(normalizeStringForSearch(rawQuery))
 	queries := ReconstructQueries(ParseTerms(rawQuery))
 	Logger.Print(queries)
 
-	results := []*ItemInfo{}
+	results := ItemInfos{}
 	for _, info := range infos {
 		if matchItem(info, queries) {
 			results = append(results, info)

@@ -72,7 +72,7 @@ func writeString(w http.ResponseWriter, s string) (int, error) {
 	return w.Write([]byte(s))
 }
 
-func writeItemInfos(w http.ResponseWriter, infos []*ItemInfo) {
+func writeItemInfos(w http.ResponseWriter, infos ItemInfos) {
 	writeString(w, "[\n")
 	for i, info := range infos {
 		writeString(w, info.ToJSON())
