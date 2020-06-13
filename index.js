@@ -294,11 +294,15 @@ const playButtonOnClick = function(event) {
     preparePlay(0)
   }
   togglePlayback()
+  // TODO: This is probably a bad hack and we should handle the button's focus
+  // in some better way.
   playButton.blur()
 }
 
 const nextButtonOnClick = function(event) {
   playNext()
+  // TODO: This is probably a bad hack and we should handle the button's focus
+  // in some better way.
   nextButton.blur()
 }
 
@@ -308,6 +312,8 @@ const shuffleButtonOnClick = function(event) {
   shuffleButton.alt = shuffleButton.title = shuffleOn ? "Shuffle (s)" : "Sort (s)"
   localStorage.setItem("shuffle", shuffleOn ? "false" : "true")
   buildCatalog(0)
+  // TODO: This is probably a bad hack and we should handle the button's focus
+  // in some better way.
   shuffleButton.blur()
 }
 
