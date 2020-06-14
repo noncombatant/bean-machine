@@ -190,7 +190,7 @@ const playNext = function(event) {
 }
 
 window.onkeydown = function(event) {
-  // Return false on space, so that we don't scroll down. We reserve space for
+  // Return false on space, so that we don't scroll down. We reserve Space for
   // `playButtonOnClick` in `bodyOnKeyup`. We have to set this as *the* event
   // listener, not use `addEventListener`.
   return !(" " === event.key && event.target === document.body)
@@ -198,6 +198,7 @@ window.onkeydown = function(event) {
 
 // TODO: Document all these hotkeys in help.html.
 const bodyOnKeyup = function(event) {
+  event.stopPropagation()
   switch (event.key) {
     case "ArrowRight":
     case "n":
@@ -294,16 +295,10 @@ const playButtonOnClick = function(event) {
     preparePlay(0)
   }
   togglePlayback()
-  // TODO: This is probably a bad hack and we should handle the button's focus
-  // in some better way.
-  playButton.blur()
 }
 
 const nextButtonOnClick = function(event) {
   playNext()
-  // TODO: This is probably a bad hack and we should handle the button's focus
-  // in some better way.
-  nextButton.blur()
 }
 
 const shuffleButtonOnClick = function(event) {
@@ -312,9 +307,6 @@ const shuffleButtonOnClick = function(event) {
   shuffleButton.alt = shuffleButton.title = shuffleOn ? "Shuffle (s)" : "Sort (s)"
   localStorage.setItem("shuffle", shuffleOn ? "false" : "true")
   buildCatalog(0)
-  // TODO: This is probably a bad hack and we should handle the button's focus
-  // in some better way.
-  shuffleButton.blur()
 }
 
 
