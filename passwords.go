@@ -3,7 +3,9 @@
 
 package main
 
-// TODO: Make this an in-memory database class.
+// TODO: Make this an in-memory database class. Wrap a class around gob that
+// reloads the gobs file when the file is newer than the last read. Use it for
+// passwords, the catalog, and whatever else.
 
 import (
 	"crypto/subtle"
