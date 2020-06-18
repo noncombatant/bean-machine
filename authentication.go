@@ -51,8 +51,6 @@ var (
 		".html",
 		".js",
 		".json",
-		".svg",
-		".tsv",
 		".txt",
 	}
 
@@ -223,9 +221,50 @@ func redirectToLogin(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/login.html", http.StatusFound)
 }
 
-// TODO: This function is just too complex, since it combines gzipping and
-// if-public. We need a transparent `MaybeGzippedFile` type, or similar.
+// Creates a gzipped version of the uncompressed file named by pathname, and
+// returns an open File and FileInfo. On error, it logs the error and returns
+// nil, nil.
 //
+// pathname, file, and info all refer to the uncompressed file. (We need
+// pathname because `info.Name()` gives us only the basename.)
+func createGzipped(pathname string, file *os.File, info os.FileInfo) (*os.File, os.FileInfo) {
+	gzPathname := pathname + ".gz"
+	// Remove any old one.
+	os.Remove(gzPathname)
+	e := GzipFile(gzPathname, file)
+	if e != nil {
+		Logger.Printf("Could not create gzipped file %q: %v", gzPathname, e)
+		return nil, nil
+	}
+
+	gzFile, gzInfo, e := OpenFileAndInfo(gzPathname)
+	if e != nil {
+		Logger.Printf("Could not open just-created gzipped file %q: %v", gzPathname, e)
+		return nil, nil
+	}
+	return gzFile, gzInfo
+}
+
+// Given a pathname to an uncompressed file, opens or creates an equivalent
+// gzipped file and returns it. On error, it logs the error and returns nil,
+// nil.
+//
+// pathname, file, and info all refer to the uncompressed file. (We need
+// pathname because `info.Name()` gives us only the basename.)
+func openOrCreateGzipped(pathname string, file *os.File, info os.FileInfo) (*os.File, os.FileInfo) {
+	gzPathname := pathname + ".gz"
+	gzFile, gzInfo, e := OpenFileAndInfo(gzPathname)
+	if e != nil {
+		Logger.Printf("Could not open %q: %v", gzPathname, e)
+		return createGzipped(pathname, file, info)
+	}
+
+	if gzInfo.ModTime().After(info.ModTime()) {
+		return gzFile, gzInfo
+	}
+	return createGzipped(pathname, file, info)
+}
+
 // Returns an open File, a FileInfo, any error, and a bool indicating whether
 // or not the file contains gzipped contents.
 func openFileIfPublic(pathname string, shouldTryGzip bool) (*os.File, os.FileInfo, error, bool) {
@@ -241,44 +280,13 @@ func openFileIfPublic(pathname string, shouldTryGzip bool) (*os.File, os.FileInf
 	}
 
 	if shouldTryGzip {
-		gzPathname := pathname + ".gz"
-		gzFile, gzInfo, e := OpenFileAndInfo(gzPathname)
-
-		if IsFileWorldReadable(gzInfo) {
-			// Handle the common case first.
-			if e == nil && gzInfo.ModTime().After(info.ModTime()) {
-				file.Close()
-				return gzFile, gzInfo, e, true
-			}
-
-			// Clean up, remove the old gzPathname if it exists, create a new one,
-			// and return it.
-			if gzFile != nil {
-				gzFile.Close()
-			}
-
-			e = os.Remove(gzPathname)
-			if e == nil {
-				e = GzipFile(gzPathname, file)
-				if e != nil {
-					Logger.Printf("Could not create new gz file: %q, %v", gzPathname, e)
-					file.Seek(0, os.SEEK_SET)
-					return file, info, e, false
-				}
-
-				gzFile, gzInfo, e = OpenFileAndInfo(gzPathname)
-				if e == nil {
-					file.Close()
-					return gzFile, gzInfo, e, true
-				} else {
-					gzFile.Close()
-				}
-			} else {
-				Logger.Printf("Could not remove %q: %v", gzPathname, e)
-			}
-		} else {
-			Logger.Printf("NOTE: %q not world-readable", gzPathname)
+		gzFile, gzInfo := openOrCreateGzipped(pathname, file, info)
+		if gzFile == nil {
+			Logger.Printf("Could not create new gz file for: %q, %v", pathname, e)
+			file.Seek(0, os.SEEK_SET)
+			return file, info, e, false
 		}
+		return gzFile, gzInfo, nil, true
 	}
 
 	return file, info, e, false
