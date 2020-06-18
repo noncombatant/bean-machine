@@ -225,6 +225,9 @@ func redirectToLogin(w http.ResponseWriter, r *http.Request) {
 
 // TODO: This function is just too complex, since it combines gzipping and
 // if-public. We need a transparent `MaybeGzippedFile` type, or similar.
+//
+// Returns an open File, a FileInfo, any error, and a bool indicating whether
+// or not the file contains gzipped contents.
 func openFileIfPublic(pathname string, shouldTryGzip bool) (*os.File, os.FileInfo, error, bool) {
 	file, info, e := OpenFileAndInfo(pathname)
 	if e != nil {
@@ -258,12 +261,14 @@ func openFileIfPublic(pathname string, shouldTryGzip bool) (*os.File, os.FileInf
 			if e == nil {
 				e = GzipFile(gzPathname, file)
 				if e != nil {
+					Logger.Printf("Could not create new gz file: %q, %v", gzPathname, e)
 					file.Seek(0, os.SEEK_SET)
 					return file, info, e, false
 				}
 
 				gzFile, gzInfo, e = OpenFileAndInfo(gzPathname)
 				if e == nil {
+					file.Close()
 					return gzFile, gzInfo, e, true
 				} else {
 					gzFile.Close()
