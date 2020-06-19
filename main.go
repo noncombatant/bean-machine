@@ -19,11 +19,13 @@ const (
 	serverKeyBasename         = "server-key.pem"
 	serverCertificateBasename = "server-certificate.pem"
 	passwordsBasename         = "passwords"
-	httpPort                  = ":1234"
+
+	// TODO: Add a -p command line option to let people change this.
+	httpPort = ":1234"
 )
 
-// Move the web front-end into a web/ subdirectory. Change install and serving
-// logic in Go accordingly.
+// TODO: Move the web front-end into a web/ subdirectory. Change install and
+// serving logic in Go accordingly.
 var (
 	frontEndFiles = []string{
 		"help.html",
@@ -125,14 +127,14 @@ func generateServerCredentials(hosts []string) (string, string) {
 		return certificatePathname, keyPathname
 	}
 
-	certificateFile, err := os.Create(certificatePathname)
-	if err != nil {
-		Logger.Fatalf("Failed to open %q for writing: %s", certificatePathname, err)
+	certificateFile, e := os.Create(certificatePathname)
+	if e != nil {
+		Logger.Fatalf("Failed to open %q for writing: %s", certificatePathname, e)
 	}
 
-	keyFile, err := os.OpenFile(keyPathname, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0600)
-	if err != nil {
-		Logger.Fatalf("Failed to open %q for writing: %s", keyPathname, err)
+	keyFile, e := os.OpenFile(keyPathname, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0600)
+	if e != nil {
+		Logger.Fatalf("Failed to open %q for writing: %s", keyPathname, e)
 	}
 
 	generateCertificate(hosts, false, keyFile, certificateFile)
