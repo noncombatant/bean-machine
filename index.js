@@ -114,11 +114,14 @@ let currentAlbumPathname = ""
 let haveRequestedExtendCatalog = false
 const maxItemsPerDraw = 500
 
+// TODO: Compilations are not grouped correctly?
 const buildCatalog = function(start) {
   if (0 === start) {
     removeAllChildren(itemListDiv)
     currentAlbumPathname = ""
     haveRequestedExtendCatalog = false
+    // TODO: Not sorting Discharge correctly; others. Especially after shuffle?
+    // (Mismatched track numbers in ID3 vs. basenames?)
     if ("true" === localStorage.getItem("shuffle")) {
       shuffle(searchHits)
     } else {
@@ -264,6 +267,7 @@ const restoreState = function() {
 let searchCatalogFetchIndex = 0
 let searchCatalogFetchBudget = 0
 
+// TODO: New search while playing: next song should be newest results item 0.
 const searchCatalog = function(query) {
   query = query.trim()
   searchInput.value = query
