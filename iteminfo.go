@@ -6,6 +6,7 @@ package main
 import (
 	"fmt"
 	"id3"
+	"net/url"
 	"path/filepath"
 	"strings"
 )
@@ -33,6 +34,15 @@ type ItemInfo struct {
 
 type ItemInfos []*ItemInfo
 
+// This terrible hack is an alternative to separately `url.PathEscape`ing each
+// pathname component and then re-joining them. That would be conceptually
+// better but this is expedient.
+func pathnameEscape(pathname string) string {
+	// `PathEscape` uses capital hex, hence "%2F".
+	return strings.ReplaceAll(url.PathEscape(pathname), "%2F", "/")
+}
+
+// TODO: Do this the idiomatic Go way.
 func (i *ItemInfo) ToJSON() string {
 	return fmt.Sprintf(`{"pathname":%q,
 "album":%q,
@@ -42,7 +52,7 @@ func (i *ItemInfo) ToJSON() string {
 "track":%d,
 "year":%d,
 "genre":%q}`,
-		i.Pathname, i.Album, i.Artist, i.Name, ParseIntegerOr0(i.NormalizedDisc), ParseIntegerOr0(i.NormalizedTrack), ParseIntegerOr0(i.NormalizedYear), i.Genre)
+		pathnameEscape(i.Pathname), i.Album, i.Artist, i.Name, ParseIntegerOr0(i.NormalizedDisc), ParseIntegerOr0(i.NormalizedTrack), ParseIntegerOr0(i.NormalizedYear), i.Genre)
 }
 
 func getDiscAndTrackFromBasename(basename string) (string, string, string) {
