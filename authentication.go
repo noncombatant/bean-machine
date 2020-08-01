@@ -176,9 +176,7 @@ type AuthenticatingFileHandler struct {
 }
 
 func (h AuthenticatingFileHandler) handleLogIn(w http.ResponseWriter, r *http.Request) {
-	// TODO: Factor the username normalization in a minimal, robust way. In this
-	// file and in passwords.go, we're just sprinkling `ToLower` everywhere.
-	username := strings.ToLower(r.FormValue("name"))
+	username := normalizeUsername(r.FormValue("name"))
 	password := r.FormValue("password")
 	stored := readPasswordDatabase(path.Join(configurationPathname, passwordsBasename))
 

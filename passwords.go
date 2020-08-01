@@ -33,6 +33,10 @@ var (
 	credentials        = make(Credentials)
 )
 
+func normalizeUsername(username string) string {
+	return strings.TrimSpace(strings.ToLower(username))
+}
+
 func readPasswordDatabase(pathname string) Credentials {
 	file, info, e := OpenFileAndInfo(pathname)
 	if e != nil {
@@ -51,7 +55,7 @@ func readPasswordDatabase(pathname string) Credentials {
 			if e != nil {
 				break
 			}
-			credentials[strings.ToLower(username)] = password
+			credentials[normalizeUsername(username)] = password
 		}
 		lastCredentialRead = info.ModTime()
 	}
@@ -65,7 +69,7 @@ func promptForCredentials() (string, string) {
 	fmt.Scanln(&username)
 	fmt.Print("Password: ")
 	fmt.Scanln(&password)
-	return strings.ToLower(username), password
+	return username, password
 }
 
 func obfuscatePassword(password, salt []byte) []byte {
@@ -90,7 +94,7 @@ func setPassword() {
 
 	username, password := promptForCredentials()
 	obfuscated := obfuscatePassword([]byte(password), salt)
-	stored[strings.ToLower(username)] = hex.EncodeToString(salt) + hex.EncodeToString(obfuscated)
+	stored[normalizeUsername(username)] = hex.EncodeToString(salt) + hex.EncodeToString(obfuscated)
 
 	writePasswordDatabase(file, stored)
 }
