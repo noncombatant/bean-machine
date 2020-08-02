@@ -19,9 +19,6 @@ const (
 	serverKeyBasename         = "server-key.pem"
 	serverCertificateBasename = "server-certificate.pem"
 	passwordsBasename         = "passwords"
-
-	// TODO: Add a -p command line option to let people change this.
-	httpPort = ":1234"
 )
 
 // TODO: Move the web front-end into a web/ subdirectory. Change install and
@@ -56,8 +53,8 @@ var (
 	configurationPathname = path.Join(homePathname, configurationBasename)
 	bindToIPv4            = true
 	bindToIPv6            = false
-
-	musicRoot = ""
+	musicRoot             = ""
+	httpPort              = ":1234"
 )
 
 func installFrontEndFiles(root string) {
@@ -258,8 +255,12 @@ func main() {
 	needsHelp1 := flag.Bool("help", false, "Print the help message.")
 	needsHelp2 := flag.Bool("h", false, "Print the help message.")
 	root := flag.String("m", "", "Set the music directory.")
+	port := flag.Int("p", 0, "Set the port the server listens on.")
 	flag.Parse()
 	musicRoot = *root
+	if *port > 0 {
+		httpPort = fmt.Sprintf(":%d", *port)
+	}
 
 	if *needsHelp1 || *needsHelp2 || flag.NArg() == 0 {
 		printHelp()
