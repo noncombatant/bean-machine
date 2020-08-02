@@ -73,18 +73,22 @@ func Lint(root string) {
 
 			basename := path.Base(pathname)
 			if basename == ".AppleFileInfo" && info.IsDir() {
-				Logger.Print(pathname)
+				Logger.Printf("Would remove %q", pathname)
 				return nil
 				//return os.RemoveAll(pathname)
 			} else if basename == ".DS_Store" && !info.IsDir() {
-				Logger.Print(pathname)
+				Logger.Printf("Would remove %q", pathname)
 				return nil
 				//return os.Remove(pathname)
 			} else if basename[0] == '.' {
-				Logger.Print("Hidden:", pathname)
+				Logger.Printf("Hidden: %q", pathname)
 			}
 
-			// TODO: Remove empty files.
+			file, e := os.OpenFile(pathname, os.O_RDWR, 0755)
+			if e != nil {
+				return e
+			}
+			defer file.Close()
 
 			if info.IsDir() {
 				// TODO: Check if it's empty; if so, remove it and return nil.
@@ -94,14 +98,34 @@ func Lint(root string) {
 					return e
 				}
 				if empty {
-					Logger.Printf("Empty: %q", pathname)
+					Logger.Printf("Would remove empty directory: %q", pathname)
 					return nil
 					//return os.Remove(pathname)
 				}
 
-				// TODO: Set its permissions to 0755.
+				Logger.Printf("Would chmod %q to 0755", pathname)
+				//e = file.Chmod(0755)
+				if e != nil {
+					Logger.Print(e)
+					return e
+				}
 			} else if info.Mode().IsRegular() {
-				// TODO: Set its permissions to 0644.
+				status, e := file.Stat()
+				if e != nil {
+					return e
+				}
+				if status.Size() == 0 {
+					Logger.Printf("Would remove 0-byte file %q", pathname)
+					return nil
+					//return os.Remove(pathname)
+				}
+
+				Logger.Printf("Would chmod %q to 0644", pathname)
+				//e = file.Chmod(0644)
+				if e != nil {
+					Logger.Print(e)
+					return e
+				}
 			}
 
 			// TODO: Remove xattrs.
