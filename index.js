@@ -125,7 +125,8 @@ const buildCatalog = function(start) {
     if ("true" === localStorage.getItem("shuffle")) {
       shuffle(searchHits)
     } else {
-      searchHits.sort((a, b) => a.artist.localeCompare(b.artist) || a.album.localeCompare(b.album) || a.disc < b.disc || a.track < b.track || a.year < b.year)
+      //searchHits.sort((a, b) => a.artist.localeCompare(b.artist) || a.album.localeCompare(b.album) || a.disc < b.disc || a.track < b.track || a.year < b.year)
+      searchHits.sort((a, b) => a.pathname.localeCompare(b.pathname))
     }
   } else {
     itemListDiv.removeChild($("bottom"))

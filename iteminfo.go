@@ -95,14 +95,15 @@ func (i *ItemInfo) fillMetadata() {
 	i.fillMetadataFromPathname()
 
 	if i.File != nil {
-		i.File.Album = strings.TrimSpace(i.File.Album)
-		if i.File.Album != "" {
-			i.Album = i.File.Album
-		}
-		i.File.Artist = strings.TrimSpace(i.File.Artist)
-		if i.File.Artist != "" {
-			i.Artist = i.File.Artist
-		}
+		// Quirk: I prefer to get the album and artist from `Pathname`. This makes .../Compilations/Jock Jams/... work.
+		//i.File.Album = strings.TrimSpace(i.File.Album)
+		//if i.File.Album != "" {
+		//	i.Album = i.File.Album
+		//}
+		//i.File.Artist = strings.TrimSpace(i.File.Artist)
+		//if i.File.Artist != "" {
+		//	i.Artist = i.File.Artist
+		//}
 		i.File.Name = strings.TrimSpace(i.File.Name)
 		if i.File.Name != "" {
 			i.Name = i.File.Name
