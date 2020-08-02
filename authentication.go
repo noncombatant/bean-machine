@@ -201,9 +201,11 @@ func (h AuthenticatingFileHandler) handleSearch(w http.ResponseWriter, r *http.R
 		return
 	}
 
-	// TODO: If empty query, show new entries for this year or month.
 	query := strings.TrimSpace(queries[0])
-	if len(query) == 0 || "?" == query {
+	if len(query) == 0 {
+		year, month, _ := time.Now().Date()
+		query = fmt.Sprintf("mtime:%04d-%02d-", year, month)
+	} else if "?" == query {
 		rand.Seed(time.Now().Unix())
 		item := catalog.ItemInfos[rand.Intn(len(catalog.ItemInfos))]
 		words := wordSplitter.Split(path.Dir(item.Pathname), -1)
