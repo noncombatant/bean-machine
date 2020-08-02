@@ -270,7 +270,7 @@ func openOrCreateGzipped(pathname string, file *os.File, info os.FileInfo) (*os.
 func openFileIfPublic(pathname string, shouldTryGzip bool) (*os.File, os.FileInfo, error, bool) {
 	file, info, e := OpenFileAndInfo(pathname)
 	if e != nil {
-		return file, info, e, false
+		return nil, nil, e, false
 	}
 
 	if !IsFileWorldReadable(info) {
@@ -284,12 +284,12 @@ func openFileIfPublic(pathname string, shouldTryGzip bool) (*os.File, os.FileInf
 		if gzFile == nil {
 			Logger.Printf("Could not create new gz file for: %q, %v", pathname, e)
 			file.Seek(0, os.SEEK_SET)
-			return file, info, e, false
+			return file, info, nil, false
 		}
 		return gzFile, gzInfo, nil, true
 	}
 
-	return file, info, e, false
+	return file, info, nil, false
 }
 
 func (h AuthenticatingFileHandler) serveFileContents(pathname string, w http.ResponseWriter, r *http.Request) {
@@ -326,13 +326,10 @@ func (h AuthenticatingFileHandler) serveFile(w http.ResponseWriter, r *http.Requ
 func (h AuthenticatingFileHandler) serveCover(pathname string, w http.ResponseWriter, r *http.Request) {
 	for _, extension := range coverExtensions {
 		file, info, e, _ := openFileIfPublic(pathname+extension, false)
-		// TODO: Reshape this!
-		if file != nil {
-			defer file.Close()
-		}
-		if e != nil || file == nil || info == nil {
+		if e != nil {
 			continue
 		}
+		defer file.Close()
 
 		// TODO: Unify this in serveFileContents.
 		http.ServeContent(w, r, pathname, info.ModTime(), file)
