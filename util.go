@@ -14,6 +14,7 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
+	"path"
 	"path/filepath"
 	"regexp"
 	"strconv"
@@ -63,16 +64,42 @@ func IsAudioPathname(pathname string) bool {
 	return IsStringInStrings(GetBasenameExtension(pathname), audioFormatExtensions)
 }
 
-func IsVideoPathname(pathname string) bool {
-	return IsStringInStrings(GetBasenameExtension(pathname), videoFormatExtensions)
-}
-
 func IsDocumentPathname(pathname string) bool {
 	return IsStringInStrings(GetBasenameExtension(pathname), documentFormatExtensions)
 }
 
+func IsFileNewestInDirectory(directoryName, baseName string) bool {
+	file, e := os.Open(path.Join(directoryName, baseName))
+	if e != nil {
+		return false
+	}
+	defer file.Close()
+
+	status, e := file.Stat()
+	if e != nil {
+		return false
+	}
+	modified := status.ModTime()
+
+	infos, e := ioutil.ReadDir(directoryName)
+	if e != nil {
+		return false
+	}
+
+	for _, info := range infos {
+		if info.IsDir() && modified.Before(info.ModTime()) {
+			return false
+		}
+	}
+	return true
+}
+
 func IsImagePathname(pathname string) bool {
 	return IsStringInStrings(GetBasenameExtension(pathname), imageFormatExtensions)
+}
+
+func IsVideoPathname(pathname string) bool {
+	return IsStringInStrings(GetBasenameExtension(pathname), videoFormatExtensions)
 }
 
 // Copies the file named by `source` into the file named by `destination`.

@@ -69,7 +69,6 @@ func (c *Catalog) buildCatalogFromWalk(root string) {
 	defer func() {
 		c.buildCatalogFromWalkInProgress = false
 	}()
-	Logger.Print("Start. This might take a while.")
 
 	catalogFileTempPath := path.Join(root, catalogFileTemp)
 	catalogFilePath := path.Join(root, catalogFile)
@@ -88,7 +87,7 @@ func (c *Catalog) buildCatalogFromWalk(root string) {
 
 	encoder := gob.NewEncoder(gobs)
 
-	// Log the walk progress periodically so that the person knows what’s going
+	// Log the walk progress periodically so that the operator knows what’s going
 	// on.
 	count := 0
 	timerFrequency := 1 * time.Second
@@ -162,34 +161,8 @@ func (c *Catalog) buildCatalogFromWalk(root string) {
 	Logger.Printf("Completed. %v items.", len(c.ItemInfos))
 }
 
-func isFileNewestInDirectory(directoryName, baseName string) bool {
-	file, e := os.Open(path.Join(directoryName, baseName))
-	if e != nil {
-		return false
-	}
-	defer file.Close()
-
-	status, e := file.Stat()
-	if e != nil {
-		return false
-	}
-	modified := status.ModTime()
-
-	infos, e := ioutil.ReadDir(directoryName)
-	if e != nil {
-		return false
-	}
-
-	for _, info := range infos {
-		if info.IsDir() && modified.Before(info.ModTime()) {
-			return false
-		}
-	}
-	return true
-}
-
 func (c *Catalog) BuildCatalog(root string) {
-	if !isFileNewestInDirectory(root, catalogFile) {
+	if !IsFileNewestInDirectory(root, catalogFile) {
 		c.buildCatalogFromWalk(root)
 		return
 	}
@@ -242,7 +215,8 @@ func shouldBuildMediaIndex(pathname string, infos []os.FileInfo) bool {
 func buildMediaIndex(pathname string) {
 	infos, e := ioutil.ReadDir(pathname)
 	if e != nil {
-		Logger.Fatal(e)
+		Logger.Print(e)
+		return
 	}
 
 	if !shouldBuildMediaIndex(pathname, infos) {
