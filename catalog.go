@@ -12,6 +12,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"strings"
 	"time"
 )
 
@@ -100,14 +101,7 @@ func (c *Catalog) buildCatalogFromWalk(root string) {
 				Logger.Printf("%q: %s", pathname, e)
 				return nil
 			}
-			if shouldSkipFile(pathname, info) {
-				return nil
-			}
-			if info.Mode().IsDir() {
-				buildMediaIndex(pathname)
-				return nil
-			}
-			if !info.Mode().IsRegular() {
+			if shouldSkipFile(pathname, info) || info.Mode().IsDir() || !info.Mode().IsRegular() {
 				return nil
 			}
 
@@ -187,63 +181,31 @@ func (c *Catalog) BuildCatalog(root string) {
 	}
 }
 
-func shouldBuildMediaIndex(pathname string, infos []os.FileInfo) bool {
-	index, e := os.Open(path.Join(pathname, "media.html"))
-	if e != nil {
-		return true
-	}
-	defer index.Close()
-
-	indexStatus, e := index.Stat()
-	if e != nil {
-		Logger.Fatal(e)
-	}
-
-	time := indexStatus.ModTime()
-	for _, info := range infos {
-		name := info.Name()
-		if IsImagePathname(name) || IsDocumentPathname(name) {
-			if time.Before(info.ModTime()) {
-				return true
-			}
-		}
-	}
-	return false
-}
-
-// TODO: Consider generating these dynamically instead of statically.
-func buildMediaIndex(pathname string) {
-	infos, e := ioutil.ReadDir(pathname)
-	if e != nil {
-		Logger.Print(e)
-		return
-	}
-
-	if !shouldBuildMediaIndex(pathname, infos) {
-		return
-	}
-
-	index, e := os.OpenFile(path.Join(pathname, "media.html"), os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
-	if e != nil {
-		Logger.Fatal(e)
-	}
-	defer index.Close()
-
+func buildMediaIndex(pathname string) string {
 	header := `<!DOCTYPE html>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <link rel="stylesheet" href="/media.css"/>
-<title>%s</title>
+<title>` + path.Base(pathname) + `</title>
 `
-	fmt.Fprintf(index, header, path.Base(pathname))
+
+	var builder strings.Builder
+	builder.WriteString(header)
+
+	infos, e := ioutil.ReadDir(pathname)
+	if e != nil {
+		Logger.Print(e)
+		builder.String()
+	}
 
 	for _, info := range infos {
 		name := info.Name()
 		if IsImagePathname(name) {
-			fmt.Fprintf(index, "<img src=\"%s\"/>\n", EscapeDoubleQuotes(name))
+			builder.WriteString(fmt.Sprintf("<img src=\"%s\"/>\n", EscapeDoubleQuotes(name)))
 		} else if IsDocumentPathname(name) {
 			name = EscapeDoubleQuotes(name)
-			fmt.Fprintf(index, "<li><a href=\"%s\">%s</a></li>\n", name, name)
+			builder.WriteString(fmt.Sprintf("<li><a href=\"%s\">%s</a></li>\n", name, name))
 		}
 	}
+	return builder.String()
 }
