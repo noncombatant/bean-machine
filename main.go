@@ -12,6 +12,8 @@ import (
 	"path"
 	"path/filepath"
 	"time"
+
+	"github.com/pkg/xattr"
 )
 
 const (
@@ -68,67 +70,75 @@ func Lint(root string) {
 		func(pathname string, info os.FileInfo, e error) error {
 			if e != nil {
 				Logger.Printf("%q: %s", pathname, e)
-				return nil
+				return e
 			}
 
 			basename := path.Base(pathname)
 			if basename == ".AppleFileInfo" && info.IsDir() {
-				Logger.Printf("Would remove %q", pathname)
-				return nil
-				//return os.RemoveAll(pathname)
+				Logger.Printf("Removing %q", pathname)
+				return os.RemoveAll(pathname)
 			} else if basename == ".DS_Store" && !info.IsDir() {
-				Logger.Printf("Would remove %q", pathname)
-				return nil
-				//return os.Remove(pathname)
+				Logger.Printf("Removing %q", pathname)
+				return os.Remove(pathname)
 			} else if basename[0] == '.' {
 				Logger.Printf("Hidden: %q", pathname)
 			}
 
-			file, e := os.OpenFile(pathname, os.O_RDWR, 0755)
+			file, e := os.OpenFile(pathname, os.O_RDONLY, 0755)
 			if e != nil {
+				Logger.Print(e)
 				return e
 			}
 			defer file.Close()
 
 			if info.IsDir() {
-				// TODO: Check if it's empty; if so, remove it and return nil.
 				empty, e := IsDirectoryEmpty(pathname)
 				if e != nil {
 					Logger.Print(e)
 					return e
 				}
 				if empty {
-					Logger.Printf("Would remove empty directory: %q", pathname)
-					return nil
-					//return os.Remove(pathname)
+					Logger.Printf("Removing empty directory: %q", pathname)
+					return os.Remove(pathname)
 				}
 
-				Logger.Printf("Would chmod %q to 0755", pathname)
-				//e = file.Chmod(0755)
-				if e != nil {
-					Logger.Print(e)
-					return e
+				if info.Mode().Perm() != 0755 {
+					Logger.Printf("chmoding %q to 0755", pathname)
+					e = file.Chmod(0755)
+					if e != nil {
+						Logger.Print(e)
+						return e
+					}
 				}
 			} else if info.Mode().IsRegular() {
-				status, e := file.Stat()
-				if e != nil {
-					return e
-				}
-				if status.Size() == 0 {
-					Logger.Printf("Would remove 0-byte file %q", pathname)
-					return nil
-					//return os.Remove(pathname)
+				if info.Size() == 0 {
+					Logger.Printf("Removing 0-byte file %q", pathname)
+					return os.Remove(pathname)
 				}
 
-				Logger.Printf("Would chmod %q to 0644", pathname)
-				//e = file.Chmod(0644)
+				if info.Mode().Perm() != 0644 {
+					Logger.Printf("chmoding %q to 0644", pathname)
+					e = file.Chmod(0644)
+					if e != nil {
+						Logger.Print(e)
+						return e
+					}
+				}
+			}
+
+			xattrs, e := xattr.FList(file)
+			if e != nil {
+				Logger.Print(e)
+				return e
+			}
+			for _, name := range xattrs {
+				Logger.Printf("Removing xattr %q from %q", name, pathname)
+				e = xattr.FRemove(file, name)
 				if e != nil {
 					Logger.Print(e)
 					return e
 				}
 			}
-
-			// TODO: Remove xattrs.
 
 			return nil
 		})
@@ -255,8 +265,8 @@ Here is what the commands do:
     of the Bean Machine web app.
 
   lint
-		Scans music-directory for junk files and tells you about them. TODO: Will
-    automatically fix things in a future version.
+    Scans music-directory for junk and empty files and removes them. Sets
+    file and directory permissions, and removes POSIX extended attributes.
 
   set-password
     Prompts for a username and password, and sets the password for the given

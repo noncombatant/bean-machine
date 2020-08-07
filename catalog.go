@@ -99,7 +99,7 @@ func (c *Catalog) buildCatalogFromWalk(root string) {
 		func(pathname string, info os.FileInfo, e error) error {
 			if e != nil {
 				Logger.Printf("%q: %s", pathname, e)
-				return nil
+				return e
 			}
 			if shouldSkipFile(pathname, info) || info.Mode().IsDir() || !info.Mode().IsRegular() {
 				return nil
@@ -108,7 +108,7 @@ func (c *Catalog) buildCatalogFromWalk(root string) {
 			input, e := os.Open(pathname)
 			if e != nil {
 				Logger.Printf("%q: %s", pathname, e)
-				return nil
+				return e
 			}
 			defer input.Close()
 
@@ -195,7 +195,7 @@ func buildMediaIndex(pathname string) string {
 	infos, e := ioutil.ReadDir(pathname)
 	if e != nil {
 		Logger.Print(e)
-		builder.String()
+		return builder.String()
 	}
 
 	for _, info := range infos {
