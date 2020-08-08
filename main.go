@@ -23,34 +23,7 @@ const (
 	passwordsBasename         = "passwords"
 )
 
-// TODO: Move the web front-end into a web/ subdirectory. Change install and
-// serving logic in Go accordingly.
 var (
-	frontEndFiles = []string{
-		"help.html",
-		"implementation-notes.html",
-		"login.html",
-		"readme.html",
-
-		"manifest.json",
-
-		"index.css",
-		"index.html",
-		"index.js",
-		"media.css",
-		"sw.js",
-
-		"clef-512.png",
-		"favicon.ico",
-		"help.png",
-		"play.png",
-		"pause.png",
-		"repeat.png",
-		"shuffle.png",
-		"skip.png",
-		"unknown-album.png",
-	}
-
 	homePathname          = getHomePathname()
 	configurationPathname = path.Join(homePathname, configurationBasename)
 	bindToIPv4            = true
@@ -60,8 +33,20 @@ var (
 )
 
 func installFrontEndFiles(root string) {
-	for _, f := range frontEndFiles {
-		MustCopyFileByName(path.Join(root, f), f)
+	webDirectoryPathname := "web"
+	webDirectory, e := os.Open(webDirectoryPathname)
+	if e != nil {
+		Logger.Fatal(e)
+	}
+	defer webDirectory.Close()
+
+	files, e := webDirectory.Readdirnames(0)
+	if e != nil {
+		Logger.Fatal(e)
+	}
+
+	for _, f := range files {
+		MustCopyFileByName(path.Join(root, f), path.Join(webDirectoryPathname, f))
 	}
 }
 
