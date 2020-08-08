@@ -8,7 +8,6 @@
 package main
 
 import (
-	"bufio"
 	"compress/gzip"
 	"crypto/rand"
 	"io"
@@ -107,13 +106,11 @@ func GetBasenameExtension(pathname string) string {
 	return strings.ToLower(filepath.Ext(pathname))
 }
 
-func GzipFile(gzPathname string, file io.Reader) error {
-	bytes, e := ioutil.ReadAll(file)
-	if e != nil {
-		return e
-	}
-
-	gzFile, e := os.OpenFile(gzPathname, os.O_WRONLY|os.O_CREATE, 0666)
+// Reads `input`, gzips it (with `gzip.BestCompression`), and stores the output
+// in a file named by `outputPathname`. This function will clobber any previous
+// file named by `outputPathname`.
+func GzipStream(outputPathname string, input io.Reader) error {
+	gzFile, e := os.OpenFile(outputPathname, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0666)
 	if e != nil {
 		return e
 	}
@@ -125,14 +122,22 @@ func GzipFile(gzPathname string, file io.Reader) error {
 	}
 	defer gzWriter.Close()
 
-	bufferedWriter := bufio.NewWriter(gzWriter)
-	defer bufferedWriter.Flush()
+	buffer := make([]byte, 4096)
+	for {
+		count, e := input.Read(buffer)
+		if count == 0 && io.EOF == e {
+			break
+		}
+		if e != nil {
+			return e
+		}
 
-	_, e = bufferedWriter.Write(bytes)
-	if e != nil {
-		os.Remove(gzPathname)
+		_, e = gzWriter.Write(buffer[:count])
+		if e != nil {
+			return e
+		}
 	}
-	return e
+	return nil
 }
 
 // TODO: These are not application-generic; move them out.

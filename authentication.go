@@ -231,7 +231,7 @@ func createGzipped(pathname string, file *os.File, info os.FileInfo) (*os.File, 
 	gzPathname := pathname + ".gz"
 	// Remove any old one.
 	os.Remove(gzPathname)
-	e := GzipFile(gzPathname, file)
+	e := GzipStream(gzPathname, file)
 	if e != nil {
 		Logger.Printf("Could not create gzipped file %q: %v", gzPathname, e)
 		return nil, nil
