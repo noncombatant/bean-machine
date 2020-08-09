@@ -124,7 +124,7 @@ func getSaltAndScrypted(storedCredential string) ([]byte, []byte) {
 }
 
 func checkPassword(stored Credentials, username, password string) bool {
-	storedCredential, ok := stored[strings.ToLower(username)]
+	storedCredential, ok := stored[normalizeUsername(username)]
 	// BUG: Timing oracle for username existence.
 	if !ok {
 		return false

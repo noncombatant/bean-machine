@@ -131,7 +131,7 @@ func getHmacKey() []byte {
 //
 func generateToken(username string, storedCredential string) []byte {
 	mac := hmac.New(sha256.New, getHmacKey())
-	mac.Write([]byte(strings.ToLower(username)))
+	mac.Write([]byte(normalizeUsername(username)))
 	mac.Write([]byte("\x00"))
 	mac.Write([]byte(storedCredential))
 	return mac.Sum(nil)
@@ -139,7 +139,7 @@ func generateToken(username string, storedCredential string) []byte {
 
 func checkToken(username string, receivedToken []byte) bool {
 	passwords := readPasswordDatabase(path.Join(configurationPathname, passwordsBasename))
-	username = strings.ToLower(username)
+	username = normalizeUsername(username)
 	storedCredential, ok := passwords[username]
 	if !ok {
 		Logger.Printf("No such username %q", username)
