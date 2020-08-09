@@ -2,8 +2,6 @@
 // the terms of the GNU GPL3. See help.html for more information.
 
 // Assorted utility functions.
-//
-// TODO: Maybe make this a separate module.
 
 package main
 
