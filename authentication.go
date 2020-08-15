@@ -28,18 +28,16 @@ const (
 
 var (
 	anonymousFiles = []string{
-		"index.css",
-		"favicon.ico",
-		"help.html",
-		"login.html",
-		"manifest.json",
-		"readme.html",
-
 		"clef-512.png",
 		"favicon.ico",
+		"help.html",
 		"help.png",
-		"play.png",
+		"index.css",
+		"login.html",
+		"manifest.json",
 		"pause.png",
+		"play.png",
+		"readme.html",
 		"repeat.png",
 		"shuffle.png",
 		"skip.png",
