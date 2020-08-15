@@ -64,7 +64,7 @@ var (
 	wordSplitter = regexp.MustCompile(`\s+`)
 )
 
-type AuthenticatingFileHandler struct {
+type HTTPHandler struct {
 	Root                  string
 	ConfigurationPathname string
 }
@@ -97,7 +97,7 @@ func getCookieLifetime() time.Time {
 	return (time.Now()).Add(cookieLifetime)
 }
 
-func (h *AuthenticatingFileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (h *HTTPHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path == "/login.html" && r.Method == http.MethodPost {
 		h.handleLogIn(w, r)
 		return
@@ -153,7 +153,7 @@ func (h *AuthenticatingFileHandler) ServeHTTP(w http.ResponseWriter, r *http.Req
 	h.serveFile(w, r)
 }
 
-func (h *AuthenticatingFileHandler) checkToken(username string, receivedToken []byte) bool {
+func (h *HTTPHandler) checkToken(username string, receivedToken []byte) bool {
 	passwords := readPasswordDatabase(path.Join(h.ConfigurationPathname, passwordsBasename))
 	username = normalizeUsername(username)
 	storedCredential, ok := passwords[username]
@@ -166,7 +166,7 @@ func (h *AuthenticatingFileHandler) checkToken(username string, receivedToken []
 	return hmac.Equal(receivedToken, expected)
 }
 
-func (h *AuthenticatingFileHandler) generateAndSaveHmacKey() {
+func (h *HTTPHandler) generateAndSaveHmacKey() {
 	pathname := path.Join(h.ConfigurationPathname, hmacBasename)
 	key := MustMakeRandomBytes(hmacKeyLength)
 	if e := ioutil.WriteFile(pathname, key, 0600); e != nil {
@@ -192,7 +192,7 @@ func (h *AuthenticatingFileHandler) generateAndSaveHmacKey() {
 //     both because the username is an input, and because each storedCredential
 //     is created with a different random salt.
 //
-func (h *AuthenticatingFileHandler) generateToken(username string, storedCredential string) []byte {
+func (h *HTTPHandler) generateToken(username string, storedCredential string) []byte {
 	mac := hmac.New(sha256.New, h.getHmacKey())
 	mac.Write([]byte(normalizeUsername(username)))
 	mac.Write([]byte("\x00"))
@@ -200,7 +200,7 @@ func (h *AuthenticatingFileHandler) generateToken(username string, storedCredent
 	return mac.Sum(nil)
 }
 
-func (h *AuthenticatingFileHandler) getHmacKey() []byte {
+func (h *HTTPHandler) getHmacKey() []byte {
 	pathname := path.Join(h.ConfigurationPathname, hmacBasename)
 	if _, e := os.Stat(pathname); os.IsNotExist(e) {
 		h.generateAndSaveHmacKey()
@@ -217,7 +217,7 @@ func (h *AuthenticatingFileHandler) getHmacKey() []byte {
 	return key
 }
 
-func (h *AuthenticatingFileHandler) handleLogIn(w http.ResponseWriter, r *http.Request) {
+func (h *HTTPHandler) handleLogIn(w http.ResponseWriter, r *http.Request) {
 	username := normalizeUsername(r.FormValue("name"))
 	password := r.FormValue("password")
 	stored := readPasswordDatabase(path.Join(h.ConfigurationPathname, passwordsBasename))
@@ -236,7 +236,7 @@ func (h *AuthenticatingFileHandler) handleLogIn(w http.ResponseWriter, r *http.R
 	}
 }
 
-func (h *AuthenticatingFileHandler) handleSearch(w http.ResponseWriter, r *http.Request) {
+func (h *HTTPHandler) handleSearch(w http.ResponseWriter, r *http.Request) {
 	queries := r.URL.Query()["q"]
 	if queries == nil || len(queries) == 0 {
 		Logger.Print("Ignoring empty search.")
@@ -259,7 +259,7 @@ func (h *AuthenticatingFileHandler) handleSearch(w http.ResponseWriter, r *http.
 	writeItemInfos(w, matches)
 }
 
-func (h *AuthenticatingFileHandler) normalizePathname(pathname string) string {
+func (h *HTTPHandler) normalizePathname(pathname string) string {
 	if "/" == pathname {
 		pathname = "/index.html"
 	}
@@ -270,7 +270,7 @@ func (h *AuthenticatingFileHandler) normalizePathname(pathname string) string {
 	return pathname
 }
 
-func (h *AuthenticatingFileHandler) serveCover(pathname string, w http.ResponseWriter, r *http.Request) {
+func (h *HTTPHandler) serveCover(pathname string, w http.ResponseWriter, r *http.Request) {
 	for _, extension := range coverExtensions {
 		file, info, e, _ := openFileIfPublic(pathname+extension, false)
 		if e != nil {
@@ -287,7 +287,7 @@ func (h *AuthenticatingFileHandler) serveCover(pathname string, w http.ResponseW
 	http.Redirect(w, r, "/unknown-album.png", http.StatusFound)
 }
 
-func (h *AuthenticatingFileHandler) serveFile(w http.ResponseWriter, r *http.Request) {
+func (h *HTTPHandler) serveFile(w http.ResponseWriter, r *http.Request) {
 	pathname := h.normalizePathname(r.URL.Path)
 	if strings.HasSuffix(pathname, "/cover") {
 		h.serveCover(pathname, w, r)
@@ -297,7 +297,7 @@ func (h *AuthenticatingFileHandler) serveFile(w http.ResponseWriter, r *http.Req
 	h.serveFileContents(pathname, w, r)
 }
 
-func (h *AuthenticatingFileHandler) serveFileContents(pathname string, w http.ResponseWriter, r *http.Request) {
+func (h *HTTPHandler) serveFileContents(pathname string, w http.ResponseWriter, r *http.Request) {
 	acceptsGzip := strings.Contains(r.Header.Get("Accept-Encoding"), "gzip")
 	gzippable := IsStringInStrings(path.Ext(pathname), gzippableExtensions)
 
