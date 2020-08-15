@@ -26,8 +26,6 @@ const (
 var (
 	homePathname          = getHomePathname()
 	configurationPathname = path.Join(homePathname, configurationBasename)
-	bindToIPv4            = true
-	bindToIPv6            = false
 )
 
 func installFrontEndFiles(root string) {
@@ -208,7 +206,10 @@ func serveApp(root string, port string) {
 	for _, address := range addresses {
 		switch a := address.(type) {
 		case *net.IPNet:
-			if !bindToIPv4 && a.IP.To4() != nil || !bindToIPv6 && a.IP.To4() == nil {
+			// Skip non-IPv4 (i.e. IPv6) addresses, because reverse DNS is rarely
+			// configured properly (I guess) and the lookup timeouts slow down server
+			// startup. TODO: Maybe fix this someday.
+			if a.IP.To4() == nil {
 				continue
 			}
 			names, e := net.LookupAddr(a.IP.String())
@@ -266,10 +267,6 @@ func assertValidRootPathname(root string) {
 }
 
 func main() {
-	if os.Getenv("IPV6") != "" {
-		bindToIPv6 = true
-	}
-
 	needsHelp1 := flag.Bool("help", false, "Print the help message.")
 	needsHelp2 := flag.Bool("h", false, "Print the help message.")
 	root := flag.String("m", "", "Set the music directory.")
