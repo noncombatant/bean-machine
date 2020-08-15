@@ -28,7 +28,6 @@ var (
 	configurationPathname = path.Join(homePathname, configurationBasename)
 	bindToIPv4            = true
 	bindToIPv6            = false
-	httpPort              = ":1234"
 )
 
 func installFrontEndFiles(root string) {
@@ -192,7 +191,8 @@ func monitorCatalogForUpdates(root string) {
 	}
 }
 
-func serveApp(root string) {
+// `port` is a string (not an integer) of the form ":1234".
+func serveApp(root string, port string) {
 	addresses, e := net.InterfaceAddrs()
 	if e != nil || 0 == len(addresses) {
 		Logger.Fatal("Can't find any network interfaces to run the web server on. Giving up.")
@@ -213,11 +213,11 @@ func serveApp(root string) {
 			}
 			names, e := net.LookupAddr(a.IP.String())
 			if e != nil || 0 == len(names) {
-				Logger.Printf("    https://%s%s/", a.IP, httpPort)
+				Logger.Printf("    https://%s%s/", a.IP, port)
 				hosts = append(hosts, fmt.Sprintf("%s", a.IP))
 			} else {
 				for _, name := range names {
-					Logger.Printf("    https://%s%s/", name, httpPort)
+					Logger.Printf("    https://%s%s/", name, port)
 					hosts = append(hosts, fmt.Sprintf("%s", name))
 				}
 			}
@@ -227,7 +227,7 @@ func serveApp(root string) {
 	certificatePathname, keyPathname := generateServerCredentials(hosts)
 	go monitorCatalogForUpdates(root)
 	handler := AuthenticatingFileHandler{Root: root}
-	Logger.Fatal(http.ListenAndServeTLS(httpPort, certificatePathname, keyPathname, handler))
+	Logger.Fatal(http.ListenAndServeTLS(port, certificatePathname, keyPathname, handler))
 }
 
 func printHelp() {
@@ -275,8 +275,11 @@ func main() {
 	root := flag.String("m", "", "Set the music directory.")
 	port := flag.Int("p", 0, "Set the port the server listens on.")
 	flag.Parse()
-	if *port > 0 {
-		httpPort = fmt.Sprintf(":%d", *port)
+	portString := ":1234"
+	if *port > 0 && *port < 65536 {
+		portString = fmt.Sprintf(":%d", *port)
+	} else if *port != 0 {
+		Logger.Fatalf("The port number must be in the range 1 – 65535.")
 	}
 
 	if *needsHelp1 || *needsHelp2 || flag.NArg() == 0 {
@@ -296,7 +299,7 @@ func main() {
 			assertValidRootPathname(*root)
 			installFrontEndFiles(*root)
 			catalog.BuildCatalog(*root)
-			serveApp(*root)
+			serveApp(*root, portString)
 		case "set-password":
 			setPassword()
 		default:
