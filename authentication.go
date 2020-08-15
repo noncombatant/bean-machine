@@ -66,6 +66,11 @@ var (
 	wordSplitter = regexp.MustCompile(`\s+`)
 )
 
+type AuthenticatingFileHandler struct {
+	Root                  string
+	ConfigurationPathname string
+}
+
 func writeString(w http.ResponseWriter, s string) (int, error) {
 	return w.Write([]byte(s))
 }
@@ -94,8 +99,8 @@ func generateAndSaveHmacKey(pathname string) {
 	}
 }
 
-func getHmacKey(configurationPathname string) []byte {
-	pathname := path.Join(configurationPathname, hmacBasename)
+func (h AuthenticatingFileHandler) getHmacKey() []byte {
+	pathname := path.Join(h.ConfigurationPathname, hmacBasename)
 	if _, e := os.Stat(pathname); os.IsNotExist(e) {
 		generateAndSaveHmacKey(pathname)
 	}
@@ -129,16 +134,16 @@ func getHmacKey(configurationPathname string) []byte {
 //     both because the username is an input, and because each storedCredential
 //     is created with a different random salt.
 //
-func generateToken(username string, storedCredential string, configurationPathname string) []byte {
-	mac := hmac.New(sha256.New, getHmacKey(configurationPathname))
+func (h AuthenticatingFileHandler) generateToken(username string, storedCredential string) []byte {
+	mac := hmac.New(sha256.New, h.getHmacKey())
 	mac.Write([]byte(normalizeUsername(username)))
 	mac.Write([]byte("\x00"))
 	mac.Write([]byte(storedCredential))
 	return mac.Sum(nil)
 }
 
-func checkToken(username string, receivedToken []byte, configurationPathname string) bool {
-	passwords := readPasswordDatabase(path.Join(configurationPathname, passwordsBasename))
+func (h AuthenticatingFileHandler) checkToken(username string, receivedToken []byte) bool {
+	passwords := readPasswordDatabase(path.Join(h.ConfigurationPathname, passwordsBasename))
 	username = normalizeUsername(username)
 	storedCredential, ok := passwords[username]
 	if !ok {
@@ -146,7 +151,7 @@ func checkToken(username string, receivedToken []byte, configurationPathname str
 		return false
 	}
 
-	expected := generateToken(username, storedCredential, configurationPathname)
+	expected := h.generateToken(username, storedCredential)
 	return hmac.Equal(receivedToken, expected)
 }
 
@@ -171,11 +176,6 @@ func parseCookie(cookie string) (string, []byte, error) {
 	return username, decodedToken, nil
 }
 
-type AuthenticatingFileHandler struct {
-	Root                  string
-	ConfigurationPathname string
-}
-
 func (h AuthenticatingFileHandler) handleLogIn(w http.ResponseWriter, r *http.Request) {
 	username := normalizeUsername(r.FormValue("name"))
 	password := r.FormValue("password")
@@ -184,7 +184,7 @@ func (h AuthenticatingFileHandler) handleLogIn(w http.ResponseWriter, r *http.Re
 	cookie := &http.Cookie{Name: "token", Value: "", Secure: true, HttpOnly: true, Expires: getCookieLifetime(), Path: "/"}
 	if checkPassword(stored, username, password) {
 		Logger.Printf("%q successful", username)
-		token := username + ":" + hex.EncodeToString(generateToken(username, stored[username], h.ConfigurationPathname))
+		token := username + ":" + hex.EncodeToString(h.generateToken(username, stored[username]))
 		cookie.Value = token
 		http.SetCookie(w, cookie)
 		http.Redirect(w, r, "/index.html", http.StatusFound)
@@ -385,7 +385,7 @@ func (h AuthenticatingFileHandler) ServeHTTP(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	if !checkToken(username, decodedToken, h.ConfigurationPathname) {
+	if !h.checkToken(username, decodedToken) {
 		Logger.Printf("Refusing %q to %q with invalid token", r.URL.Path, username)
 		redirectToLogin(w, r)
 		return
