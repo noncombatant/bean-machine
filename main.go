@@ -28,7 +28,6 @@ var (
 	configurationPathname = path.Join(homePathname, configurationBasename)
 	bindToIPv4            = true
 	bindToIPv6            = false
-	musicRoot             = ""
 	httpPort              = ":1234"
 )
 
@@ -186,10 +185,10 @@ func establishConfiguration() {
 	}
 }
 
-func monitorCatalogForUpdates() {
+func monitorCatalogForUpdates(root string) {
 	for {
 		time.Sleep(2 * time.Minute)
-		catalog.BuildCatalog(musicRoot)
+		catalog.BuildCatalog(root)
 	}
 }
 
@@ -226,7 +225,7 @@ func serveApp(root string) {
 	}
 
 	certificatePathname, keyPathname := generateServerCredentials(hosts)
-	go monitorCatalogForUpdates()
+	go monitorCatalogForUpdates(root)
 	handler := AuthenticatingFileHandler{Root: root}
 	Logger.Fatal(http.ListenAndServeTLS(httpPort, certificatePathname, keyPathname, handler))
 }
@@ -276,7 +275,6 @@ func main() {
 	root := flag.String("m", "", "Set the music directory.")
 	port := flag.Int("p", 0, "Set the port the server listens on.")
 	flag.Parse()
-	musicRoot = *root
 	if *port > 0 {
 		httpPort = fmt.Sprintf(":%d", *port)
 	}
@@ -291,14 +289,14 @@ func main() {
 		command := flag.Arg(i)
 		switch command {
 		case "lint":
-			Lint(musicRoot)
+			Lint(*root)
 		case "help":
 			printHelp()
 		case "serve":
-			assertValidRootPathname(musicRoot)
-			installFrontEndFiles(musicRoot)
-			catalog.BuildCatalog(musicRoot)
-			serveApp(musicRoot)
+			assertValidRootPathname(*root)
+			installFrontEndFiles(*root)
+			catalog.BuildCatalog(*root)
+			serveApp(*root)
 		case "set-password":
 			setPassword()
 		default:

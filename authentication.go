@@ -394,9 +394,9 @@ func (h AuthenticatingFileHandler) ServeHTTP(w http.ResponseWriter, r *http.Requ
 		h.handleSearch(w, r)
 		return
 	} else if strings.HasSuffix(r.URL.Path, "/media.html") {
-		pathname := path.Clean(musicRoot + path.Dir(r.URL.Path))
+		pathname := path.Clean(h.Root + path.Dir(r.URL.Path))
 		// In addition to `path.Clean`, handle this special case:
-		if pathname == musicRoot {
+		if pathname == h.Root {
 			w.WriteHeader(http.StatusForbidden)
 			w.Write([]byte("Forbidden"))
 			return
