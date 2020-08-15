@@ -94,7 +94,7 @@ func generateAndSaveHmacKey(pathname string) {
 	}
 }
 
-func getHmacKey() []byte {
+func getHmacKey(configurationPathname string) []byte {
 	pathname := path.Join(configurationPathname, hmacBasename)
 	if _, e := os.Stat(pathname); os.IsNotExist(e) {
 		generateAndSaveHmacKey(pathname)
@@ -129,15 +129,15 @@ func getHmacKey() []byte {
 //     both because the username is an input, and because each storedCredential
 //     is created with a different random salt.
 //
-func generateToken(username string, storedCredential string) []byte {
-	mac := hmac.New(sha256.New, getHmacKey())
+func generateToken(username string, storedCredential string, configurationPathname string) []byte {
+	mac := hmac.New(sha256.New, getHmacKey(configurationPathname))
 	mac.Write([]byte(normalizeUsername(username)))
 	mac.Write([]byte("\x00"))
 	mac.Write([]byte(storedCredential))
 	return mac.Sum(nil)
 }
 
-func checkToken(username string, receivedToken []byte) bool {
+func checkToken(username string, receivedToken []byte, configurationPathname string) bool {
 	passwords := readPasswordDatabase(path.Join(configurationPathname, passwordsBasename))
 	username = normalizeUsername(username)
 	storedCredential, ok := passwords[username]
@@ -146,7 +146,7 @@ func checkToken(username string, receivedToken []byte) bool {
 		return false
 	}
 
-	expected := generateToken(username, storedCredential)
+	expected := generateToken(username, storedCredential, configurationPathname)
 	return hmac.Equal(receivedToken, expected)
 }
 
@@ -172,18 +172,19 @@ func parseCookie(cookie string) (string, []byte, error) {
 }
 
 type AuthenticatingFileHandler struct {
-	Root string
+	Root                  string
+	ConfigurationPathname string
 }
 
 func (h AuthenticatingFileHandler) handleLogIn(w http.ResponseWriter, r *http.Request) {
 	username := normalizeUsername(r.FormValue("name"))
 	password := r.FormValue("password")
-	stored := readPasswordDatabase(path.Join(configurationPathname, passwordsBasename))
+	stored := readPasswordDatabase(path.Join(h.ConfigurationPathname, passwordsBasename))
 
 	cookie := &http.Cookie{Name: "token", Value: "", Secure: true, HttpOnly: true, Expires: getCookieLifetime(), Path: "/"}
 	if checkPassword(stored, username, password) {
 		Logger.Printf("%q successful", username)
-		token := username + ":" + hex.EncodeToString(generateToken(username, stored[username]))
+		token := username + ":" + hex.EncodeToString(generateToken(username, stored[username], h.ConfigurationPathname))
 		cookie.Value = token
 		http.SetCookie(w, cookie)
 		http.Redirect(w, r, "/index.html", http.StatusFound)
@@ -384,7 +385,7 @@ func (h AuthenticatingFileHandler) ServeHTTP(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	if !checkToken(username, decodedToken) {
+	if !checkToken(username, decodedToken, h.ConfigurationPathname) {
 		Logger.Printf("Refusing %q to %q with invalid token", r.URL.Path, username)
 		redirectToLogin(w, r)
 		return

@@ -23,11 +23,6 @@ const (
 	passwordsBasename         = "passwords"
 )
 
-var (
-	homePathname          = getHomePathname()
-	configurationPathname = path.Join(homePathname, configurationBasename)
-)
-
 func installFrontEndFiles(root string) {
 	webDirectoryPathname := "web"
 	webDirectory, e := os.Open(webDirectoryPathname)
@@ -129,7 +124,7 @@ func Lint(root string) {
 	}
 }
 
-func generateServerCredentials(hosts []string) (string, string) {
+func generateServerCredentials(hosts []string, configurationPathname string) (string, string) {
 	certificatePathname := path.Join(configurationPathname, serverCertificateBasename)
 	keyPathname := path.Join(configurationPathname, serverKeyBasename)
 
@@ -168,15 +163,10 @@ func getHomePathname() string {
 		}
 	}
 
-	Logger.Fatal("No HOME environment variable is set.")
 	return ""
 }
 
-func establishConfiguration() {
-	if homePathname == "" {
-		Logger.Fatal("No HOME environment variable is set.")
-	}
-
+func makeConfigurationDirectory(configurationPathname string) {
 	if e := os.MkdirAll(configurationPathname, 0755); e != nil {
 		Logger.Fatalf("Could not create %q: %v", configurationPathname, e)
 	}
@@ -190,7 +180,7 @@ func monitorCatalogForUpdates(root string) {
 }
 
 // `port` is a string (not an integer) of the form ":1234".
-func serveApp(root string, port string) {
+func serveApp(root, port, configurationPathname string) {
 	addresses, e := net.InterfaceAddrs()
 	if e != nil || 0 == len(addresses) {
 		Logger.Fatal("Can't find any network interfaces to run the web server on. Giving up.")
@@ -225,9 +215,9 @@ func serveApp(root string, port string) {
 		}
 	}
 
-	certificatePathname, keyPathname := generateServerCredentials(hosts)
+	certificatePathname, keyPathname := generateServerCredentials(hosts, configurationPathname)
 	go monitorCatalogForUpdates(root)
-	handler := AuthenticatingFileHandler{Root: root}
+	handler := AuthenticatingFileHandler{Root: root, ConfigurationPathname: configurationPathname}
 	Logger.Fatal(http.ListenAndServeTLS(port, certificatePathname, keyPathname, handler))
 }
 
@@ -272,6 +262,7 @@ func main() {
 	root := flag.String("m", "", "Set the music directory.")
 	port := flag.Int("p", 0, "Set the port the server listens on.")
 	flag.Parse()
+
 	portString := ":1234"
 	if *port > 0 && *port < 65536 {
 		portString = fmt.Sprintf(":%d", *port)
@@ -283,7 +274,8 @@ func main() {
 		printHelp()
 	}
 
-	establishConfiguration()
+	configurationPathname := path.Join(getHomePathname(), configurationBasename)
+	makeConfigurationDirectory(configurationPathname)
 
 	for i := 0; i < flag.NArg(); i++ {
 		command := flag.Arg(i)
@@ -296,9 +288,9 @@ func main() {
 			assertValidRootPathname(*root)
 			installFrontEndFiles(*root)
 			catalog.BuildCatalog(*root)
-			serveApp(*root, portString)
+			serveApp(*root, portString, configurationPathname)
 		case "set-password":
-			setPassword()
+			setPassword(configurationPathname)
 		default:
 			printHelp()
 		}

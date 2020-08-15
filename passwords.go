@@ -80,7 +80,7 @@ func obfuscatePassword(password, salt []byte) []byte {
 	return obfuscated
 }
 
-func setPassword() {
+func setPassword(configurationPathname string) {
 	salt := MustMakeRandomBytes(saltSize)
 
 	pathname := path.Join(configurationPathname, passwordsBasename)
