@@ -218,7 +218,7 @@ func serveApp(root, port, configurationPathname string) {
 	certificatePathname, keyPathname := generateServerCredentials(hosts, configurationPathname)
 	go monitorCatalogForUpdates(root)
 	handler := AuthenticatingFileHandler{Root: root, ConfigurationPathname: configurationPathname}
-	Logger.Fatal(http.ListenAndServeTLS(port, certificatePathname, keyPathname, handler))
+	Logger.Fatal(http.ListenAndServeTLS(port, certificatePathname, keyPathname, &handler))
 }
 
 func printHelp() {
