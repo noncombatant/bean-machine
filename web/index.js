@@ -175,6 +175,10 @@ const windowOnScroll = function(event) {
   haveRequestedExtendCatalog = true
 }
 
+const closeHelpButtonOnClick = function(event) {
+  helpDiv.style.display = "none"
+}
+
 const displayNowPlaying = function(item, element) {
   removeAllChildren(element)
   element.appendChild(createElement("span", "", "“" + getName(item) + "” by "))
@@ -224,8 +228,11 @@ const bodyOnKeyup = function(event) {
       searchInput.select()
       break
     case "?":
-      // TODO: Show help screen (i.e. help.html in a `div`).
+      helpDiv.style.display = helpDiv.style.display || "none"
+      helpDiv.style.display = "none" === helpDiv.style.display ? "block" : "none"
       break
+    case "Escape":
+      helpDiv.style.display = "none"
   }
 }
 
@@ -463,6 +470,7 @@ const main = function() {
   positionRange.addEventListener("change", positionRangeOnChange)
   searchInput.addEventListener("keyup", searchInputOnKeyUp)
   searchButton.addEventListener("click", executeSearch)
+  closeHelpButton.addEventListener("click", closeHelpButtonOnClick)
   window.addEventListener("scroll", windowOnScroll)
   document.body.addEventListener("keyup", bodyOnKeyup)
 
