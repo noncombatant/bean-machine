@@ -244,19 +244,36 @@ func (h *HTTPHandler) handleSearch(w http.ResponseWriter, r *http.Request) {
 	}
 
 	query := strings.TrimSpace(queries[0])
+	var matches ItemInfos
 	if len(query) == 0 {
-		// TODO: Loop until a date query gets some hits. It's a bummer when this
-		// search yields 0 hits — empty screen!
 		year, month, _ := time.Now().Date()
-		query = fmt.Sprintf("mtime:%04d-%02d-", year, month)
-	} else if "?" == query {
+		for i := 0; i < 6; i++ {
+			if i > 0 && month == 1 {
+				month = 12
+				year -= 1
+			}
+			query = fmt.Sprintf("mtime:%04d-%02d-", year, int(month)-i)
+			matches = matchItems(catalog.ItemInfos, query)
+			if len(matches) > 0 {
+				goto done
+			}
+		}
+
+		// If we get here, there were no new items in the last 6 months. Just make
+		// a random query, then.
+		query = "?"
+	}
+
+	if "?" == query {
 		rand.Seed(time.Now().Unix())
 		item := catalog.ItemInfos[rand.Intn(len(catalog.ItemInfos))]
 		words := wordSplitter.Split(path.Dir(item.Pathname), -1)
 		query = words[len(words)-1]
 	}
 
-	matches := matchItems(catalog.ItemInfos, query)
+	matches = matchItems(catalog.ItemInfos, query)
+
+done:
 	w.Header().Set("Content-Type", "text/json")
 	writeItemInfos(w, matches)
 }
