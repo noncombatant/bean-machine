@@ -27,6 +27,7 @@ const preparePlay = function(itemID) {
   player.src = blobCache[item.pathname] || item.pathname
   player.itemID = itemID
   displayNowPlaying(item, nowPlayingTitle)
+  searchCatalogFetchIndex = itemID + 1
   searchCatalogFetchBudget++
 }
 
