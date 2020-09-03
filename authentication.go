@@ -245,6 +245,8 @@ func (h *HTTPHandler) handleSearch(w http.ResponseWriter, r *http.Request) {
 
 	query := strings.TrimSpace(queries[0])
 	if len(query) == 0 {
+		// TODO: Loop until a date query gets some hits. It's a bummer when this
+		// search yields 0 hits — empty screen!
 		year, month, _ := time.Now().Date()
 		query = fmt.Sprintf("mtime:%04d-%02d-", year, month)
 	} else if "?" == query {
