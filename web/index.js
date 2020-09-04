@@ -205,7 +205,6 @@ window.onkeydown = function(event) {
   return !(" " === event.key && event.target === document.body)
 }
 
-// TODO: Document all these hotkeys in help.html.
 const bodyOnKeyup = function(event) {
   event.stopPropagation()
   switch (event.key) {
