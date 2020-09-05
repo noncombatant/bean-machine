@@ -115,18 +115,14 @@ let currentAlbumPathname = ""
 let haveRequestedExtendCatalog = false
 const maxItemsPerDraw = 500
 
-// TODO: Compilations are not grouped correctly?
 const buildCatalog = function(start) {
   if (0 === start) {
     removeAllChildren(itemListDiv)
     currentAlbumPathname = ""
     haveRequestedExtendCatalog = false
-    // TODO: Not sorting Discharge correctly; others. Especially after shuffle?
-    // (Mismatched track numbers in ID3 vs. basenames?)
     if ("true" === localStorage.getItem("shuffle")) {
       shuffle(searchHits)
     } else {
-      //searchHits.sort((a, b) => a.artist.localeCompare(b.artist) || a.album.localeCompare(b.album) || a.disc < b.disc || a.track < b.track || a.year < b.year)
       searchHits.sort((a, b) => a.pathname.localeCompare(b.pathname))
     }
   } else {
