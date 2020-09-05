@@ -284,11 +284,17 @@ const searchCatalog = function(query) {
   searchInput.value = query
   localStorage.setItem("query", query)
   const queryURL = "search?q=" + searchInput.value
+
+  const progressTimeout = setTimeout(function() {
+    removeAllChildren(itemListDiv)
+    setSingleTextChild(itemListDiv, "Loadin’ up yer tunez...")
+  }, 250)
   fetch(queryURL, {"credentials": "include"})
   .then(r => r.json())
   .then(j => {
     searchHits = j
     searchHitsUpdated = true
+    clearTimeout(progressTimeout)
     buildCatalog(0)
     searchCatalogFetchIndex = 0
     searchCatalogFetchBudget = 3
