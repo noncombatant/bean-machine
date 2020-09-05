@@ -185,11 +185,19 @@ const displayNowPlaying = function(item, element) {
   document.title = element.textContent
 }
 
+let searchHitsUpdated = false
+
 const playNext = function(event) {
   if (0 === searchHits.length || undefined === player.itemID) {
     return
   }
-  const itemID = (player.itemID + 1) % searchHits.length
+
+  let itemID = 0
+  if (searchHitsUpdated) {
+    searchHitsUpdated = false
+  } else {
+    itemID = (player.itemID + 1) % searchHits.length
+  }
   preparePlay(itemID)
   player.play()
 }
@@ -271,7 +279,6 @@ const restoreState = function() {
 let searchCatalogFetchIndex = 0
 let searchCatalogFetchBudget = 0
 
-// TODO: New search while playing: next song should be newest results item 0.
 const searchCatalog = function(query) {
   query = query.trim()
   searchInput.value = query
@@ -281,6 +288,7 @@ const searchCatalog = function(query) {
   .then(r => r.json())
   .then(j => {
     searchHits = j
+    searchHitsUpdated = true
     buildCatalog(0)
     searchCatalogFetchIndex = 0
     searchCatalogFetchBudget = 3
