@@ -11,10 +11,12 @@ const setAudioVideoControls = function(item) {
     player = audioPlayer
     audioPlayer.className = ""
     videoPlayer.className = "hidden"
+    playButton.className = positionRange.className = ""
   } else if (isVideoPathname(item.pathname)) {
     player = videoPlayer
     audioPlayer.className = "hidden"
     videoPlayer.className = ""
+    playButton.className = positionRange.className = "hidden"
   }
   player.className = "normal"
 }
