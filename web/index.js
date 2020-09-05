@@ -29,6 +29,7 @@ const preparePlay = function(itemID) {
   displayNowPlaying(item, nowPlayingTitle)
   searchCatalogFetchIndex = itemID + 1
   searchCatalogFetchBudget++
+  searchHitsUpdated = false
 }
 
 let fetchSearchHitsInProgress = false
