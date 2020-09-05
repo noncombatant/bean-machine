@@ -156,12 +156,9 @@ const extendCatalog = function() {
 }
 
 const itemDivOnClick = function(event) {
-  preparePlay(this.itemID)
   playButton.src = "pause.png"
-  // TODO: This pattern of code is repeated too many times, and it's redundant
-  // (and the instances of it can thus get out of sync). Abstract these into
-  // functions like `setPlayButton`, `setShuffleButton`, et c.
   playButton.alt = playButton.title = "Pause (p)"
+  preparePlay(this.itemID)
   player.play()
 }
 
