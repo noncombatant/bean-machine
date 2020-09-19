@@ -11,6 +11,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/pkg/xattr"
@@ -21,6 +22,37 @@ const (
 	serverKeyBasename         = "server-key.pem"
 	serverCertificateBasename = "server-certificate.pem"
 	passwordsBasename         = "passwords"
+)
+
+var (
+	// TODO: Make this map more complete.
+	combiningCharacterReplacements = map[string]string{
+		"á": "á",
+		"à": "à",
+		"ä": "ä",
+		"â": "â",
+		"ç": "ç",
+		"è": "è",
+		"É": "É",
+		"È": "È",
+		"ë": "ë",
+		"é": "é",
+		"ê": "ê",
+		"í": "í",
+		"ì": "ì",
+		"ï": "ï",
+		"ñ": "ñ",
+		"Ó": "Ó",
+		"ó": "ó",
+		"ò": "ò",
+		"ö": "ö",
+		"ô": "ô",
+		"ř": "ř",
+		"ú": "ú",
+		"ù": "ù",
+		"ü": "ü",
+		"ž": "ž",
+	}
 )
 
 func installFrontEndFiles(root string) {
@@ -113,6 +145,17 @@ func Lint(root string) {
 				if e != nil {
 					Logger.Print(e)
 					return e
+				}
+			}
+
+			savedPathname := pathname
+			for k, v := range combiningCharacterReplacements {
+				pathname = strings.ReplaceAll(pathname, k, v)
+			}
+			if savedPathname != pathname {
+				e := os.Rename(savedPathname, pathname)
+				if e != nil {
+					Logger.Print(e)
 				}
 			}
 
