@@ -74,3 +74,14 @@ func TestReconstructQueries(t *testing.T) {
 		}
 	}
 }
+
+// TODO: Make this more complete.
+func TestNormalizeStringForSearch(t *testing.T) {
+	input := "Monáe"
+	expected := "monae"
+	received := normalizeStringForSearch(input)
+	if received != expected {
+		t.Errorf("%q != %q", expected, received)
+	}
+	t.Logf("%q == %q", expected, received)
+}
