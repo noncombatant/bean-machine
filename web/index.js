@@ -22,6 +22,11 @@ const setAudioVideoControls = function(item) {
 }
 
 const preparePlay = function(itemID) {
+  if ("undefined" !== typeof(player.itemID)) {
+    // Clear possible `nowPlayingItemDiv` style:
+    $("itemDiv" + player.itemID).className = "itemDiv"
+  }
+
   player.pause()
   const item = searchHits[itemID]
   setAudioVideoControls(item)
@@ -32,6 +37,9 @@ const preparePlay = function(itemID) {
   searchCatalogFetchIndex = itemID + 1
   searchCatalogFetchBudget++
   searchHitsUpdated = false
+  const itemDiv = $("itemDiv" + itemID)
+  itemDiv.scrollIntoView(false)
+  itemDiv.className = "itemDiv nowPlayingItemDiv"
 }
 
 let fetchSearchHitsInProgress = false
@@ -65,6 +73,7 @@ const requireLongPress = /android/i.test(navigator.userAgent)
 const buildItemDiv = function(item, itemID) {
   const div = createElement("div", "itemDiv")
   div.itemID = itemID
+  div.id = "itemDiv" + itemID
   if (requireLongPress) {
     div.addEventListener("contextmenu", itemDivOnClick)
   } else {
@@ -336,6 +345,14 @@ const positionRangeOnChange = function(event) {
   player.currentTime = player.duration * (positionRange.value / 100.0)
 }
 
+const positionRangeOnMousedown = function(event) {
+  player.pause()
+}
+
+const positionRangeOnMouseup = function(event) {
+  player.play()
+}
+
 const $ = function(id) {
   return document.getElementById(id)
 }
@@ -467,7 +484,7 @@ const isVideoPathname = function(pathname) {
 }
 
 const main = function() {
-  if ('serviceWorker' in navigator) {
+  if ("serviceWorker" in navigator) {
     navigator.serviceWorker.register("sw.js");
   }
 
@@ -478,6 +495,8 @@ const main = function() {
   nextButton.addEventListener("click", nextButtonOnClick)
   shuffleButton.addEventListener("click", shuffleButtonOnClick)
   positionRange.addEventListener("change", positionRangeOnChange)
+  positionRange.addEventListener("mousedown", positionRangeOnMousedown)
+  positionRange.addEventListener("mouseup", positionRangeOnMouseup)
   searchInput.addEventListener("keyup", searchInputOnKeyUp)
   searchButton.addEventListener("click", executeSearch)
   closeHelpButton.addEventListener("click", closeHelpButtonOnClick)
