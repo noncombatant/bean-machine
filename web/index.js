@@ -249,6 +249,18 @@ const bodyOnKeyup = function(event) {
   }
 }
 
+var lastAudioOutputDevice = ""
+const mediaDevicesOnDeviceChange = async function(event) {
+  const devices = (await navigator.mediaDevices.enumerateDevices()).filter(info => "audiooutput" === info.kind)
+  const device = devices[0].groupId
+  if (device !== lastAudioOutputDevice) {
+    player.pause()
+    playButton.src = "play.png"
+    playButton.alt = playButton.title = "Play (p or Space)"
+  }
+  lastAudioOutputDevice = device
+}
+
 const togglePlayback = function() {
   playButton.src = player.paused ? "pause.png" : "play.png"
   playButton.alt = playButton.title = player.paused ? "Pause (p or Space)" : "Play (p or Space)"
@@ -502,6 +514,7 @@ const main = function() {
   closeHelpButton.addEventListener("click", closeHelpButtonOnClick)
   window.addEventListener("scroll", windowOnScroll)
   document.body.addEventListener("keyup", bodyOnKeyup)
+  navigator.mediaDevices.addEventListener("devicechange", mediaDevicesOnDeviceChange)
 
   if (requireLongPress) {
     nowPlayingTitle.innerText = "Long-press on any track to play."
