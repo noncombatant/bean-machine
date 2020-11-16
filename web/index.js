@@ -514,7 +514,7 @@ const main = function() {
   closeHelpButton.addEventListener("click", closeHelpButtonOnClick)
   window.addEventListener("scroll", windowOnScroll)
   document.body.addEventListener("keyup", bodyOnKeyup)
-  navigator.mediaDevices.addEventListener("devicechange", mediaDevicesOnDeviceChange)
+  //navigator.mediaDevices.addEventListener("devicechange", mediaDevicesOnDeviceChange)
 
   if (requireLongPress) {
     nowPlayingTitle.innerText = "Long-press on any track to play."
