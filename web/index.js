@@ -167,9 +167,17 @@ const extendCatalog = function() {
   haveRequestedExtendCatalog = false
 }
 
-const itemDivOnClick = function(event) {
+const audioPlayerOnPlay = function(event) {
   playButton.src = "pause.png"
-  playButton.alt = playButton.title = "Pause (p)"
+  playButton.alt = playButton.title = "Pause (p or Space)"
+}
+
+const audioPlayerOnPause = function(event) {
+  playButton.src = "play.png"
+  playButton.alt = playButton.title = "Play (p or Space)"
+}
+
+const itemDivOnClick = function(event) {
   preparePlay(this.itemID)
   player.play()
 }
@@ -249,21 +257,7 @@ const bodyOnKeyup = function(event) {
   }
 }
 
-var lastAudioOutputDevice = ""
-const mediaDevicesOnDeviceChange = async function(event) {
-  const devices = (await navigator.mediaDevices.enumerateDevices()).filter(info => "audiooutput" === info.kind)
-  const device = devices[0].groupId
-  if (device !== lastAudioOutputDevice) {
-    player.pause()
-    playButton.src = "play.png"
-    playButton.alt = playButton.title = "Play (p or Space)"
-  }
-  lastAudioOutputDevice = device
-}
-
 const togglePlayback = function() {
-  playButton.src = player.paused ? "pause.png" : "play.png"
-  playButton.alt = playButton.title = player.paused ? "Pause (p or Space)" : "Play (p or Space)"
   player[player.paused ? "play" : "pause"]()
 }
 
@@ -500,6 +494,8 @@ const main = function() {
     navigator.serviceWorker.register("sw.js");
   }
 
+  audioPlayer.addEventListener("pause", audioPlayerOnPause)
+  audioPlayer.addEventListener("play", audioPlayerOnPlay)
   player.addEventListener("ended", playNext)
   player.addEventListener("error", playerOnError)
   player.addEventListener("timeupdate", playerOnTimeupdate)
@@ -514,7 +510,6 @@ const main = function() {
   closeHelpButton.addEventListener("click", closeHelpButtonOnClick)
   window.addEventListener("scroll", windowOnScroll)
   document.body.addEventListener("keyup", bodyOnKeyup)
-  //navigator.mediaDevices.addEventListener("devicechange", mediaDevicesOnDeviceChange)
 
   if (requireLongPress) {
     nowPlayingTitle.innerText = "Long-press on any track to play."
