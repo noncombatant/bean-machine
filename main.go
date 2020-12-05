@@ -302,7 +302,7 @@ func assertValidRootPathname(root string) {
 func main() {
 	needsHelp1 := flag.Bool("help", false, "Print the help message.")
 	needsHelp2 := flag.Bool("h", false, "Print the help message.")
-	root := flag.String("m", "", "Set the music directory.")
+	root := path.Clean(*flag.String("m", "", "Set the music directory."))
 	port := flag.Int("p", 0, "Set the port the server listens on.")
 	flag.Parse()
 
@@ -324,14 +324,14 @@ func main() {
 		command := flag.Arg(i)
 		switch command {
 		case "lint":
-			Lint(*root)
+			Lint(root)
 		case "help":
 			printHelp()
 		case "serve":
-			assertValidRootPathname(*root)
-			installFrontEndFiles(*root)
-			catalog.BuildCatalog(*root)
-			serveApp(*root, portString, configurationPathname)
+			assertValidRootPathname(root)
+			installFrontEndFiles(root)
+			catalog.BuildCatalog(root)
+			serveApp(root, portString, configurationPathname)
 		case "set-password":
 			setPassword(configurationPathname)
 		default:
