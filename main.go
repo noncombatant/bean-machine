@@ -324,6 +324,7 @@ func main() {
 		command := flag.Arg(i)
 		switch command {
 		case "lint":
+			assertValidRootPathname(root)
 			Lint(root)
 		case "help":
 			printHelp()
