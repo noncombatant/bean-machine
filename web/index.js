@@ -72,6 +72,7 @@ const requireLongPress = /android/i.test(navigator.userAgent)
 
 const buildItemDiv = function(item, itemID) {
   const div = createElement("div", "itemDiv")
+  div.title = decodeURI(item.pathname)
   div.itemID = itemID
   div.id = "itemDiv" + itemID
   if (requireLongPress) {
