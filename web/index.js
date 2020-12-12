@@ -38,7 +38,7 @@ const preparePlay = function(itemID) {
   searchCatalogFetchBudget++
   searchHitsUpdated = false
   const itemDiv = $("itemDiv" + itemID)
-  itemDiv.scrollIntoView(false)
+  itemDiv.scrollIntoView({behavior: "smooth", block: "center"})
   itemDiv.className = "itemDiv nowPlayingItemDiv"
 }
 
