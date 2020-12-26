@@ -287,7 +287,7 @@ func ParseIntegerOr0(s string) int {
 }
 
 // https://twinnation.org/articles/33/remove-accents-from-characters-in-go
-func RemoveAccents(s string) string  {
+func RemoveAccents(s string) string {
 	t := transform.Chain(norm.NFD, runes.Remove(runes.In(unicode.Mn)), norm.NFC)
 	output, _, e := transform.String(t, s)
 	if e != nil {
