@@ -28,7 +28,6 @@ const (
 
 var (
 	anonymousFiles = []string{
-		"clef-512.png",
 		"favicon.ico",
 		"help.html",
 		"help.png",

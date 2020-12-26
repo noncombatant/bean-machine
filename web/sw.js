@@ -12,13 +12,13 @@
 
 "use strict";
 
-const PreCache = "precache-v2"
+const PreCache = "precache-v3"
 const RunTimeCache = "runtime"
 
 const PreCacheURLs = [
   "./", // Alias for index.html
-  "clef-512.png",
   "close.png",
+  "favicon.ico",
   "help.png",
   "index.css",
   "index.html",
