@@ -112,16 +112,21 @@ func (h *HTTPHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	var decodedToken []byte
 
 	cookie, e := r.Cookie("token")
-	if e == nil {
-		username, decodedToken, e = parseCookie(cookie.Value)
-		if e != nil {
-			Logger.Printf("Refusing %q to client with invalid cookie (%v)", r.URL.Path, e)
-			redirectToLogin(w, r)
-			return
-		}
+	if e != nil {
+		Logger.Printf("Refusing %q to client with missing cookie (%v)", r.URL.Path, e)
+		redirectToLogin(w, r)
+		return
+	}
+
+	username, decodedToken, e = parseCookie(cookie.Value)
+	if e != nil {
+		Logger.Printf("Refusing %q to client with invalid cookie (%v)", r.URL.Path, e)
+		redirectToLogin(w, r)
+		return
 	}
 
 	if "" == username {
+		Logger.Printf("Refusing %q to client with blank username", r.URL.Path)
 		redirectToLogin(w, r)
 		return
 	}
@@ -303,7 +308,15 @@ func (h *HTTPHandler) serveCover(pathname string, w http.ResponseWriter, r *http
 		return
 	}
 
-	http.Redirect(w, r, "/unknown-album.png", http.StatusFound)
+	file, info, e, _ := openFileIfPublic(h.normalizePathname("/unknown-album.png"), false)
+	if e != nil {
+		Logger.Fatal(e)
+	}
+	defer file.Close()
+
+	// TODO: Unify this in serveFileContents. Find a way to not copy and paste this.
+	http.ServeContent(w, r, pathname, info.ModTime(), file)
+	Logger.Printf("%q", pathname)
 }
 
 func (h *HTTPHandler) serveFile(w http.ResponseWriter, r *http.Request) {
@@ -332,7 +345,16 @@ func (h *HTTPHandler) serveFileContents(pathname string, w http.ResponseWriter, 
 		w.Header().Set("Content-Encoding", "gzip")
 	}
 
-	// TODO: Do something to help the browser cache resources. ETag seems most likely?
+	// If not gzipped, that's because it's a big ol' audio, video, or image file.
+	// Tell the client to cache thos beans.
+	if !gzippable {
+		w.Header().Set("Cache-Control", "max-age=604800")
+		expires := time.Now()
+		duration, _ := time.ParseDuration("604800s")
+		expires = expires.Add(duration)
+		w.Header().Set("Expires", expires.Format(time.RFC1123))
+	}
+
 	http.ServeContent(w, r, pathname, info.ModTime(), file)
 	Logger.Printf("%q", pathname)
 }
