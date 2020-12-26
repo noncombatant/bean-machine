@@ -349,10 +349,10 @@ func (h *HTTPHandler) serveFileContents(pathname string, w http.ResponseWriter, 
 	// Tell the client to cache thos beans.
 	if !gzippable {
 		w.Header().Set("Cache-Control", "max-age=604800")
-		expires := time.Now()
-		duration, _ := time.ParseDuration("604800s")
-		expires = expires.Add(duration)
-		w.Header().Set("Expires", expires.Format(time.RFC1123))
+		//expires := time.Now()
+		//duration, _ := time.ParseDuration("604800s")
+		//expires = expires.Add(duration)
+		//w.Header().Set("Expires", expires.Format(time.RFC1123))
 	}
 
 	http.ServeContent(w, r, pathname, info.ModTime(), file)
