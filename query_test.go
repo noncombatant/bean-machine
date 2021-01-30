@@ -4,8 +4,6 @@ import (
 	"testing"
 )
 
-// TODO: add test for "-noodle" and -thing:"noodle" and thing:"-noodle"
-
 var (
 	rawTerms = `Foo bar kw:term kw2 : term2 -greeb graggle kw3: -"term 3"`
 
@@ -75,13 +73,28 @@ func TestReconstructQueries(t *testing.T) {
 	}
 }
 
-// TODO: Make this more complete.
 func TestNormalizeStringForSearch(t *testing.T) {
-	input := "Monáe"
-	expected := "monae"
-	received := normalizeStringForSearch(input)
-	if received != expected {
-		t.Errorf("%q != %q", expected, received)
+	input := []string{
+		"Monáe",
+		"monÁe",
+		"MONÁE",
+		"gürg",
+		"ALLCAPS",
 	}
-	t.Logf("%q == %q", expected, received)
+	expected := []string{
+		"monae",
+		"monae",
+		"monae",
+		"gurg",
+		"allcaps",
+	}
+
+	for i, v := range input {
+		received := normalizeStringForSearch(v)
+		ex := expected[i]
+		if received != ex {
+			t.Errorf("%q != %q", ex, received)
+		}
+		t.Logf("%q == %q", ex, received)
+	}
 }
