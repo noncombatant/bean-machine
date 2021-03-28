@@ -248,11 +248,11 @@ func serveApp(root, port, configurationPathname string) {
 			names, e := net.LookupAddr(a.IP.String())
 			if e != nil || len(names) == 0 {
 				Logger.Printf("    https://%s%s/", a.IP, port)
-				hosts = append(hosts, fmt.Sprintf("%s", a.IP))
+				hosts = append(hosts, "%s", a.IP.String())
 			} else {
 				for _, name := range names {
 					Logger.Printf("    https://%s%s/", name, port)
-					hosts = append(hosts, fmt.Sprintf("%s", name))
+					hosts = append(hosts, name)
 				}
 			}
 		}
