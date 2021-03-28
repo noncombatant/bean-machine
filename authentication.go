@@ -8,6 +8,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"math/rand"
 	"net/http"
@@ -375,7 +376,7 @@ func openFileIfPublic(pathname string, shouldTryGzip bool) (*os.File, os.FileInf
 		gzFile, gzInfo := openOrCreateGzipped(pathname, file, info)
 		if gzFile == nil {
 			Logger.Printf("Could not create new gz file for: %q, %v", pathname, e)
-			file.Seek(0, os.SEEK_SET)
+			file.Seek(0, io.SeekStart)
 			return file, info, nil, false
 		}
 		return gzFile, gzInfo, nil, true
