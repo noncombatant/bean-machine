@@ -34,13 +34,13 @@ func ParseTerms(query string) []string {
 		if state == Bareword {
 			if unicode.IsSpace(r) {
 				state = Boundary
-				if "" != currentTerm {
+				if currentTerm != "" {
 					terms = append(terms, currentTerm)
 					currentTerm = ""
 				}
-			} else if ':' == r {
+			} else if r == ':' {
 				state = Boundary
-				if "" != currentTerm {
+				if currentTerm != "" {
 					terms = append(terms, currentTerm)
 					currentTerm = ""
 				}
@@ -49,9 +49,9 @@ func ParseTerms(query string) []string {
 				currentTerm += string(r)
 			}
 		} else if state == Quoted {
-			if '"' == r {
+			if r == '"' {
 				state = Boundary
-				if "" != currentTerm {
+				if currentTerm != "" {
 					terms = append(terms, currentTerm)
 					currentTerm = ""
 				}
@@ -59,10 +59,10 @@ func ParseTerms(query string) []string {
 				currentTerm += string(r)
 			}
 		} else if state == Boundary {
-			if '"' == r {
+			if r == '"' {
 				state = Quoted
-			} else if '-' == r || ':' == r {
-				if "" != currentTerm {
+			} else if r == '-' || r == ':' {
+				if currentTerm != "" {
 					terms = append(terms, currentTerm)
 					currentTerm = ""
 				}
@@ -74,19 +74,19 @@ func ParseTerms(query string) []string {
 		} else {
 			if unicode.IsSpace(r) {
 				state = Boundary
-				if "" != currentTerm {
+				if currentTerm != "" {
 					terms = append(terms, currentTerm)
 					currentTerm = ""
 				}
-			} else if '"' == r {
+			} else if r == '"' {
 				state = Quoted
-				if "" != currentTerm {
+				if currentTerm != "" {
 					terms = append(terms, currentTerm)
 					currentTerm = ""
 				}
-			} else if '-' == r || ':' == r {
+			} else if r == '-' || r == ':' {
 				state = Boundary
-				if "" != currentTerm {
+				if currentTerm != "" {
 					terms = append(terms, currentTerm)
 					currentTerm = ""
 				}
@@ -98,7 +98,7 @@ func ParseTerms(query string) []string {
 		}
 	}
 
-	if "" != currentTerm {
+	if currentTerm != "" {
 		terms = append(terms, currentTerm)
 	}
 

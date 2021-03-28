@@ -201,7 +201,7 @@ func getHomePathname() string {
 
 	for _, home := range homes {
 		pathname := os.Getenv(home)
-		if "" != pathname {
+		if pathname != "" {
 			return pathname
 		}
 	}
@@ -225,12 +225,12 @@ func monitorCatalogForUpdates(root string) {
 // `port` is a string (not an integer) of the form ":1234".
 func serveApp(root, port, configurationPathname string) {
 	addresses, e := net.InterfaceAddrs()
-	if e != nil || 0 == len(addresses) {
+	if e != nil || len(addresses) == 0 {
 		Logger.Fatal("Can't find any network interfaces to run the web server on. Giving up.")
 	}
 
 	message := "Starting the web server. Point your browser to any of these addresses:"
-	if 1 == len(addresses) {
+	if len(addresses) == 1 {
 		message = "Starting the web server. Point your browser to this address:"
 	}
 	Logger.Printf("%s", message)
@@ -246,7 +246,7 @@ func serveApp(root, port, configurationPathname string) {
 				continue
 			}
 			names, e := net.LookupAddr(a.IP.String())
-			if e != nil || 0 == len(names) {
+			if e != nil || len(names) == 0 {
 				Logger.Printf("    https://%s%s/", a.IP, port)
 				hosts = append(hosts, fmt.Sprintf("%s", a.IP))
 			} else {

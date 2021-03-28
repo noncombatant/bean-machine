@@ -124,7 +124,7 @@ func (h *HTTPHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if "" == username {
+	if username == "" {
 		Logger.Printf("Refusing %q to client with blank username", r.URL.Path)
 		redirectToLogin(w, r)
 		return
@@ -268,7 +268,7 @@ func (h *HTTPHandler) handleSearch(w http.ResponseWriter, r *http.Request) {
 		query = "?"
 	}
 
-	if "?" == query {
+	if query == "?" {
 		rand.Seed(time.Now().Unix())
 		item := catalog.ItemInfos[rand.Intn(len(catalog.ItemInfos))]
 		words := wordSplitter.Split(path.Dir(item.Pathname), -1)
@@ -283,7 +283,7 @@ done:
 }
 
 func (h *HTTPHandler) normalizePathname(pathname string) string {
-	if "/" == pathname {
+	if pathname == "/" {
 		pathname = "/index.html"
 	}
 	pathname = path.Join(h.Root, filepath.Clean(pathname))

@@ -11,11 +11,12 @@ import (
 	"crypto/subtle"
 	"encoding/hex"
 	"fmt"
-	"golang.org/x/crypto/scrypt"
 	"os"
 	"path"
 	"strings"
 	"time"
+
+	"golang.org/x/crypto/scrypt"
 )
 
 const (
@@ -133,5 +134,5 @@ func checkPassword(stored Credentials, username, password string) bool {
 	salt, scrypted := getSaltAndScrypted(storedCredential)
 	obfuscated := obfuscatePassword([]byte(password), salt)
 
-	return 1 == subtle.ConstantTimeEq(1, int32(subtle.ConstantTimeCompare(obfuscated, scrypted)))
+	return subtle.ConstantTimeEq(1, int32(subtle.ConstantTimeCompare(obfuscated, scrypted))) == 1
 }
