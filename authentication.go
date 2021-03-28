@@ -295,7 +295,7 @@ func (h *HTTPHandler) normalizePathname(pathname string) string {
 
 func (h *HTTPHandler) serveCover(pathname string, w http.ResponseWriter, r *http.Request) {
 	for _, extension := range coverExtensions {
-		file, info, e, _ := openFileIfPublic(pathname+extension, false)
+		file, info, _, e := openFileIfPublic(pathname+extension, false)
 		if e != nil {
 			continue
 		}
@@ -307,7 +307,7 @@ func (h *HTTPHandler) serveCover(pathname string, w http.ResponseWriter, r *http
 		return
 	}
 
-	file, info, e, _ := openFileIfPublic(h.normalizePathname("/unknown-album.png"), false)
+	file, info, _, e := openFileIfPublic(h.normalizePathname("/unknown-album.png"), false)
 	if e != nil {
 		Logger.Fatal(e)
 	}
@@ -332,7 +332,7 @@ func (h *HTTPHandler) serveFileContents(pathname string, w http.ResponseWriter, 
 	acceptsGzip := strings.Contains(r.Header.Get("Accept-Encoding"), "gzip")
 	gzippable := IsStringInStrings(path.Ext(pathname), gzippableExtensions)
 
-	file, info, e, isGzipped := openFileIfPublic(pathname, gzippable && acceptsGzip)
+	file, info, isGzipped, e := openFileIfPublic(pathname, gzippable && acceptsGzip)
 	if e != nil || file == nil || info == nil {
 		Logger.Printf("%q: %v", pathname, e)
 		http.NotFound(w, r)
@@ -360,16 +360,16 @@ func (h *HTTPHandler) serveFileContents(pathname string, w http.ResponseWriter, 
 
 // Returns an open File, a FileInfo, any error, and a bool indicating whether
 // or not the file contains gzipped contents.
-func openFileIfPublic(pathname string, shouldTryGzip bool) (*os.File, os.FileInfo, error, bool) {
+func openFileIfPublic(pathname string, shouldTryGzip bool) (*os.File, os.FileInfo, bool, error) {
 	file, info, e := OpenFileAndInfo(pathname)
 	if e != nil {
-		return nil, nil, e, false
+		return nil, nil, false, e
 	}
 
 	if !IsFileWorldReadable(info) {
 		file.Close()
 		Logger.Printf("NOTE: %q not world-readable", pathname)
-		return nil, nil, fmt.Errorf("openFileIfPublic: %q not public", pathname), false
+		return nil, nil, false, fmt.Errorf("openFileIfPublic: %q not public", pathname)
 	}
 
 	if shouldTryGzip {
@@ -377,12 +377,12 @@ func openFileIfPublic(pathname string, shouldTryGzip bool) (*os.File, os.FileInf
 		if gzFile == nil {
 			Logger.Printf("Could not create new gz file for: %q, %v", pathname, e)
 			file.Seek(0, io.SeekStart)
-			return file, info, nil, false
+			return file, info, false, nil
 		}
-		return gzFile, gzInfo, nil, true
+		return gzFile, gzInfo, true, nil
 	}
 
-	return file, info, nil, false
+	return file, info, false, nil
 }
 
 // Given a pathname to an uncompressed file, opens or creates an equivalent
