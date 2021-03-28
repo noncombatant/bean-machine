@@ -7,7 +7,6 @@ import (
 	"crypto/hmac"
 	"crypto/sha256"
 	"encoding/hex"
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"math/rand"
@@ -369,7 +368,7 @@ func openFileIfPublic(pathname string, shouldTryGzip bool) (*os.File, os.FileInf
 	if !IsFileWorldReadable(info) {
 		file.Close()
 		Logger.Printf("NOTE: %q not world-readable", pathname)
-		return nil, nil, errors.New(fmt.Sprintf("openFileIfPublic: %q not public", pathname)), false
+		return nil, nil, fmt.Errorf("openFileIfPublic: %q not public", pathname), false
 	}
 
 	if shouldTryGzip {
@@ -408,7 +407,7 @@ func openOrCreateGzipped(pathname string, file *os.File, info os.FileInfo) (*os.
 func parseCookie(cookie string) (string, []byte, error) {
 	parts := strings.Split(cookie, ":")
 	if len(parts) != 2 {
-		return "", nil, errors.New(fmt.Sprintf("Could not parse cookie %q", cookie))
+		return "", nil, fmt.Errorf("could not parse cookie %q", cookie)
 	}
 
 	username := parts[0]
@@ -416,11 +415,11 @@ func parseCookie(cookie string) (string, []byte, error) {
 
 	decodedToken, e := hex.DecodeString(token)
 	if e != nil {
-		return "", nil, errors.New(fmt.Sprintf("Invalid token %q (%v)", cookie, e))
+		return "", nil, fmt.Errorf("invalid token %q (%v)", cookie, e)
 	}
 
 	if len(decodedToken) != authenticationTokenLength {
-		return "", nil, errors.New(fmt.Sprintf("Invalid token length %q", cookie))
+		return "", nil, fmt.Errorf("invalid token length %q", cookie)
 	}
 
 	return username, decodedToken, nil
