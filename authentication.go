@@ -242,7 +242,7 @@ func (h *HTTPHandler) handleLogIn(w http.ResponseWriter, r *http.Request) {
 
 func (h *HTTPHandler) handleSearch(w http.ResponseWriter, r *http.Request) {
 	queries := r.URL.Query()["q"]
-	if queries == nil || len(queries) == 0 {
+	if len(queries) == 0 {
 		Logger.Print("Ignoring empty search.")
 		return
 	}
