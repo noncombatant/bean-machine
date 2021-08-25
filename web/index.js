@@ -11,12 +11,12 @@ const setAudioVideoControls = function(item) {
     player = audioPlayer
     audioPlayer.className = ""
     videoPlayer.className = "hidden"
-    playButton.className = positionRange.className = ""
+    //playButton.className = positionRange.className = ""
   } else if (isVideoPathname(item.pathname)) {
     player = videoPlayer
     audioPlayer.className = "hidden"
     videoPlayer.className = ""
-    playButton.className = positionRange.className = "hidden"
+    //playButton.className = positionRange.className = "hidden"
   }
   player.className = "normal"
 }
@@ -30,7 +30,7 @@ const preparePlay = function(itemID) {
   player.pause()
   const item = searchHits[itemID]
   setAudioVideoControls(item)
-  positionRange.value = 0
+  //positionRange.value = 0
   player.src = blobCache[item.pathname] || item.pathname
   player.itemID = itemID
   displayNowPlaying(item, nowPlayingTitle)
@@ -270,7 +270,7 @@ const playerOnTimeupdate = function(event) {
   // Hypothesis: the graphic jankiness when updating the thumb position (in
   // Chrome for Android) is due to too much 'precision' in this value. Use
   // `floor` to get rid of it.
-  positionRange.value = Math.floor((player.currentTime / player.duration) * 100)
+  //positionRange.value = Math.floor((player.currentTime / player.duration) * 100)
 }
 
 // https://stackoverflow.com/questions/2450954/how-to-randomize-shuffle-a-javascript-array
@@ -348,17 +348,17 @@ const shuffleButtonOnClick = function(event) {
 }
 
 
-const positionRangeOnChange = function(event) {
-  player.currentTime = player.duration * (positionRange.value / 100.0)
-}
-
-const positionRangeOnMousedown = function(event) {
-  player.pause()
-}
-
-const positionRangeOnMouseup = function(event) {
-  player.play()
-}
+//const positionRangeOnChange = function(event) {
+//  player.currentTime = player.duration * (positionRange.value / 100.0)
+//}
+//
+//const positionRangeOnMousedown = function(event) {
+//  player.pause()
+//}
+//
+//const positionRangeOnMouseup = function(event) {
+//  player.play()
+//}
 
 const $ = function(id) {
   return document.getElementById(id)
@@ -495,17 +495,17 @@ const main = function() {
     navigator.serviceWorker.register("sw.js");
   }
 
-  audioPlayer.addEventListener("pause", audioPlayerOnPause)
-  audioPlayer.addEventListener("play", audioPlayerOnPlay)
+  //audioPlayer.addEventListener("pause", audioPlayerOnPause)
+  //audioPlayer.addEventListener("play", audioPlayerOnPlay)
   player.addEventListener("ended", playNext)
   player.addEventListener("error", playerOnError)
-  player.addEventListener("timeupdate", playerOnTimeupdate)
-  playButton.addEventListener("click", playButtonOnClick)
-  nextButton.addEventListener("click", nextButtonOnClick)
+  //player.addEventListener("timeupdate", playerOnTimeupdate)
+  //playButton.addEventListener("click", playButtonOnClick)
+  //nextButton.addEventListener("click", nextButtonOnClick)
   shuffleButton.addEventListener("click", shuffleButtonOnClick)
-  positionRange.addEventListener("change", positionRangeOnChange)
-  positionRange.addEventListener("mousedown", positionRangeOnMousedown)
-  positionRange.addEventListener("mouseup", positionRangeOnMouseup)
+  //positionRange.addEventListener("change", positionRangeOnChange)
+  //positionRange.addEventListener("mousedown", positionRangeOnMousedown)
+  //positionRange.addEventListener("mouseup", positionRangeOnMouseup)
   searchInput.addEventListener("keyup", searchInputOnKeyUp)
   searchButton.addEventListener("click", executeSearch)
   closeHelpButton.addEventListener("click", closeHelpButtonOnClick)
