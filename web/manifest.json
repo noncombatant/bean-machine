@@ -3,11 +3,8 @@
   "name": "Bean Machine",
   "description": "A delightful music player",
   "start_url": "./",
-  "display": "fullscreen",
-  "orientation": "portrait",
-  "theme_color": "#317EFB",
+  "theme_color": "red",
   "background_color": "#317EFB",
-  "theme_color": "#317EFB",
   "icons": [
     {
       "src": "favicon.ico",
