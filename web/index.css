@@ -92,6 +92,10 @@ th, td {
   padding: 0.5em;
 }
 
+img {
+  float: left;
+}
+
 .itemDivCell {
   display: table-cell;
   padding: 0.2em;

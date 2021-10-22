@@ -103,11 +103,21 @@ const buildAlbumTitleDiv = function(item, itemID) {
   const coverImg = createElement("img")
   coverA.href = directory + "/media.html"
   coverImg.src = directory + "/cover"
-  coverImg.height = coverImg.width = 64
+  coverImg.height = coverImg.width = 32
   coverImg.loading = "lazy"
   coverA.target = "cover"
   coverA.appendChild(coverImg)
   div.appendChild(coverA)
+
+  const downloadA = createElement("a")
+  const downloadImg = createElement("img")
+  downloadA.href = directory + "?download"
+  downloadImg.src = "/download.png"
+  downloadImg.height = downloadImg.width = 32
+  downloadImg.loading = "lazy"
+  downloadA.target = "download"
+  downloadA.appendChild(downloadImg)
+  div.appendChild(downloadA)
 
   const albumSpan = createElement("span", "itemDivCell albumTitle", getAlbum(item))
   div.appendChild(albumSpan)

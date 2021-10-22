@@ -4,6 +4,8 @@
 package main
 
 import (
+	"archive/zip"
+	"bytes"
 	"crypto/hmac"
 	"crypto/sha256"
 	"encoding/hex"
@@ -152,6 +154,8 @@ func (h *HTTPHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		page := buildMediaIndex(pathname)
 		w.Write([]byte(page))
 		return
+	} else if r.URL.RawQuery == "download" {
+		h.serveZip(w, r)
 	}
 
 	h.serveFile(w, r)
@@ -316,6 +320,59 @@ func (h *HTTPHandler) serveCover(pathname string, w http.ResponseWriter, r *http
 	// TODO: Unify this in serveFileContents. Find a way to not copy and paste this.
 	http.ServeContent(w, r, pathname, info.ModTime(), file)
 	Logger.Printf("%q", pathname)
+}
+
+func zipDirectory(pathname string) (*bytes.Buffer, error) {
+	buffer := new(bytes.Buffer)
+	zipWriter := zip.NewWriter(buffer)
+
+	infos, e := ioutil.ReadDir(pathname)
+	if e != nil {
+		return nil, e
+	}
+
+	for _, info := range infos {
+		f, e := zipWriter.Create(info.Name())
+		if e != nil {
+			return nil, e
+		}
+		contents, e := ioutil.ReadFile(pathname + "/" + info.Name())
+		if e != nil {
+			return nil, e
+		}
+		_, e = f.Write(contents)
+		if e != nil {
+			return nil, e
+		}
+	}
+
+	e = zipWriter.Close()
+	if e != nil {
+		return nil, e
+	}
+
+	return buffer, nil
+}
+
+func (h *HTTPHandler) serveZip(w http.ResponseWriter, r *http.Request) {
+	pathname := h.normalizePathname(r.URL.Path)
+	Logger.Printf("%q", pathname)
+
+	info, e := os.Stat(pathname)
+	if e != nil {
+		Logger.Print("stat", e)
+		return
+	}
+
+	zipBuffer, e := zipDirectory(pathname)
+	if e != nil {
+		Logger.Print(e)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/zip, application/octet-stream")
+	w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%q", filepath.Base(filepath.Dir(pathname))+" - "+filepath.Base(pathname)+".zip"))
+	http.ServeContent(w, r, pathname, info.ModTime(), bytes.NewReader(zipBuffer.Bytes()))
 }
 
 func (h *HTTPHandler) serveFile(w http.ResponseWriter, r *http.Request) {
