@@ -22,6 +22,7 @@ const (
 	serverKeyBasename         = "server-key.pem"
 	serverCertificateBasename = "server-certificate.pem"
 	passwordsBasename         = "passwords"
+	sessionsDirectoryName     = "sessions"
 )
 
 var (
@@ -211,7 +212,10 @@ func getHomePathname() string {
 
 func makeConfigurationDirectory(configurationPathname string) {
 	if e := os.MkdirAll(configurationPathname, 0755); e != nil {
-		Logger.Fatalf("Could not create %q: %v", configurationPathname, e)
+		Logger.Fatal(e)
+	}
+	if e := os.MkdirAll(path.Join(configurationPathname, sessionsDirectoryName), 0755); e != nil {
+		Logger.Fatal(e)
 	}
 }
 

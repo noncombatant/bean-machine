@@ -6,9 +6,7 @@ package main
 import (
 	"archive/zip"
 	"bytes"
-	"crypto/hmac"
-	"crypto/sha256"
-	"encoding/hex"
+	"encoding/base64"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -23,9 +21,8 @@ import (
 )
 
 const (
-	hmacKeyLength             = 32
-	hmacBasename              = "hmac.key"
-	authenticationTokenLength = 32
+	tokenLength        = 16
+	encodedTokenLength = 24
 )
 
 var (
@@ -109,9 +106,6 @@ func (h *HTTPHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var username string
-	var decodedToken []byte
-
 	cookie, e := r.Cookie("token")
 	if e != nil {
 		Logger.Printf("Refusing %q to client with missing cookie (%v)", r.URL.Path, e)
@@ -119,21 +113,8 @@ func (h *HTTPHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	username, decodedToken, e = parseCookie(cookie.Value)
-	if e != nil {
-		Logger.Printf("Refusing %q to client with invalid cookie (%v)", r.URL.Path, e)
-		redirectToLogin(w, r)
-		return
-	}
-
-	if username == "" {
-		Logger.Printf("Refusing %q to client with blank username", r.URL.Path)
-		redirectToLogin(w, r)
-		return
-	}
-
-	if !h.checkToken(username, decodedToken) {
-		Logger.Printf("Refusing %q to %q with invalid token", r.URL.Path, username)
+	if !h.checkToken(cookie.Value) {
+		Logger.Printf("Refusing %q (invalid token)", r.URL.Path)
 		redirectToLogin(w, r)
 		return
 	}
@@ -161,68 +142,36 @@ func (h *HTTPHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	h.serveFile(w, r)
 }
 
-func (h *HTTPHandler) checkToken(username string, receivedToken []byte) bool {
-	passwords := readPasswordDatabase(path.Join(h.ConfigurationPathname, passwordsBasename))
-	username = normalizeUsername(username)
-	storedCredential, ok := passwords[username]
-	if !ok {
-		Logger.Printf("No such username %q", username)
+func (h *HTTPHandler) checkToken(token string) bool {
+	if len(token) != encodedTokenLength {
 		return false
 	}
 
-	expected := h.generateToken(username, storedCredential)
-	return hmac.Equal(receivedToken, expected)
-}
-
-func (h *HTTPHandler) generateAndSaveHmacKey() {
-	pathname := path.Join(h.ConfigurationPathname, hmacBasename)
-	key := MustMakeRandomBytes(hmacKeyLength)
-	if e := ioutil.WriteFile(pathname, key, 0600); e != nil {
-		Logger.Fatalf("Could not save HMAC key to %q: %v", pathname, e)
-	}
-}
-
-// The token is the HMAC_SHA256 of the credential as stored in the password
-// database (salt and scrypted password). This means that a token is valid as
-// long as the HMAC key and the stored credential remain constant. No additional
-// session state storage (beyond the password database and the HMAC key) is
-// necessary.
-//
-// The security implications of this are:
-//
-//   * If the storedCredential changes (new scrypt parameters, new salt, new
-//     password), existing sessions are invalidated.
-//   * The token for all live sessions for the same (username, storedCredential)
-//     pair is the same.
-//   * Deducing the storedCredential from the token is as hard as 'reversing'
-//     HMAC_SHA256 with a `hmacKeyLength`-length key.
-//   * Users with with the same password will still get different token values,
-//     both because the username is an input, and because each storedCredential
-//     is created with a different random salt.
-//
-func (h *HTTPHandler) generateToken(username string, storedCredential string) []byte {
-	mac := hmac.New(sha256.New, h.getHmacKey())
-	mac.Write([]byte(normalizeUsername(username)))
-	mac.Write([]byte("\x00"))
-	mac.Write([]byte(storedCredential))
-	return mac.Sum(nil)
-}
-
-func (h *HTTPHandler) getHmacKey() []byte {
-	pathname := path.Join(h.ConfigurationPathname, hmacBasename)
-	if _, e := os.Stat(pathname); os.IsNotExist(e) {
-		h.generateAndSaveHmacKey()
+	data, e := base64.URLEncoding.DecodeString(token)
+	if e != nil || len(data) != tokenLength {
+		return false
 	}
 
-	key, e := ioutil.ReadFile(pathname)
+	_, e = os.Stat(path.Join(h.ConfigurationPathname, sessionsDirectoryName, token))
+	return e == nil
+}
+
+func (h *HTTPHandler) generateToken() string {
+	bytes := MustMakeRandomBytes(tokenLength)
+	token := base64.URLEncoding.EncodeToString(bytes)
+	pathname := path.Join(h.ConfigurationPathname, sessionsDirectoryName, token)
+
+	file, e := os.Create(pathname)
 	if e != nil {
-		Logger.Fatalf("Could not open %q: %v", pathname, e)
+		Logger.Fatal(e)
 	}
 
-	if len(key) != hmacKeyLength {
-		Logger.Fatalf("No valid key in %q: %v", pathname, e)
+	e = file.Close()
+	if e != nil {
+		Logger.Fatal(e)
 	}
-	return key
+
+	return token
 }
 
 func (h *HTTPHandler) handleLogIn(w http.ResponseWriter, r *http.Request) {
@@ -233,8 +182,7 @@ func (h *HTTPHandler) handleLogIn(w http.ResponseWriter, r *http.Request) {
 	cookie := &http.Cookie{Name: "token", Value: "", Secure: true, HttpOnly: true, Expires: getCookieLifetime(), Path: "/"}
 	if checkPassword(stored, username, password) {
 		Logger.Printf("%q successful", username)
-		token := username + ":" + hex.EncodeToString(h.generateToken(username, stored[username]))
-		cookie.Value = token
+		cookie.Value = h.generateToken()
 		http.SetCookie(w, cookie)
 		http.Redirect(w, r, "/index.html", http.StatusFound)
 	} else {
@@ -460,27 +408,6 @@ func openOrCreateGzipped(pathname string, file *os.File, info os.FileInfo) (*os.
 		return gzFile, gzInfo
 	}
 	return createGzipped(pathname, file, info)
-}
-
-func parseCookie(cookie string) (string, []byte, error) {
-	parts := strings.Split(cookie, ":")
-	if len(parts) != 2 {
-		return "", nil, fmt.Errorf("could not parse cookie %q", cookie)
-	}
-
-	username := parts[0]
-	token := parts[1]
-
-	decodedToken, e := hex.DecodeString(token)
-	if e != nil {
-		return "", nil, fmt.Errorf("invalid token %q (%v)", cookie, e)
-	}
-
-	if len(decodedToken) != authenticationTokenLength {
-		return "", nil, fmt.Errorf("invalid token length %q", cookie)
-	}
-
-	return username, decodedToken, nil
 }
 
 func redirectToLogin(w http.ResponseWriter, r *http.Request) {
