@@ -3,7 +3,7 @@
   "name": "Bean Machine",
   "description": "A delightful music player",
   "start_url": "./",
-  "theme_color": "red",
+  "theme_color": "#317EFB",
   "background_color": "#317EFB",
   "icons": [
     {
