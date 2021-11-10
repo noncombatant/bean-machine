@@ -19,6 +19,14 @@ var (
 	Logger = log.New(LogWriter{}, "", 0)
 )
 
+func GetLastComponent(s string) string {
+	dot := strings.LastIndex(s, ".")
+	if dot == -1 {
+		return s
+	}
+	return s[dot+1:]
+}
+
 func (f LogWriter) Write(bytes []byte) (int, error) {
 	pc, _, _, _ := runtime.Caller(3)
 	function := runtime.FuncForPC(pc)
@@ -26,6 +34,6 @@ func (f LogWriter) Write(bytes []byte) (int, error) {
 	if function != nil {
 		name = function.Name()
 	}
-	log.Printf("%s: %s", strings.TrimPrefix(name, "main."), bytes)
+	log.Printf("%s: %s", GetLastComponent(name), bytes)
 	return len(bytes), nil
 }
