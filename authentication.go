@@ -5,7 +5,6 @@ package main
 
 import (
 	"archive/zip"
-	"bytes"
 	"encoding/base64"
 	"fmt"
 	"io"
@@ -270,9 +269,15 @@ func (h *HTTPHandler) serveCover(pathname string, w http.ResponseWriter, r *http
 	Logger.Printf("%q", pathname)
 }
 
-func zipDirectory(pathname string) (*bytes.Buffer, error) {
-	buffer := new(bytes.Buffer)
-	zipWriter := zip.NewWriter(buffer)
+func zipDirectory(pathname string) (*os.File, error) {
+	os.Mkdir("/tmp/beanzip", 0700);
+	file, e := ioutil.TempFile("/tmp/beanzip", "album.zip")
+	if e != nil {
+		return nil, e
+	}
+	defer os.Remove(file.Name())
+
+	zipWriter := zip.NewWriter(file)
 
 	infos, e := ioutil.ReadDir(pathname)
 	if e != nil {
@@ -299,7 +304,7 @@ func zipDirectory(pathname string) (*bytes.Buffer, error) {
 		return nil, e
 	}
 
-	return buffer, nil
+	return file, nil
 }
 
 func (h *HTTPHandler) serveZip(w http.ResponseWriter, r *http.Request) {
@@ -312,15 +317,27 @@ func (h *HTTPHandler) serveZip(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	zipBuffer, e := zipDirectory(pathname)
+	zipFile, e := zipDirectory(pathname)
 	if e != nil {
 		Logger.Print(e)
 		return
 	}
 
+	_, e = zipFile.Seek(0, 0)
+	if e != nil {
+		Logger.Print(e)
+		zipFile.Close()
+		return
+	}
+
 	w.Header().Set("Content-Type", "application/zip, application/octet-stream")
 	w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%q", filepath.Base(filepath.Dir(pathname))+" - "+filepath.Base(pathname)+".zip"))
-	http.ServeContent(w, r, pathname, info.ModTime(), bytes.NewReader(zipBuffer.Bytes()))
+	http.ServeContent(w, r, pathname, info.ModTime(), zipFile)
+
+	e = zipFile.Close()
+	if e != nil {
+		Logger.Print(e)
+	}
 }
 
 func (h *HTTPHandler) serveFile(w http.ResponseWriter, r *http.Request) {
