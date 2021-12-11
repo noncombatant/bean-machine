@@ -260,6 +260,7 @@ const bodyOnKeyup = function(event) {
       searchInput.select()
       break
     case "?":
+    case "h":
       helpDiv.style.display = helpDiv.style.display || "none"
       helpDiv.style.display = "none" === helpDiv.style.display ? "block" : "none"
       break
