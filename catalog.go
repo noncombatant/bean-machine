@@ -104,7 +104,7 @@ func (c *Catalog) buildCatalogFromWalk(root string) {
 	e := filepath.Walk(root,
 		func(pathname string, info os.FileInfo, e error) error {
 			if e != nil {
-				Logger.Printf("%q: %s", pathname, e)
+				Logger.Print(e)
 				return e
 			}
 			if shouldSkipFile(pathname, info) || info.Mode().IsDir() || !info.Mode().IsRegular() {
@@ -113,7 +113,7 @@ func (c *Catalog) buildCatalogFromWalk(root string) {
 
 			input, e := os.Open(pathname)
 			if e != nil {
-				Logger.Printf("%q: %s", pathname, e)
+				Logger.Print(e)
 				return e
 			}
 			defer input.Close()
@@ -131,10 +131,10 @@ func (c *Catalog) buildCatalogFromWalk(root string) {
 				select {
 				case _, ok := <-timer.C:
 					if ok {
-						Logger.Printf("Processed %v items", count)
+						Logger.Print(count)
 						timer.Reset(timerFrequency)
 					} else {
-						Logger.Printf("Channel closed?!")
+						Logger.Fatal("Channel closed?!")
 					}
 				default:
 					// Do nothing.
