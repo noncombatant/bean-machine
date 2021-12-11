@@ -77,13 +77,13 @@ func createGzipped(pathname string, file *os.File, info os.FileInfo) (*os.File, 
 	os.Remove(gzPathname)
 	e := GzipStream(gzPathname, file)
 	if e != nil {
-		Logger.Printf("Could not create gzipped file %q: %v", gzPathname, e)
+		Logger.Print(e)
 		return nil, nil
 	}
 
 	gzFile, gzInfo, e := OpenFileAndInfo(gzPathname)
 	if e != nil {
-		Logger.Printf("Could not open just-created gzipped file %q: %v", gzPathname, e)
+		Logger.Print(e)
 		return nil, nil
 	}
 	return gzFile, gzInfo
@@ -106,7 +106,7 @@ func (h *HTTPHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	cookie, e := r.Cookie("token")
 	if e != nil {
-		Logger.Printf("Refusing %q to client with missing cookie (%v)", r.URL.Path, e)
+		Logger.Printf("Refusing %q (missing cookie)", r.URL.Path)
 		redirectToLogin(w, r)
 		return
 	}
@@ -243,6 +243,11 @@ func (h *HTTPHandler) normalizePathname(pathname string) string {
 	return pathname
 }
 
+func (h *HTTPHandler) serveContent(w http.ResponseWriter, r *http.Request, pathname string, modified time.Time, content io.ReadSeeker) {
+	http.ServeContent(w, r, pathname, modified, content)
+	Logger.Printf("%v %v %v %v", r.RemoteAddr, r.Method, r.Host, r.URL)
+}
+
 func (h *HTTPHandler) serveCover(pathname string, w http.ResponseWriter, r *http.Request) {
 	for _, extension := range coverExtensions {
 		file, info, _, e := openFileIfPublic(pathname+extension, false)
@@ -252,8 +257,7 @@ func (h *HTTPHandler) serveCover(pathname string, w http.ResponseWriter, r *http
 		defer file.Close()
 
 		// TODO: Unify this in serveFileContents.
-		http.ServeContent(w, r, pathname, info.ModTime(), file)
-		Logger.Printf("%q", pathname)
+		h.serveContent(w, r, pathname, info.ModTime(), file)
 		return
 	}
 
@@ -264,8 +268,7 @@ func (h *HTTPHandler) serveCover(pathname string, w http.ResponseWriter, r *http
 	defer file.Close()
 
 	// TODO: Unify this in serveFileContents. Find a way to not copy and paste this.
-	http.ServeContent(w, r, pathname, info.ModTime(), file)
-	Logger.Printf("%q", pathname)
+	h.serveContent(w, r, pathname, info.ModTime(), file)
 }
 
 func zipDirectory(pathname string) (*os.File, error) {
@@ -308,8 +311,6 @@ func zipDirectory(pathname string) (*os.File, error) {
 
 func (h *HTTPHandler) serveZip(w http.ResponseWriter, r *http.Request) {
 	pathname := h.normalizePathname(r.URL.Path)
-	Logger.Printf("%q", pathname)
-
 	info, e := os.Stat(pathname)
 	if e != nil {
 		Logger.Print("stat", e)
@@ -331,7 +332,7 @@ func (h *HTTPHandler) serveZip(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/zip, application/octet-stream")
 	w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%q", filepath.Base(filepath.Dir(pathname))+" - "+filepath.Base(pathname)+".zip"))
-	http.ServeContent(w, r, pathname, info.ModTime(), zipFile)
+	h.serveContent(w, r, pathname, info.ModTime(), zipFile)
 
 	e = zipFile.Close()
 	if e != nil {
@@ -355,7 +356,7 @@ func (h *HTTPHandler) serveFileContents(pathname string, w http.ResponseWriter, 
 
 	file, info, isGzipped, e := openFileIfPublic(pathname, gzippable && acceptsGzip)
 	if e != nil || file == nil || info == nil {
-		Logger.Printf("%q: %v", pathname, e)
+		Logger.Print(e)
 		http.NotFound(w, r)
 		return
 	}
@@ -375,8 +376,7 @@ func (h *HTTPHandler) serveFileContents(pathname string, w http.ResponseWriter, 
 		//w.Header().Set("Expires", expires.Format(time.RFC1123))
 	}
 
-	http.ServeContent(w, r, pathname, info.ModTime(), file)
-	Logger.Printf("%q", pathname)
+	h.serveContent(w, r, pathname, info.ModTime(), file)
 }
 
 // Returns an open File, a FileInfo, any error, and a bool indicating whether
@@ -389,14 +389,13 @@ func openFileIfPublic(pathname string, shouldTryGzip bool) (*os.File, os.FileInf
 
 	if !IsFileWorldReadable(info) {
 		file.Close()
-		Logger.Printf("NOTE: %q not world-readable", pathname)
 		return nil, nil, false, fmt.Errorf("openFileIfPublic: %q not public", pathname)
 	}
 
 	if shouldTryGzip {
 		gzFile, gzInfo := openOrCreateGzipped(pathname, file, info)
 		if gzFile == nil {
-			Logger.Printf("Could not create new gz file for: %q, %v", pathname, e)
+			Logger.Print(e)
 			file.Seek(0, io.SeekStart)
 			return file, info, false, nil
 		}
@@ -416,7 +415,7 @@ func openOrCreateGzipped(pathname string, file *os.File, info os.FileInfo) (*os.
 	gzPathname := pathname + ".gz"
 	gzFile, gzInfo, e := OpenFileAndInfo(gzPathname)
 	if e != nil {
-		Logger.Printf("Could not open %q: %v", gzPathname, e)
+		Logger.Print(e)
 		return createGzipped(pathname, file, info)
 	}
 
