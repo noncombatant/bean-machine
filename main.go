@@ -324,8 +324,6 @@ func main() {
 	configurationPathname := path.Join(getHomePathname(), configurationBasename)
 	makeConfigurationDirectory(configurationPathname)
 
-	Logger.Printf("Music: %q, configuration: %q", cleanedRoot, configurationPathname)
-
 	for i := 0; i < flag.NArg(); i++ {
 		command := flag.Arg(i)
 		switch command {
