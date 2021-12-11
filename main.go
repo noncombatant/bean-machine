@@ -78,16 +78,14 @@ func Lint(root string) {
 	e := filepath.Walk(root,
 		func(pathname string, info os.FileInfo, e error) error {
 			if e != nil {
-				Logger.Printf("%q: %s", pathname, e)
+				Logger.Print(e)
 				return e
 			}
 
 			basename := path.Base(pathname)
 			if basename == ".AppleFileInfo" && info.IsDir() {
-				Logger.Printf("Removing %q", pathname)
 				return os.RemoveAll(pathname)
 			} else if basename == ".DS_Store" && !info.IsDir() {
-				Logger.Printf("Removing %q", pathname)
 				return os.Remove(pathname)
 			} else if basename[0] == '.' {
 				Logger.Printf("Hidden: %q", pathname)
@@ -107,12 +105,10 @@ func Lint(root string) {
 					return e
 				}
 				if empty {
-					Logger.Printf("Removing empty directory: %q", pathname)
 					return os.Remove(pathname)
 				}
 
 				if info.Mode().Perm() != 0755 {
-					Logger.Printf("chmoding %q to 0755", pathname)
 					e = file.Chmod(0755)
 					if e != nil {
 						Logger.Print(e)
@@ -121,12 +117,10 @@ func Lint(root string) {
 				}
 			} else if info.Mode().IsRegular() {
 				if info.Size() == 0 {
-					Logger.Printf("Removing 0-byte file %q", pathname)
 					return os.Remove(pathname)
 				}
 
 				if info.Mode().Perm() != 0644 {
-					Logger.Printf("chmoding %q to 0644", pathname)
 					e = file.Chmod(0644)
 					if e != nil {
 						Logger.Print(e)
@@ -141,7 +135,6 @@ func Lint(root string) {
 				return e
 			}
 			for _, name := range xattrs {
-				Logger.Printf("Removing xattr %q from %q", name, pathname)
 				e = xattr.FRemove(file, name)
 				if e != nil {
 					Logger.Print(e)
@@ -164,7 +157,7 @@ func Lint(root string) {
 		})
 
 	if e != nil {
-		Logger.Printf("Problem walking %q: %s", root, e)
+		Logger.Print(e)
 	}
 }
 
@@ -230,14 +223,14 @@ func monitorCatalogForUpdates(root string) {
 func serveApp(root, port, configurationPathname string) {
 	addresses, e := net.InterfaceAddrs()
 	if e != nil || len(addresses) == 0 {
-		Logger.Fatal("Can't find any network interfaces to run the web server on. Giving up.")
+		Logger.Fatal(e)
 	}
 
 	message := "Starting the web server. Point your browser to any of these addresses:"
 	if len(addresses) == 1 {
 		message = "Starting the web server. Point your browser to this address:"
 	}
-	Logger.Printf("%s", message)
+	Logger.Print(message)
 
 	var hosts []string
 	for _, address := range addresses {
@@ -326,8 +319,7 @@ func main() {
 	configurationPathname := path.Join(getHomePathname(), configurationBasename)
 	makeConfigurationDirectory(configurationPathname)
 
-	Logger.Printf("Music directory: %q", cleanedRoot)
-	Logger.Printf("Configuration directory: %q", configurationPathname)
+	Logger.Printf("Music: %q, configuration: %q", cleanedRoot, configurationPathname)
 
 	for i := 0; i < flag.NArg(); i++ {
 		command := flag.Arg(i)
