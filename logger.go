@@ -1,5 +1,5 @@
 // Copyright 2020 by Chris Palmer (https://noncombatant.org), and released under
-// the terms of the GNU GPL3. See help.html for more information.
+// the terms of the GNU GPL3. See web/index.html for more information.
 //
 // Adapted from
 // https://wycd.net/posts/2014-07-02-logging-function-names-in-go.html.Thanks
