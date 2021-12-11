@@ -55,21 +55,19 @@ var (
 		"ü": "ü",
 		"ž": "ž",
 	}
-
-	Logger = log.Default()
 )
 
 func installFrontEndFiles(root string) {
 	webDirectoryPathname := "web"
 	webDirectory, e := os.Open(webDirectoryPathname)
 	if e != nil {
-		Logger.Fatal(e)
+		log.Fatal(e)
 	}
 	defer webDirectory.Close()
 
 	files, e := webDirectory.Readdirnames(0)
 	if e != nil {
-		Logger.Fatal(e)
+		log.Fatal(e)
 	}
 
 	for _, f := range files {
@@ -81,7 +79,7 @@ func Lint(root string) {
 	e := filepath.Walk(root,
 		func(pathname string, info os.FileInfo, e error) error {
 			if e != nil {
-				Logger.Print(e)
+				log.Print(e)
 				return e
 			}
 
@@ -91,12 +89,12 @@ func Lint(root string) {
 			} else if basename == ".DS_Store" && !info.IsDir() {
 				return os.Remove(pathname)
 			} else if basename[0] == '.' {
-				Logger.Printf("Hidden: %q", pathname)
+				log.Printf("Hidden: %q", pathname)
 			}
 
 			file, e := os.OpenFile(pathname, os.O_RDONLY, 0755)
 			if e != nil {
-				Logger.Print(e)
+				log.Print(e)
 				return e
 			}
 			defer file.Close()
@@ -104,7 +102,7 @@ func Lint(root string) {
 			if info.IsDir() {
 				empty, e := IsDirectoryEmpty(pathname)
 				if e != nil {
-					Logger.Print(e)
+					log.Print(e)
 					return e
 				}
 				if empty {
@@ -114,7 +112,7 @@ func Lint(root string) {
 				if info.Mode().Perm() != 0755 {
 					e = file.Chmod(0755)
 					if e != nil {
-						Logger.Print(e)
+						log.Print(e)
 						return e
 					}
 				}
@@ -126,7 +124,7 @@ func Lint(root string) {
 				if info.Mode().Perm() != 0644 {
 					e = file.Chmod(0644)
 					if e != nil {
-						Logger.Print(e)
+						log.Print(e)
 						return e
 					}
 				}
@@ -134,13 +132,13 @@ func Lint(root string) {
 
 			xattrs, e := xattr.FList(file)
 			if e != nil {
-				Logger.Print(e)
+				log.Print(e)
 				return e
 			}
 			for _, name := range xattrs {
 				e = xattr.FRemove(file, name)
 				if e != nil {
-					Logger.Print(e)
+					log.Print(e)
 					return e
 				}
 			}
@@ -152,7 +150,7 @@ func Lint(root string) {
 			if savedPathname != pathname {
 				e := os.Rename(savedPathname, pathname)
 				if e != nil {
-					Logger.Print(e)
+					log.Print(e)
 				}
 			}
 
@@ -160,7 +158,7 @@ func Lint(root string) {
 		})
 
 	if e != nil {
-		Logger.Print(e)
+		log.Print(e)
 	}
 }
 
@@ -176,12 +174,12 @@ func generateServerCredentials(hosts []string, configurationPathname string) (st
 
 	certificateFile, e := os.Create(certificatePathname)
 	if e != nil {
-		Logger.Fatal(e)
+		log.Fatal(e)
 	}
 
 	keyFile, e := os.OpenFile(keyPathname, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0600)
 	if e != nil {
-		Logger.Fatal(e)
+		log.Fatal(e)
 	}
 
 	generateCertificate(hosts, false, keyFile, certificateFile)
@@ -208,10 +206,10 @@ func getHomePathname() string {
 
 func makeConfigurationDirectory(configurationPathname string) {
 	if e := os.MkdirAll(configurationPathname, 0755); e != nil {
-		Logger.Fatal(e)
+		log.Fatal(e)
 	}
 	if e := os.MkdirAll(path.Join(configurationPathname, sessionsDirectoryName), 0755); e != nil {
-		Logger.Fatal(e)
+		log.Fatal(e)
 	}
 }
 
@@ -226,14 +224,14 @@ func monitorCatalogForUpdates(root string) {
 func serveApp(root, port, configurationPathname string) {
 	addresses, e := net.InterfaceAddrs()
 	if e != nil || len(addresses) == 0 {
-		Logger.Fatal(e)
+		log.Fatal(e)
 	}
 
 	message := "Starting the web server. Point your browser to any of these addresses:"
 	if len(addresses) == 1 {
 		message = "Starting the web server. Point your browser to this address:"
 	}
-	Logger.Print(message)
+	log.Print(message)
 
 	var hosts []string
 	for _, address := range addresses {
@@ -247,11 +245,11 @@ func serveApp(root, port, configurationPathname string) {
 			}
 			names, e := net.LookupAddr(a.IP.String())
 			if e != nil || len(names) == 0 {
-				Logger.Printf("    https://%s%s/", a.IP, port)
+				log.Printf("    https://%s%s/", a.IP, port)
 				hosts = append(hosts, "%s", a.IP.String())
 			} else {
 				for _, name := range names {
-					Logger.Printf("    https://%s%s/", name, port)
+					log.Printf("    https://%s%s/", name, port)
 					hosts = append(hosts, name)
 				}
 			}
@@ -261,7 +259,7 @@ func serveApp(root, port, configurationPathname string) {
 	certificatePathname, keyPathname := generateServerCredentials(hosts, configurationPathname)
 	go monitorCatalogForUpdates(root)
 	handler := HTTPHandler{Root: root, ConfigurationPathname: configurationPathname}
-	Logger.Fatal(http.ListenAndServeTLS(port, certificatePathname, keyPathname, &handler))
+	log.Fatal(http.ListenAndServeTLS(port, certificatePathname, keyPathname, &handler))
 }
 
 func printHelp() {
@@ -295,12 +293,12 @@ Here is what the commands do:
 func assertValidRootPathname(root string) {
 	info, e := os.Stat(root)
 	if e != nil || !info.IsDir() {
-		Logger.Fatal("Cannot continue without a valid music-directory.")
+		log.Fatal("Cannot continue without a valid music-directory.")
 	}
 }
 
 func main() {
-	Logger.SetFlags(log.Ldate | log.LUTC | log.Ltime | log.Lmicroseconds | log.Lshortfile)
+	log.SetFlags(log.Ldate | log.LUTC | log.Ltime | log.Lmicroseconds | log.Lshortfile)
 
 	needsHelp1 := flag.Bool("help", false, "Print the help message.")
 	needsHelp2 := flag.Bool("h", false, "Print the help message.")
@@ -314,7 +312,7 @@ func main() {
 	if *port > 0 && *port < 65536 {
 		portString = fmt.Sprintf(":%d", *port)
 	} else if *port != 0 {
-		Logger.Fatal("The port number must be in the range 1 – 65535.")
+		log.Fatal("The port number must be in the range 1 – 65535.")
 	}
 
 	if *needsHelp1 || *needsHelp2 || flag.NArg() == 0 {

@@ -9,6 +9,7 @@ import (
 	"id3"
 	"io"
 	"io/ioutil"
+	"log"
 	"os"
 	"path"
 	"path/filepath"
@@ -43,7 +44,7 @@ func (c *Catalog) readCatalog(gobs *os.File) {
 	infos := ItemInfos{}
 	e := decoder.Decode(&infos)
 	if e != nil && e != io.EOF {
-		Logger.Fatal(e)
+		log.Fatal(e)
 	}
 	c.ItemInfos = infos
 }
@@ -53,12 +54,12 @@ func (c *Catalog) writeCatalog(root string, infos ItemInfos) {
 	catalogFilePath := path.Join(root, catalogFile)
 	gobs, e := os.OpenFile(catalogFileTempPath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
 	if e != nil {
-		Logger.Fatal(e)
+		log.Fatal(e)
 	}
 
 	status, e := gobs.Stat()
 	if e != nil {
-		Logger.Fatal(e)
+		log.Fatal(e)
 	} else {
 		c.Modified = status.ModTime()
 	}
@@ -66,17 +67,17 @@ func (c *Catalog) writeCatalog(root string, infos ItemInfos) {
 	encoder := gob.NewEncoder(gobs)
 	e = encoder.Encode(infos)
 	if e != nil {
-		Logger.Fatal(e)
+		log.Fatal(e)
 	}
 
 	e = gobs.Close()
 	if e != nil {
-		Logger.Fatal(e)
+		log.Fatal(e)
 	}
 
 	e = os.Rename(catalogFileTempPath, catalogFilePath)
 	if e != nil {
-		Logger.Fatal(e)
+		log.Fatal(e)
 	}
 }
 
@@ -104,7 +105,7 @@ func (c *Catalog) buildCatalogFromWalk(root string) {
 	e := filepath.Walk(root,
 		func(pathname string, info os.FileInfo, e error) error {
 			if e != nil {
-				Logger.Print(e)
+				log.Print(e)
 				return e
 			}
 			if shouldSkipFile(pathname, info) || info.Mode().IsDir() || !info.Mode().IsRegular() {
@@ -113,7 +114,7 @@ func (c *Catalog) buildCatalogFromWalk(root string) {
 
 			input, e := os.Open(pathname)
 			if e != nil {
-				Logger.Print(e)
+				log.Print(e)
 				return e
 			}
 			defer input.Close()
@@ -131,10 +132,10 @@ func (c *Catalog) buildCatalogFromWalk(root string) {
 				select {
 				case _, ok := <-timer.C:
 					if ok {
-						Logger.Print(count)
+						log.Print(count)
 						timer.Reset(timerFrequency)
 					} else {
-						Logger.Fatal("Channel closed?!")
+						log.Fatal("Channel closed?!")
 					}
 				default:
 					// Do nothing.
@@ -145,7 +146,7 @@ func (c *Catalog) buildCatalogFromWalk(root string) {
 		})
 
 	if e != nil {
-		Logger.Print(e)
+		log.Print(e)
 	}
 	c.buildCatalogFromWalkInProgress = false
 	c.writeCatalog(root, newItems)
@@ -192,7 +193,7 @@ func buildMediaIndex(pathname string) string {
 
 	infos, e := ioutil.ReadDir(pathname)
 	if e != nil {
-		Logger.Print(e)
+		log.Print(e)
 		return builder.String()
 	}
 

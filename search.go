@@ -4,6 +4,7 @@
 package main
 
 import (
+	"log"
 	"strings"
 )
 
@@ -56,7 +57,7 @@ func matchItem(info *ItemInfo, queries []Query) bool {
 func matchItems(infos ItemInfos, rawQuery string) ItemInfos {
 	query := strings.TrimSpace(normalizeStringForSearch(rawQuery))
 	queries := ReconstructQueries(ParseTerms(query))
-	Logger.Print(queries)
+	log.Print(queries)
 
 	results := ItemInfos{}
 	for _, info := range infos {

@@ -14,6 +14,7 @@ import (
 	"crypto/x509/pkix"
 	"encoding/pem"
 	"io"
+	"log"
 	"math/big"
 	"net"
 	"time"
@@ -22,7 +23,7 @@ import (
 func pemBlockForKey(priv *ecdsa.PrivateKey) *pem.Block {
 	b, e := x509.MarshalECPrivateKey(priv)
 	if e != nil {
-		Logger.Fatal(e)
+		log.Fatal(e)
 	}
 	return &pem.Block{Type: "EC PRIVATE KEY", Bytes: b}
 }
@@ -30,7 +31,7 @@ func pemBlockForKey(priv *ecdsa.PrivateKey) *pem.Block {
 func generateCertificate(hosts []string, isCA bool, key, certificate io.Writer) {
 	priv, e := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 	if e != nil {
-		Logger.Fatal(e)
+		log.Fatal(e)
 	}
 
 	notBefore := time.Now()
@@ -39,7 +40,7 @@ func generateCertificate(hosts []string, isCA bool, key, certificate io.Writer) 
 	serialNumberLimit := new(big.Int).Lsh(big.NewInt(1), 128)
 	serialNumber, e := rand.Int(rand.Reader, serialNumberLimit)
 	if e != nil {
-		Logger.Fatal(e)
+		log.Fatal(e)
 	}
 
 	template := x509.Certificate{
@@ -69,15 +70,15 @@ func generateCertificate(hosts []string, isCA bool, key, certificate io.Writer) 
 
 	derBytes, e := x509.CreateCertificate(rand.Reader, &template, &template, &priv.PublicKey, priv)
 	if e != nil {
-		Logger.Fatal(e)
+		log.Fatal(e)
 	}
 
 	e = pem.Encode(certificate, &pem.Block{Type: "CERTIFICATE", Bytes: derBytes})
 	if e != nil {
-		Logger.Fatal(e)
+		log.Fatal(e)
 	}
 	e = pem.Encode(key, pemBlockForKey(priv))
 	if e != nil {
-		Logger.Fatal(e)
+		log.Fatal(e)
 	}
 }

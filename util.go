@@ -11,6 +11,7 @@ import (
 	"crypto/rand"
 	"io"
 	"io/ioutil"
+	"log"
 	"os"
 	"path"
 	"path/filepath"
@@ -218,7 +219,7 @@ func IsVideoPathname(pathname string) bool {
 func MustCopyFileByName(destination, source string) {
 	e := CopyFileByName(destination, source)
 	if e != nil {
-		Logger.Fatal(e)
+		log.Fatal(e)
 	}
 }
 
@@ -229,7 +230,7 @@ func MustCopyFileByName(destination, source string) {
 func MustGetRandomBytes(bytes []byte) {
 	_, e := rand.Read(bytes)
 	if e != nil {
-		Logger.Fatal(e)
+		log.Fatal(e)
 	}
 }
 

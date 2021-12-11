@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"log"
 	"math/rand"
 	"net/http"
 	"os"
@@ -77,13 +78,13 @@ func createGzipped(pathname string, file *os.File, info os.FileInfo) (*os.File, 
 	os.Remove(gzPathname)
 	e := GzipStream(gzPathname, file)
 	if e != nil {
-		Logger.Print(e)
+		log.Print(e)
 		return nil, nil
 	}
 
 	gzFile, gzInfo, e := OpenFileAndInfo(gzPathname)
 	if e != nil {
-		Logger.Print(e)
+		log.Print(e)
 		return nil, nil
 	}
 	return gzFile, gzInfo
@@ -106,13 +107,13 @@ func (h *HTTPHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	cookie, e := r.Cookie("token")
 	if e != nil {
-		Logger.Printf("Refusing %q (missing cookie)", r.URL.Path)
+		log.Printf("Refusing %q (missing cookie)", r.URL.Path)
 		redirectToLogin(w, r)
 		return
 	}
 
 	if !h.checkToken(cookie.Value) {
-		Logger.Printf("Refusing %q (invalid token)", r.URL.Path)
+		log.Printf("Refusing %q (invalid token)", r.URL.Path)
 		redirectToLogin(w, r)
 		return
 	}
@@ -161,12 +162,12 @@ func (h *HTTPHandler) generateToken() string {
 
 	file, e := os.Create(pathname)
 	if e != nil {
-		Logger.Fatal(e)
+		log.Fatal(e)
 	}
 
 	e = file.Close()
 	if e != nil {
-		Logger.Fatal(e)
+		log.Fatal(e)
 	}
 
 	return token
@@ -179,12 +180,12 @@ func (h *HTTPHandler) handleLogIn(w http.ResponseWriter, r *http.Request) {
 
 	cookie := &http.Cookie{Name: "token", Value: "", Secure: true, HttpOnly: true, Expires: getCookieLifetime(), Path: "/"}
 	if checkPassword(stored, username, password) {
-		Logger.Printf("%q successful", username)
+		log.Printf("%q successful", username)
 		cookie.Value = h.generateToken()
 		http.SetCookie(w, cookie)
 		http.Redirect(w, r, "/index.html", http.StatusFound)
 	} else {
-		Logger.Printf("%q unsuccessful", username)
+		log.Printf("%q unsuccessful", username)
 		http.SetCookie(w, cookie)
 		redirectToLogin(w, r)
 	}
@@ -193,7 +194,7 @@ func (h *HTTPHandler) handleLogIn(w http.ResponseWriter, r *http.Request) {
 func (h *HTTPHandler) handleSearch(w http.ResponseWriter, r *http.Request) {
 	queries := r.URL.Query()["q"]
 	if len(queries) == 0 {
-		Logger.Print("Ignoring empty search.")
+		log.Print("Ignoring empty search.")
 		return
 	}
 
@@ -245,7 +246,7 @@ func (h *HTTPHandler) normalizePathname(pathname string) string {
 
 func (h *HTTPHandler) serveContent(w http.ResponseWriter, r *http.Request, pathname string, modified time.Time, content io.ReadSeeker) {
 	http.ServeContent(w, r, pathname, modified, content)
-	Logger.Printf("%v %v %v %v", r.RemoteAddr, r.Method, r.Host, r.URL)
+	log.Printf("%v %v %v %v", r.RemoteAddr, r.Method, r.Host, r.URL)
 }
 
 func (h *HTTPHandler) serveCover(pathname string, w http.ResponseWriter, r *http.Request) {
@@ -263,7 +264,7 @@ func (h *HTTPHandler) serveCover(pathname string, w http.ResponseWriter, r *http
 
 	file, info, _, e := openFileIfPublic(h.normalizePathname("/unknown-album.png"), false)
 	if e != nil {
-		Logger.Fatal(e)
+		log.Fatal(e)
 	}
 	defer file.Close()
 
@@ -313,19 +314,19 @@ func (h *HTTPHandler) serveZip(w http.ResponseWriter, r *http.Request) {
 	pathname := h.normalizePathname(r.URL.Path)
 	info, e := os.Stat(pathname)
 	if e != nil {
-		Logger.Print("stat", e)
+		log.Print("stat", e)
 		return
 	}
 
 	zipFile, e := zipDirectory(pathname)
 	if e != nil {
-		Logger.Print(e)
+		log.Print(e)
 		return
 	}
 
 	_, e = zipFile.Seek(0, 0)
 	if e != nil {
-		Logger.Print(e)
+		log.Print(e)
 		zipFile.Close()
 		return
 	}
@@ -336,7 +337,7 @@ func (h *HTTPHandler) serveZip(w http.ResponseWriter, r *http.Request) {
 
 	e = zipFile.Close()
 	if e != nil {
-		Logger.Print(e)
+		log.Print(e)
 	}
 }
 
@@ -356,7 +357,7 @@ func (h *HTTPHandler) serveFileContents(pathname string, w http.ResponseWriter, 
 
 	file, info, isGzipped, e := openFileIfPublic(pathname, gzippable && acceptsGzip)
 	if e != nil || file == nil || info == nil {
-		Logger.Print(e)
+		log.Print(e)
 		http.NotFound(w, r)
 		return
 	}
@@ -395,7 +396,7 @@ func openFileIfPublic(pathname string, shouldTryGzip bool) (*os.File, os.FileInf
 	if shouldTryGzip {
 		gzFile, gzInfo := openOrCreateGzipped(pathname, file, info)
 		if gzFile == nil {
-			Logger.Print(e)
+			log.Print(e)
 			file.Seek(0, io.SeekStart)
 			return file, info, false, nil
 		}
@@ -415,7 +416,7 @@ func openOrCreateGzipped(pathname string, file *os.File, info os.FileInfo) (*os.
 	gzPathname := pathname + ".gz"
 	gzFile, gzInfo, e := OpenFileAndInfo(gzPathname)
 	if e != nil {
-		Logger.Print(e)
+		log.Print(e)
 		return createGzipped(pathname, file, info)
 	}
 

@@ -11,6 +11,7 @@ import (
 	"crypto/subtle"
 	"encoding/hex"
 	"fmt"
+	"log"
 	"os"
 	"path"
 	"strings"
@@ -44,7 +45,7 @@ func readPasswordDatabase(pathname string) Credentials {
 		if os.IsNotExist(e) {
 			return credentials
 		}
-		Logger.Fatal(e)
+		log.Fatal(e)
 	}
 	defer file.Close()
 
@@ -76,7 +77,7 @@ func promptForCredentials() (string, string) {
 func obfuscatePassword(password, salt []byte) []byte {
 	obfuscated, e := scrypt.Key(password, salt, scryptN, scryptR, scryptP, scryptLength)
 	if e != nil {
-		Logger.Fatal(e)
+		log.Fatal(e)
 	}
 	return obfuscated
 }
@@ -89,7 +90,7 @@ func setPassword(configurationPathname string) {
 
 	file, e := os.OpenFile(pathname, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0600)
 	if e != nil {
-		Logger.Fatal(e)
+		log.Fatal(e)
 	}
 	defer file.Close()
 
@@ -103,7 +104,7 @@ func setPassword(configurationPathname string) {
 func mustWriteString(file *os.File, s string) {
 	_, e := file.WriteString(s)
 	if e != nil {
-		Logger.Fatal(e)
+		log.Fatal(e)
 	}
 }
 
@@ -119,7 +120,7 @@ func writePasswordDatabase(file *os.File, toBeStored Credentials) {
 func getSaltAndScrypted(storedCredential string) ([]byte, []byte) {
 	decodedCredential, e := hex.DecodeString(storedCredential)
 	if e != nil {
-		Logger.Fatal(e)
+		log.Fatal(e)
 	}
 	return decodedCredential[:saltSize], decodedCredential[saltSize:]
 }
