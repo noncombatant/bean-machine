@@ -173,12 +173,12 @@ func generateServerCredentials(hosts []string, configurationPathname string) (st
 
 	certificateFile, e := os.Create(certificatePathname)
 	if e != nil {
-		Logger.Fatalf("Failed to open %q for writing: %s", certificatePathname, e)
+		Logger.Fatal(e)
 	}
 
 	keyFile, e := os.OpenFile(keyPathname, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0600)
 	if e != nil {
-		Logger.Fatalf("Failed to open %q for writing: %s", keyPathname, e)
+		Logger.Fatal(e)
 	}
 
 	generateCertificate(hosts, false, keyFile, certificateFile)
@@ -309,7 +309,7 @@ func main() {
 	if *port > 0 && *port < 65536 {
 		portString = fmt.Sprintf(":%d", *port)
 	} else if *port != 0 {
-		Logger.Fatalf("The port number must be in the range 1 – 65535.")
+		Logger.Fatal("The port number must be in the range 1 – 65535.")
 	}
 
 	if *needsHelp1 || *needsHelp2 || flag.NArg() == 0 {
