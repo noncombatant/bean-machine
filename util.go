@@ -145,7 +145,6 @@ func GzipStream(outputPathname string, input io.Reader) error {
 	return nil
 }
 
-// TODO: These are not application-generic; move them out.
 func IsAudioPathname(pathname string) bool {
 	return IsStringInStrings(GetBasenameExtension(pathname), audioFormatExtensions)
 }
