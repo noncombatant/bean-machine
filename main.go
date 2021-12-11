@@ -237,9 +237,6 @@ func serveApp(root, port, configurationPathname string) {
 	for _, address := range addresses {
 		switch a := address.(type) {
 		case *net.IPNet:
-			// Skip non-IPv4 (i.e. IPv6) addresses, because reverse DNS is rarely
-			// configured properly (I guess) and the lookup timeouts slow down server
-			// startup. TODO: Maybe fix this someday.
 			if a.IP.To4() == nil {
 				continue
 			}
