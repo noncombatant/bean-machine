@@ -20,26 +20,26 @@ import (
 )
 
 func pemBlockForKey(priv *ecdsa.PrivateKey) *pem.Block {
-	b, err := x509.MarshalECPrivateKey(priv)
-	if err != nil {
-		Logger.Fatalf("Unable to marshal ECDSA private key: %v", err)
+	b, e := x509.MarshalECPrivateKey(priv)
+	if e != nil {
+		Logger.Fatal(e)
 	}
 	return &pem.Block{Type: "EC PRIVATE KEY", Bytes: b}
 }
 
 func generateCertificate(hosts []string, isCA bool, key, certificate io.Writer) {
-	priv, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
-	if err != nil {
-		Logger.Fatalf("Failed to generate private key: %s", err)
+	priv, e := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
+	if e != nil {
+		Logger.Fatal(e)
 	}
 
 	notBefore := time.Now()
 	notAfter := notBefore.Add(365 * 24 * time.Hour)
 
 	serialNumberLimit := new(big.Int).Lsh(big.NewInt(1), 128)
-	serialNumber, err := rand.Int(rand.Reader, serialNumberLimit)
-	if err != nil {
-		Logger.Fatalf("Failed to generate serial number: %s", err)
+	serialNumber, e := rand.Int(rand.Reader, serialNumberLimit)
+	if e != nil {
+		Logger.Fatal(e)
 	}
 
 	template := x509.Certificate{
@@ -67,17 +67,17 @@ func generateCertificate(hosts []string, isCA bool, key, certificate io.Writer) 
 		template.KeyUsage |= x509.KeyUsageCertSign
 	}
 
-	derBytes, err := x509.CreateCertificate(rand.Reader, &template, &template, &priv.PublicKey, priv)
-	if err != nil {
-		Logger.Fatalf("Failed to create certificate: %s", err)
+	derBytes, e := x509.CreateCertificate(rand.Reader, &template, &template, &priv.PublicKey, priv)
+	if e != nil {
+		Logger.Fatal(e)
 	}
 
-	err = pem.Encode(certificate, &pem.Block{Type: "CERTIFICATE", Bytes: derBytes})
-	if err != nil {
-		Logger.Fatalf("Failed to encode certificate: %s", err)
+	e = pem.Encode(certificate, &pem.Block{Type: "CERTIFICATE", Bytes: derBytes})
+	if e != nil {
+		Logger.Fatal(e)
 	}
-	err = pem.Encode(key, pemBlockForKey(priv))
-	if err != nil {
-		Logger.Fatalf("Failed to encode certificate: %s", err)
+	e = pem.Encode(key, pemBlockForKey(priv))
+	if e != nil {
+		Logger.Fatal(e)
 	}
 }
