@@ -272,7 +272,7 @@ func (h *HTTPHandler) serveCover(pathname string, w http.ResponseWriter, r *http
 }
 
 func zipDirectory(pathname string) (*os.File, error) {
-	os.Mkdir("/tmp/beanzip", 0700);
+	os.Mkdir("/tmp/beanzip", 0700)
 	file, e := ioutil.TempFile("/tmp/beanzip", "album.zip")
 	if e != nil {
 		return nil, e

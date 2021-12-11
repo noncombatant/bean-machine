@@ -300,7 +300,7 @@ func assertValidRootPathname(root string) {
 }
 
 func main() {
-	Logger.SetFlags(log.Ldate|log.LUTC|log.Ltime|log.Lmicroseconds|log.Lshortfile)
+	Logger.SetFlags(log.Ldate | log.LUTC | log.Ltime | log.Lmicroseconds | log.Lshortfile)
 
 	needsHelp1 := flag.Bool("help", false, "Print the help message.")
 	needsHelp2 := flag.Bool("h", false, "Print the help message.")
