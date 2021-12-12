@@ -5,7 +5,6 @@ package main
 
 import (
 	"id3"
-	"net/url"
 	"path/filepath"
 	"strings"
 )
