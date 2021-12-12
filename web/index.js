@@ -175,16 +175,6 @@ const extendCatalog = function() {
   haveRequestedExtendCatalog = false
 }
 
-const audioPlayerOnPlay = function(event) {
-  playButton.src = "pause.png"
-  playButton.alt = playButton.title = "Pause (p or Space)"
-}
-
-const audioPlayerOnPause = function(event) {
-  playButton.src = "play.png"
-  playButton.alt = playButton.title = "Play (p or Space)"
-}
-
 const itemDivOnClick = function(event) {
   preparePlay(this.itemID)
   player.play()
