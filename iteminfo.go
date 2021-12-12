@@ -4,7 +4,6 @@
 package main
 
 import (
-	"fmt"
 	"id3"
 	"net/url"
 	"path/filepath"
@@ -12,24 +11,24 @@ import (
 )
 
 type ItemInfo struct {
-	Pathname           string
-	Album              string
-	Artist             string
-	Name               string
-	Disc               string
-	Track              string
-	Year               string
-	Genre              string
-	NormalizedPathname string
-	NormalizedAlbum    string
-	NormalizedArtist   string
-	NormalizedName     string
-	NormalizedDisc     string
-	NormalizedTrack    string
-	NormalizedYear     string
-	NormalizedGenre    string
-	ModTime            string
-	File               *id3.File
+	Pathname           string    `json:"pathname"`
+	Album              string    `json:"album"`
+	Artist             string    `json:"artist"`
+	Name               string    `json:"name"`
+	Disc               string    `json:"disc"`
+	Track              string    `json:"track"`
+	Year               string    `json:"year"`
+	Genre              string    `json:"genre"`
+	NormalizedPathname string    `json:"-"`
+	NormalizedAlbum    string    `json:"-"`
+	NormalizedArtist   string    `json:"-"`
+	NormalizedName     string    `json:"-"`
+	NormalizedDisc     string    `json:"-"`
+	NormalizedTrack    string    `json:"-"`
+	NormalizedYear     string    `json:"-"`
+	NormalizedGenre    string    `json:"-"`
+	ModTime            string    `json:"-"`
+	File               *id3.File `json:"-"`
 }
 
 type ItemInfos []*ItemInfo
@@ -40,19 +39,6 @@ type ItemInfos []*ItemInfo
 func pathnameEscape(pathname string) string {
 	// `PathEscape` uses capital hex, hence "%2F".
 	return strings.ReplaceAll(url.PathEscape(pathname), "%2F", "/")
-}
-
-// TODO: Do this the idiomatic Go way.
-func (i *ItemInfo) ToJSON() string {
-	return fmt.Sprintf(`{"pathname":%q,
-"album":%q,
-"artist":%q,
-"name":%q,
-"disc":%d,
-"track":%d,
-"year":%d,
-"genre":%q}`,
-		pathnameEscape(i.Pathname), i.Album, i.Artist, i.Name, ParseIntegerOr0(i.NormalizedDisc), ParseIntegerOr0(i.NormalizedTrack), ParseIntegerOr0(i.NormalizedYear), i.Genre)
 }
 
 func getDiscAndTrackFromBasename(basename string) (string, string, string) {

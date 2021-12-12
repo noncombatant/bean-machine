@@ -6,6 +6,7 @@ package main
 import (
 	"archive/zip"
 	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -229,8 +230,14 @@ func (h *HTTPHandler) handleSearch(w http.ResponseWriter, r *http.Request) {
 	matches = matchItems(catalog.ItemInfos, query)
 
 done:
-	w.Header().Set("Content-Type", "text/json")
-	writeItemInfos(w, matches)
+	json, e := json.Marshal(matches)
+	if e != nil {
+		log.Print(e)
+		http.Error(w, "", 500)
+	} else {
+		w.Header().Set("Content-Type", "text/json")
+		w.Write(json)
+	}
 }
 
 func (h *HTTPHandler) normalizePathname(pathname string) string {
@@ -432,19 +439,6 @@ func redirectToLogin(w http.ResponseWriter, r *http.Request) {
 
 func shouldServeFileToAnonymousClients(pathname string) bool {
 	return IsStringInStrings(path.Base(pathname), anonymousFiles)
-}
-
-func writeItemInfos(w http.ResponseWriter, infos ItemInfos) {
-	writeString(w, "[\n")
-	for i, info := range infos {
-		writeString(w, info.ToJSON())
-		if i == len(infos)-1 {
-			writeString(w, "\n")
-		} else {
-			writeString(w, ",\n")
-		}
-	}
-	writeString(w, "]")
 }
 
 func writeString(w http.ResponseWriter, s string) (int, error) {
