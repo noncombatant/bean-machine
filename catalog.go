@@ -4,6 +4,7 @@
 package main
 
 import (
+	"compress/gzip"
 	"encoding/gob"
 	"fmt"
 	"id3"
@@ -39,11 +40,10 @@ const (
 	catalogFileTemp = "catalog.gobs.tmp"
 )
 
-func (c *Catalog) readCatalog(gobs *os.File) {
+func (c *Catalog) readCatalog(gobs io.Reader) {
 	decoder := gob.NewDecoder(gobs)
 	infos := ItemInfos{}
-	e := decoder.Decode(&infos)
-	if e != nil && e != io.EOF {
+	if e := decoder.Decode(&infos); e != nil && e != io.EOF {
 		log.Fatal(e)
 	}
 	c.ItemInfos = infos
@@ -64,19 +64,25 @@ func (c *Catalog) writeCatalog(root string, infos ItemInfos) {
 		c.Modified = status.ModTime()
 	}
 
-	encoder := gob.NewEncoder(gobs)
-	e = encoder.Encode(infos)
+	gz, e := gzip.NewWriterLevel(gobs, 9)
 	if e != nil {
 		log.Fatal(e)
 	}
 
-	e = gobs.Close()
-	if e != nil {
+	encoder := gob.NewEncoder(gz)
+	if e := encoder.Encode(infos); e != nil {
 		log.Fatal(e)
 	}
 
-	e = os.Rename(catalogFileTempPath, catalogFilePath)
-	if e != nil {
+	if e := gz.Close(); e != nil {
+		log.Fatal(e)
+	}
+
+	if e := gobs.Close(); e != nil {
+		log.Fatal(e)
+	}
+
+	if e := os.Rename(catalogFileTempPath, catalogFilePath); e != nil {
 		log.Fatal(e)
 	}
 }
@@ -174,7 +180,14 @@ func (c *Catalog) BuildCatalog(root string) {
 
 	modified := status.ModTime()
 	if c.Modified.IsZero() || c.Modified.Before(modified) {
-		c.readCatalog(gobs)
+		gz, e := gzip.NewReader(gobs)
+		if e != nil {
+			log.Fatal(e)
+		}
+		c.readCatalog(gz)
+		if e := gz.Close(); e != nil {
+			log.Fatal(e)
+		}
 		c.Modified = modified
 		return
 	}
