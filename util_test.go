@@ -41,9 +41,8 @@ func TestGetBasenameExtension(t *testing.T) {
 		{"~/bin/zip.sh", ".sh"},
 		{"zip.pdf.sh", ".sh"},
 		{"/usr/local/goat.beard/thing.stuff.txt", ".txt"},
-		// TODO: Consider this:
-		//{".hidden", ""},
-		//{"~/whatever/.hidden", ""},
+		{".hidden", ".hidden"},
+		{"~/whatever/.hidden", ".hidden"},
 	}
 
 	for _, e := range expectations {
