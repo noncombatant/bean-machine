@@ -57,24 +57,6 @@ var (
 	}
 )
 
-func installFrontEndFiles(root string) {
-	webDirectoryPathname := "web"
-	webDirectory, e := os.Open(webDirectoryPathname)
-	if e != nil {
-		log.Fatal(e)
-	}
-	defer webDirectory.Close()
-
-	files, e := webDirectory.Readdirnames(0)
-	if e != nil {
-		log.Fatal(e)
-	}
-
-	for _, f := range files {
-		MustCopyFileByName(path.Join(root, f), path.Join(webDirectoryPathname, f))
-	}
-}
-
 func Lint(root string) {
 	e := filepath.Walk(root,
 		func(pathname string, info os.FileInfo, e error) error {
@@ -269,8 +251,6 @@ func printHelp() {
 Here is what the commands do:
 
   serve
-    Installs the web app front-end files in music-directory.
-
     Scans music-directory for music files, and creates a database of their
     metadata.
 
@@ -329,7 +309,6 @@ func main() {
 			printHelp()
 		case "serve":
 			assertValidRootPathname(cleanedRoot)
-			installFrontEndFiles(cleanedRoot)
 			catalog.BuildCatalog(cleanedRoot)
 			serveApp(cleanedRoot, portString, configurationPathname)
 		case "set-password":

@@ -425,7 +425,3 @@ func openOrCreateGzipped(pathname string, file *os.File, info os.FileInfo) (*os.
 func redirectToLogin(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/login.html", http.StatusFound)
 }
-
-func writeString(w http.ResponseWriter, s string) (int, error) {
-	return w.Write([]byte(s))
-}
