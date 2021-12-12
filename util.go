@@ -6,10 +6,11 @@
 package main
 
 import (
-	"archive/zip"
 	"compress/gzip"
 	"crypto/rand"
+	"embed"
 	"io"
+	"io/fs"
 	"io/ioutil"
 	"log"
 	"os"
@@ -266,13 +267,24 @@ func OpenFileAndInfo(pathname string) (*os.File, os.FileInfo, error) {
 	if e != nil {
 		return nil, nil, e
 	}
-
 	info, e := file.Stat()
 	if e != nil {
 		file.Close()
 		return nil, nil, e
 	}
+	return file, info, nil
+}
 
+func OpenFileAndInfoFS(pathname string, fs embed.FS) (fs.File, os.FileInfo, error) {
+	file, e := fs.Open(pathname)
+	if e != nil {
+		return nil, nil, e
+	}
+	info, e := file.Stat()
+	if e != nil {
+		file.Close()
+		return nil, nil, e
+	}
 	return file, info, nil
 }
 
@@ -295,42 +307,4 @@ func RemoveAccents(s string) string {
 		panic(e)
 	}
 	return output
-}
-
-func ArchiveDirectory(sourcePathname, destinationPathname string) error {
-	destinationFile, e := os.Create(destinationPathname)
-	if e != nil {
-		return e
-	}
-	zipWriter := zip.NewWriter(destinationFile)
-	e = filepath.Walk(sourcePathname, func(pathname string, info os.FileInfo, e error) error {
-		if info.IsDir() {
-			return nil
-		}
-		if e != nil {
-			return e
-		}
-		relativePathname := strings.TrimPrefix(pathname, filepath.Dir(sourcePathname))
-		zipFile, e := zipWriter.Create(relativePathname)
-		if e != nil {
-			return e
-		}
-		fsFile, e := os.Open(pathname)
-		if e != nil {
-			return e
-		}
-		_, e = io.Copy(zipFile, fsFile)
-		if e != nil {
-			return e
-		}
-		return nil
-	})
-	if e != nil {
-		return e
-	}
-	e = zipWriter.Close()
-	if e != nil {
-		return e
-	}
-	return nil
 }

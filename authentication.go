@@ -85,6 +85,14 @@ func getCookieLifetime() time.Time {
 	return (time.Now()).Add(cookieLifetime)
 }
 
+func (h *HTTPHandler) isAuthenticated(r *http.Request) bool {
+	cookie, e := r.Cookie("token")
+	if e != nil {
+		return false
+	}
+	return h.checkToken(cookie.Value)
+}
+
 func (h *HTTPHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path == "/login.html" && r.Method == http.MethodPost {
 		h.handleLogIn(w, r)
@@ -92,24 +100,18 @@ func (h *HTTPHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// All the front-end files can and should be served to anonymous clients.
-	f, e := frontend.Open("web"+r.URL.Path)
+	if r.URL.Path == "/" {
+		r.URL.Path = "/index.html"
+	}
+	// ...but the UI will break if we serve the index to an anonymous client.
+	if r.URL.Path == "/index.html" && !h.isAuthenticated(r) {
+		redirectToLogin(w, r)
+	}
+	f, info, e := OpenFileAndInfoFS("web"+r.URL.Path, frontend)
 	if e == nil {
+		defer f.Close()
 		data, _ := ioutil.ReadAll(f)
-		status, _ := f.Stat()
-		h.serveContent(w, r, r.URL.Path, status.ModTime(), bytes.NewReader(data))
-		return
-	}
-
-	cookie, e := r.Cookie("token")
-	if e != nil {
-		log.Printf("Refusing %q (missing cookie)", r.URL.Path)
-		redirectToLogin(w, r)
-		return
-	}
-
-	if !h.checkToken(cookie.Value) {
-		log.Printf("Refusing %q (invalid token)", r.URL.Path)
-		redirectToLogin(w, r)
+		h.serveContent(w, r, r.URL.Path, info.ModTime(), bytes.NewReader(data))
 		return
 	}
 
@@ -260,12 +262,13 @@ func (h *HTTPHandler) serveCover(pathname string, w http.ResponseWriter, r *http
 		return
 	}
 
-	file, info, _, e := openFileIfPublic(h.normalizePathname("/unknown-album.png"), false)
+	f, info, e := OpenFileAndInfoFS("web/unknown-album.png", frontend)
 	if e != nil {
 		log.Fatal(e)
 	}
-	defer file.Close()
-	h.serveContent(w, r, pathname, info.ModTime(), file)
+	defer f.Close()
+	data, _ := ioutil.ReadAll(f)
+	h.serveContent(w, r, r.URL.Path, info.ModTime(), bytes.NewReader(data))
 }
 
 func zipDirectory(pathname string) (*os.File, error) {
