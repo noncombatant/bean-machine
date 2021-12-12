@@ -263,8 +263,6 @@ func (h *HTTPHandler) serveCover(pathname string, w http.ResponseWriter, r *http
 			continue
 		}
 		defer file.Close()
-
-		// TODO: Unify this in serveFileContents.
 		h.serveContent(w, r, pathname, info.ModTime(), file)
 		return
 	}
@@ -274,8 +272,6 @@ func (h *HTTPHandler) serveCover(pathname string, w http.ResponseWriter, r *http
 		log.Fatal(e)
 	}
 	defer file.Close()
-
-	// TODO: Unify this in serveFileContents. Find a way to not copy and paste this.
 	h.serveContent(w, r, pathname, info.ModTime(), file)
 }
 
