@@ -177,10 +177,10 @@ func (h *HTTPHandler) generateToken() string {
 func (h *HTTPHandler) handleLogIn(w http.ResponseWriter, r *http.Request) {
 	username := normalizeUsername(r.FormValue("name"))
 	password := r.FormValue("password")
-	stored := readPasswordDatabase(path.Join(h.ConfigurationPathname, passwordsBasename))
+	credentials := readCredentials(path.Join(h.ConfigurationPathname, passwordsBasename))
 
 	cookie := &http.Cookie{Name: "token", Value: "", Secure: true, HttpOnly: true, Expires: getCookieLifetime(), Path: "/"}
-	if checkPassword(stored, username, password) {
+	if checkPassword(credentials, username, password) {
 		log.Printf("%q successful", username)
 		cookie.Value = h.generateToken()
 		http.SetCookie(w, cookie)

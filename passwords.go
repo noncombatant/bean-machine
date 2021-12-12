@@ -3,10 +3,6 @@
 
 package main
 
-// TODO: Make this an in-memory database class. Wrap a class around gob that
-// reloads the gobs file when the file is newer than the last read. Use it for
-// passwords, the catalog, and whatever else.
-
 import (
 	"crypto/subtle"
 	"encoding/hex"
@@ -32,25 +28,24 @@ type Credentials map[string]string
 
 var (
 	lastCredentialRead time.Time
-	credentials        = make(Credentials)
 )
 
 func normalizeUsername(username string) string {
 	return strings.TrimSpace(strings.ToLower(username))
 }
 
-func readPasswordDatabase(pathname string) Credentials {
+func readCredentials(pathname string) Credentials {
 	file, info, e := OpenFileAndInfo(pathname)
 	if e != nil {
 		if os.IsNotExist(e) {
-			return credentials
+			return make(Credentials)
 		}
 		log.Fatal(e)
 	}
 	defer file.Close()
 
+	credentials := make(Credentials)
 	if info.ModTime().After(lastCredentialRead) {
-		credentials = make(Credentials)
 		var username, password string
 		for {
 			_, e := fmt.Fscanf(file, "%s %s\n", &username, &password)
@@ -61,8 +56,13 @@ func readPasswordDatabase(pathname string) Credentials {
 		}
 		lastCredentialRead = info.ModTime()
 	}
-
 	return credentials
+}
+
+func writeCredentials(file *os.File, credentials Credentials) {
+	for k, v := range credentials {
+		fmt.Fprintf(file, "%s %s\n", k, v)
+	}
 }
 
 func promptForCredentials() (string, string) {
@@ -84,9 +84,8 @@ func obfuscatePassword(password, salt []byte) []byte {
 
 func setPassword(configurationPathname string) {
 	salt := MustMakeRandomBytes(saltSize)
-
 	pathname := path.Join(configurationPathname, passwordsBasename)
-	stored := readPasswordDatabase(pathname)
+	credentials := readCredentials(pathname)
 
 	file, e := os.OpenFile(pathname, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0600)
 	if e != nil {
@@ -96,25 +95,8 @@ func setPassword(configurationPathname string) {
 
 	username, password := promptForCredentials()
 	obfuscated := obfuscatePassword([]byte(password), salt)
-	stored[normalizeUsername(username)] = hex.EncodeToString(salt) + hex.EncodeToString(obfuscated)
-
-	writePasswordDatabase(file, stored)
-}
-
-func mustWriteString(file *os.File, s string) {
-	_, e := file.WriteString(s)
-	if e != nil {
-		log.Fatal(e)
-	}
-}
-
-func writePasswordDatabase(file *os.File, toBeStored Credentials) {
-	for key, value := range toBeStored {
-		mustWriteString(file, key)
-		mustWriteString(file, " ")
-		mustWriteString(file, value)
-		mustWriteString(file, "\n")
-	}
+	credentials[normalizeUsername(username)] = hex.EncodeToString(salt) + hex.EncodeToString(obfuscated)
+	writeCredentials(file, credentials)
 }
 
 func getSaltAndScrypted(storedCredential string) ([]byte, []byte) {
