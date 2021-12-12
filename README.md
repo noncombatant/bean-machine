@@ -91,7 +91,3 @@ important and real, and you should not click through it!)
 
 In the main page of the application, you can show a help screen by typing **?**
 or **h**.
-
-## TODO
-
-Consider using https://pkg.go.dev/embed.

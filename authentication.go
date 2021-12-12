@@ -5,6 +5,8 @@ package main
 
 import (
 	"archive/zip"
+	"bytes"
+	"embed"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
@@ -26,22 +28,10 @@ const (
 	encodedTokenLength = 24
 )
 
-var (
-	anonymousFiles = []string{
-		"favicon.ico",
-		"help.png",
-		"index.css",
-		"login.html",
-		"manifest.json",
-		"pause.png",
-		"play.png",
-		"readme.html",
-		"repeat.png",
-		"shuffle.png",
-		"skip.png",
-		"unknown-album.png",
-	}
+//go:embed web/*
+var frontend embed.FS
 
+var (
 	gzippableExtensions = []string{
 		".css",
 		".html",
@@ -101,8 +91,12 @@ func (h *HTTPHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if shouldServeFileToAnonymousClients(r.URL.Path) {
-		h.serveFile(w, r)
+	// All the front-end files can and should be served to anonymous clients.
+	f, e := frontend.Open("web"+r.URL.Path)
+	if e == nil {
+		data, _ := ioutil.ReadAll(f)
+		status, _ := f.Stat()
+		h.serveContent(w, r, r.URL.Path, status.ModTime(), bytes.NewReader(data))
 		return
 	}
 
@@ -127,7 +121,6 @@ func (h *HTTPHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		// In addition to `path.Clean`, handle this special case:
 		if pathname == h.Root {
 			w.WriteHeader(http.StatusForbidden)
-			w.Write([]byte("Forbidden"))
 			return
 		}
 
@@ -431,10 +424,6 @@ func openOrCreateGzipped(pathname string, file *os.File, info os.FileInfo) (*os.
 
 func redirectToLogin(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/login.html", http.StatusFound)
-}
-
-func shouldServeFileToAnonymousClients(pathname string) bool {
-	return IsStringInStrings(path.Base(pathname), anonymousFiles)
 }
 
 func writeString(w http.ResponseWriter, s string) (int, error) {
