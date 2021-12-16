@@ -5,6 +5,7 @@ package main
 
 import (
 	"id3"
+	"net/url"
 	"path/filepath"
 	"strings"
 )
@@ -31,6 +32,14 @@ type ItemInfo struct {
 }
 
 type ItemInfos []*ItemInfo
+
+// This terrible hack is an alternative to separately `url.PathEscape`ing each
+// pathname component and then re-joining them. That would be conceptually
+// better but this is expedient.
+func pathnameEscape(pathname string) string {
+  // `PathEscape` uses capital hex, hence "%2F".
+  return strings.ReplaceAll(url.PathEscape(pathname), "%2F", "/")
+}
 
 func getDiscAndTrackFromBasename(basename string) (string, string, string) {
 	parts := strings.SplitN(basename, " ", 2)
@@ -116,6 +125,7 @@ func (i *ItemInfo) fillMetadata() {
 		i.Track = "1"
 	}
 
+	i.Pathname = pathnameEscape(i.Pathname)
 	i.Normalize()
 }
 
