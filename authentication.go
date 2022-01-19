@@ -330,6 +330,7 @@ func (h *HTTPHandler) serveZip(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// This may be redundant: server.go:3160: http: superfluous response.WriteHeader call from main.(*HTTPHandler).serveContent (authentication.go:250)
 	w.Header().Set("Content-Type", "application/zip, application/octet-stream")
 	w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%q", filepath.Base(filepath.Dir(pathname))+" - "+filepath.Base(pathname)+".zip"))
 	h.serveContent(w, r, pathname, info.ModTime(), zipFile)
