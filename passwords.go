@@ -11,7 +11,6 @@ import (
 	"os"
 	"path"
 	"strings"
-	"time"
 
 	"golang.org/x/crypto/scrypt"
 )
@@ -26,16 +25,12 @@ const (
 
 type Credentials map[string]string
 
-var (
-	lastCredentialRead time.Time
-)
-
 func normalizeUsername(username string) string {
 	return strings.TrimSpace(strings.ToLower(username))
 }
 
 func readCredentials(pathname string) Credentials {
-	file, info, e := OpenFileAndInfo(pathname)
+	file, _, e := OpenFileAndInfo(pathname)
 	if e != nil {
 		if os.IsNotExist(e) {
 			return make(Credentials)
@@ -45,16 +40,13 @@ func readCredentials(pathname string) Credentials {
 	defer file.Close()
 
 	credentials := make(Credentials)
-	if info.ModTime().After(lastCredentialRead) {
-		var username, password string
-		for {
-			_, e := fmt.Fscanf(file, "%s %s\n", &username, &password)
-			if e != nil {
-				break
-			}
-			credentials[normalizeUsername(username)] = password
+	var username, password string
+	for {
+		_, e := fmt.Fscanf(file, "%s %s\n", &username, &password)
+		if e != nil {
+			break
 		}
-		lastCredentialRead = info.ModTime()
+		credentials[normalizeUsername(username)] = password
 	}
 	return credentials
 }
@@ -108,9 +100,11 @@ func getSaltAndScrypted(storedCredential string) ([]byte, []byte) {
 }
 
 func checkPassword(stored Credentials, username, password string) bool {
-	storedCredential, ok := stored[normalizeUsername(username)]
+	username = normalizeUsername(username)
+	storedCredential, ok := stored[username]
 	// BUG: Timing oracle for username existence.
 	if !ok {
+		log.Print("No such user ", username)
 		return false
 	}
 
