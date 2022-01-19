@@ -37,8 +37,8 @@ type ItemInfos []*ItemInfo
 // pathname component and then re-joining them. That would be conceptually
 // better but this is expedient.
 func pathnameEscape(pathname string) string {
-  // `PathEscape` uses capital hex, hence "%2F".
-  return strings.ReplaceAll(url.PathEscape(pathname), "%2F", "/")
+	// `PathEscape` uses capital hex, hence "%2F".
+	return strings.ReplaceAll(url.PathEscape(pathname), "%2F", "/")
 }
 
 func getDiscAndTrackFromBasename(basename string) (string, string, string) {
