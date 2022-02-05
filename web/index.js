@@ -79,7 +79,7 @@ const buildItemDiv = function(item, itemID) {
     div.addEventListener("click", itemDivOnClick)
   }
 
-  const trackSpan = createElement("span", "itemDivCell secondaryMetadata", (item.disc || "1") + "-" + (item.track || "1"))
+  const trackSpan = createElement("span", "itemDivCell secondaryMetadata", getDiscAndTrack(item))
   div.appendChild(trackSpan)
 
   const nameSpan = createElement("span", "itemDivCell", getName(item))
@@ -413,6 +413,10 @@ const stripFileExtension = function(pathname) {
 
 const stripLeadingTrack = function(pathname) {
   return pathname.replace(/^(\d|-)+ /, "")
+}
+
+const getDiscAndTrack = function(item) {
+  return item.track.replace(/^0*/, "").replace(/(\/\d*)/, "")
 }
 
 const getName = function(item) {
