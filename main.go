@@ -302,11 +302,14 @@ func main() {
 	for i := 0; i < flag.NArg(); i++ {
 		command := flag.Arg(i)
 		switch command {
+		case "catalog":
+			assertValidRootPathname(cleanedRoot)
+			catalog.BuildCatalog(cleanedRoot)
+		case "help":
+			printHelp()
 		case "lint":
 			assertValidRootPathname(cleanedRoot)
 			Lint(cleanedRoot)
-		case "help":
-			printHelp()
 		case "serve":
 			assertValidRootPathname(cleanedRoot)
 			catalog.BuildCatalog(cleanedRoot)
