@@ -326,10 +326,6 @@ const playButtonOnClick = function(event) {
   togglePlayback()
 }
 
-const nextButtonOnClick = function(event) {
-  playNext()
-}
-
 const shuffleButtonOnClick = function(event) {
   const shuffleOn = "true" === localStorage.getItem("shuffle")
   shuffleButton.src = shuffleOn ? "shuffle.png" : "repeat.png"
