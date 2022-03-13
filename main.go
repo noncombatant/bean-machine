@@ -84,11 +84,15 @@ func Lint(root string) {
 			if info.IsDir() {
 				empty, e := IsDirectoryEmpty(pathname)
 				if e != nil {
-					log.Print(e)
-					return e
+					log.Printf("%q: %v", pathname, e)
+					//return e
 				}
 				if empty {
-					return os.Remove(pathname)
+					e = os.Remove(pathname)
+					if e != nil {
+						log.Printf("%q: %v", pathname, e)
+					}
+					return e
 				}
 
 				if info.Mode().Perm() != 0755 {
