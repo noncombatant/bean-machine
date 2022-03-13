@@ -416,15 +416,15 @@ const getDiscAndTrack = function(item) {
 }
 
 const getName = function(item) {
-  return item.name || decodeURIComponent(stripLeadingTrack(stripFileExtension(basename(item.pathname))))
+  return item.name || decodeURIComponent(stripLeadingTrack(stripFileExtension(basename(item.pathname)))) || "Unknown Track"
 }
 
 const getAlbum = function(item) {
-  return item.album || decodeURIComponent(basename(dirname(item.pathname)))
+  return item.album || decodeURIComponent(basename(dirname(item.pathname))) || "Unknown Album"
 }
 
 const getArtist = function(item) {
-  return item.artist || decodeURIComponent(basename(dirname(dirname(item.pathname))))
+  return item.artist || decodeURIComponent(basename(dirname(dirname(item.pathname)))) || "Unknown Artist"
 }
 
 const getGenre = function(item) {

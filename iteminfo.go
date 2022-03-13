@@ -7,6 +7,7 @@ import (
 	"id3"
 	"net/url"
 	"path/filepath"
+	"regexp"
 	"strings"
 )
 
@@ -41,27 +42,24 @@ func pathnameEscape(pathname string) string {
 	return strings.ReplaceAll(url.PathEscape(pathname), "%2F", "/")
 }
 
-func getDiscAndTrackFromBasename(basename string) (string, string, string) {
-	parts := strings.SplitN(basename, " ", 2)
-	if len(parts) != 2 {
+var (
+	discTrackAndNameMatcher = regexp.MustCompile("^\\s*(\\d*)?-?(\\d*)?\\s+(.*)$")
+)
+func getDiscTrackAndNameFromBasename(basename string) (string, string, string) {
+	submatches := discTrackAndNameMatcher.FindSubmatch([]byte(basename))
+	if len(submatches) != 4 {
 		return "", "", basename
 	}
-
-	rest := parts[1]
-
-	parts = strings.Split(parts[0], "-")
-	if len(parts) > 2 {
-		return "", "", basename
+	if len(submatches[1]) > 0 && len(submatches[2]) == 0 {
+		return "", string(submatches[1]), string(submatches[3])
 	}
-	if len(parts) == 2 {
-		return parts[0], parts[1], rest
-	}
-	return "", parts[0], rest
+	return string(submatches[1]), string(submatches[2]), string(submatches[3])
 }
 
-// Get info from pathname, assuming format:
-// ".../AC_DC/Back In Black/1-01 Hells Bells.m4a"
-//     performer/album/disc#-track# name
+// Sets fields of `i` from `i.Pathname`, assuming the format:
+//
+//   ".../AC_DC/Back In Black/1-01 Hells Bells.m4a"
+//        performer/album/disc#-track# name
 func (i *ItemInfo) fillMetadataFromPathname() {
 	parts := strings.Split(i.Pathname, string(filepath.Separator))
 	length := len(parts)
@@ -72,7 +70,7 @@ func (i *ItemInfo) fillMetadataFromPathname() {
 		i.Album = parts[length-2]
 	}
 	if length > 0 {
-		i.Disc, i.Track, i.Name = getDiscAndTrackFromBasename(parts[length-1])
+		i.Disc, i.Track, i.Name = getDiscTrackAndNameFromBasename(parts[length-1])
 		i.Name = RemoveBasenameExtension(i.Name)
 	}
 }
@@ -93,12 +91,15 @@ func (i *ItemInfo) fillMetadata() {
 		if i.File.Name != "" {
 			i.Name = i.File.Name
 		}
+		i.File.Disc = strings.TrimSpace(i.File.Disc)
 		if i.File.Disc != "" {
 			i.Disc = i.File.Disc
 		}
+		i.File.Track = strings.TrimSpace(i.File.Track)
 		if i.File.Track != "" {
 			i.Track = i.File.Track
 		}
+		i.File.Year = strings.TrimSpace(i.File.Year)
 		if i.File.Year != "" {
 			i.Year = i.File.Year
 		}
@@ -107,22 +108,6 @@ func (i *ItemInfo) fillMetadata() {
 			i.Genre = i.File.Genre
 		}
 	}
-
-	if i.Artist == "" {
-		i.Artist = "Unknown Artist"
-	}
-	if i.Album == "" {
-		i.Album = "Unknown Album"
-	}
-	if i.Name == "" {
-		i.Name = "Unknown Track"
-	}
-	//if i.Disc == "" {
-	//	i.Disc = "1"
-	//}
-	//if i.Track == "" {
-	//	i.Track = "1"
-	//}
 
 	i.Pathname = pathnameEscape(i.Pathname)
 	i.Normalize()
