@@ -1,10 +1,10 @@
-run: build
-	./bean-machine -m ~/muzak serve
-
 build:
 	go build
 	go vet
 	go test
+
+run: build
+	./bean-machine -m ~/muzak serve
 
 clean:
 	rm -f bean-machine
