@@ -4,7 +4,7 @@
   "description": "A delightful music player",
   "start_url": "./",
   "theme_color": "#ffc0cb",
-  "background_color": "#aaf",
+  "background_color": "#ffc0cb",
   "icons": [
     {
       "src": "favicon.ico",
