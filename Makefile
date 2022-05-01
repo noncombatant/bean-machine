@@ -4,7 +4,7 @@ build:
 	go test
 
 run: build
-	./bean-machine -m ~/muzak serve
+	./bean-machine -m ~/muzak catalog serve
 
 clean:
 	rm -f bean-machine

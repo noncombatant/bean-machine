@@ -27,7 +27,6 @@ const (
 )
 
 var (
-	// TODO: Make this map more complete.
 	combiningCharacterReplacements = map[string]string{
 		"á": "á",
 		"à": "à",
@@ -316,7 +315,6 @@ func main() {
 			Lint(cleanedRoot)
 		case "serve":
 			assertValidRootPathname(cleanedRoot)
-			catalog.BuildCatalog(cleanedRoot)
 			serveApp(cleanedRoot, portString, configurationPathname)
 		case "set-password":
 			setPassword(configurationPathname)
@@ -324,5 +322,4 @@ func main() {
 			printHelp()
 		}
 	}
-	os.Exit(0)
 }
