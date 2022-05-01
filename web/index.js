@@ -278,8 +278,8 @@ const shuffle = function(array) {
 
 const restoreState = function() {
   const shuffleOn = "true" === localStorage.getItem("shuffle")
-  shuffleButton.src = shuffleOn ? "repeat.png" : "shuffle.png"
-  shuffleButton.alt = shuffleButton.title = shuffleOn ? "Sort (s)" : "Shuffle (s)"
+  shuffleButton.title = shuffleOn ? "Sort (s)" : "Shuffle (s)"
+  shuffleButton.innerText = shuffleOn ? "Sort" : "Shuffle"
   searchCatalog(localStorage.getItem("query") || "")
 }
 
@@ -328,8 +328,8 @@ const playButtonOnClick = function(event) {
 
 const shuffleButtonOnClick = function(event) {
   const shuffleOn = "true" === localStorage.getItem("shuffle")
-  shuffleButton.src = shuffleOn ? "shuffle.png" : "repeat.png"
-  shuffleButton.alt = shuffleButton.title = shuffleOn ? "Shuffle (s)" : "Sort (s)"
+  shuffleButton.title = shuffleOn ? "Shuffle (s)" : "Sort (s)"
+  shuffleButton.innerText = shuffleOn ? "Shuffle" : "Sort"
   localStorage.setItem("shuffle", shuffleOn ? "false" : "true")
   buildCatalog(0)
 }

@@ -12,21 +12,30 @@
 <div id="controlsDiv">
   <div id="nowPlayingTitle">Click on any track to play.</div>
 
-  <div>
-    <audio id="audioPlayer" preload="auto" controls></audio>
-    <video id="videoPlayer" controls width="400" height="300" class="hidden"></video>
-<!--
-    <input type="image" src="play.png" width="32" height="32" id="playButton" alt="Play (p)" title="Play (p or Space)"/>
-    <input type="range" min="0" max="100" step="0.1" value="0" id="positionRange">
-    <input type="image" src="skip.png" width="32" height="32" id="nextButton" alt="Next (n or →)" title="Next (n or →)"/>
--->
-    <input type="image" src="shuffle.png" width="32" height="32" id="shuffleButton" alt="Shuffle (s)" title="Shuffle (s)"/>
-  </div>
+  <section class="flexbox">
+    <div class="stretch">
+      <audio id="audioPlayer" preload="auto" controls></audio>
+      <video id="videoPlayer" controls width="400" height="300" class="hidden"></video>
+      <!--
+      <input type="image" src="play.png" width="32" height="32" id="playButton" alt="Play (p)" title="Play (p or Space)"/>
+      <input type="range" min="0" max="100" step="0.1" value="0" id="positionRange">
+      <input type="image" src="skip.png" width="32" height="32" id="nextButton" alt="Next (n or →)" title="Next (n or →)"/>
+      <input type="image" src="shuffle.png" width="32" height="32" id="shuffleButton" alt="Shuffle (s)" title="Shuffle (s)"/>
+      -->
+    </div>
+    <div class="normal">
+      <button id="shuffleButton" title="Shuffle (s)">Shuffle</button>
+    </div>
+  </section>
 
-  <div>
-    <input type="text" name="search" id="searchInput" placeholder="search or ? for random" title="Search (/)"/>
-    <button id="searchButton">Search</button>
-  </div>
+  <section class="flexbox">
+    <div class="stretch">
+      <input type="text" name="search" id="searchInput" placeholder="search or ? for random" title="Search (/)"/>
+    </div>
+    <div class="normal">
+      <button id="searchButton">Search</button>
+    </div>
+  </section>
 </div>
 
 <div id="itemListDiv"></div>
@@ -132,7 +141,7 @@ when you have a connectivity gap.</p>
 
 <h2>Authors And Copyright</h2>
 
-<p>This is Bean Machine version 2021-12-10, written by <a
+<p>This is Bean Machine version 2022-05-01, written by <a
 href="https://noncombatant.org/">Chris Palmer</a>. It uses the <a
 href="https://github.com/ascherkus/go-id3"><code>id3</code> package by Andrew
 Scherkus</a>, and uses X.509 certificate generation code adapted from an example

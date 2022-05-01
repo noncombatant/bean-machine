@@ -1,3 +1,15 @@
+* {
+  box-sizing: border-box;
+}
+
+.flexbox { display: flex; }
+.flexbox .stretch { flex: 1; }
+.flexbox .normal { flex: 0; margin: 0 0 0 1rem; }
+.flexbox div input { width: 100%; }
+.flexbox div audio { width: 100%; }
+.flexbox div video { width: 100%; }
+.flexbox div button { white-space: nowrap; }
+
 body {
   font-family: system-ui;
   line-height: 140%;
@@ -131,6 +143,10 @@ button, input {
   background-color: rgb(255, 255, 255, 0.6);
 }
 
+audio, video {
+  padding: 0.5em;
+}
+
 #positionRange {
   padding-right: 0;
   padding-left: 0;
@@ -140,10 +156,6 @@ button, input {
 
 button {
   font-weight: bold;
-}
-
-#playButton, #nextButton, #shuffleButton {
-  border-radius: 50%;
 }
 
 pre {
