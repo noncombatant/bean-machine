@@ -4,8 +4,10 @@
 <title>Bean Machine</title>
 <link rel="manifest" href="manifest.json"/>
 <link rel="stylesheet" href="index.css"/>
+<meta name="theme-color" content="#ffc0cb"/>
 <link rel="apple-touch-icon" href="favicon.ico"/>
-<meta name="theme-color" content="#317efb"/>
+<link rel="icon" href="favicon.ico"/>
+<meta name="author" content="Chris Palmer">
 
 <noscript><strong>Bean Machine requires JavaScript to work.</strong></noscript>
 
@@ -68,9 +70,10 @@ brown"</strong></code> will find only items whose artist field matches “james
 brown”. Similarly, <code><strong>album:-goat</strong></code> will match items
 whose album name does not match “goat”. The common metadata field names are:
 <i>album</i>, <i>artist</i>, <i>name</i> (of track or item), <i>disc</i>
-(number), <i>track</i> (number), <i>year</i>, and <i>genre</i>. Nerdy additional
-field names are <i>path</i> (and synonym <i>pathname</i>) and <i>added</i> (and
-synonym <i>mtime</i>).</li>
+(number), <i>track</i> (number), <i>year</i>, and <i>genre</i>.</li>
+
+<li>Nerdy additional field names are <i>path</i> (and synonym <i>pathname</i>)
+and <i>added</i> (and synonym <i>mtime</i>).</li>
 
 <li>Each item has in its metadata the date it was added to the catalog
 (<i>added</i> or <i>mtime</i>), in the format YYYY-MM-DD. This means you can
