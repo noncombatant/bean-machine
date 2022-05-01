@@ -32,7 +32,7 @@ type ItemInfo struct {
 	File               *id3.File `json:"-"`
 }
 
-type ItemInfos []*ItemInfo
+type ItemInfos []ItemInfo
 
 // This terrible hack is an alternative to separately `url.PathEscape`ing each
 // pathname component and then re-joining them. That would be conceptually
@@ -45,6 +45,7 @@ func pathnameEscape(pathname string) string {
 var (
 	discTrackAndNameMatcher = regexp.MustCompile("^\\s*(\\d*)?-?(\\d*)?\\s+(.*)$")
 )
+
 func getDiscTrackAndNameFromBasename(basename string) (string, string, string) {
 	submatches := discTrackAndNameMatcher.FindSubmatch([]byte(basename))
 	if len(submatches) != 4 {

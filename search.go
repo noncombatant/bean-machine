@@ -61,7 +61,7 @@ func matchItems(infos ItemInfos, rawQuery string) ItemInfos {
 
 	results := ItemInfos{}
 	for _, info := range infos {
-		if matchItem(info, queries) {
+		if matchItem(&info, queries) {
 			results = append(results, info)
 		}
 	}

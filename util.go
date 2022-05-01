@@ -11,10 +11,8 @@ import (
 	"embed"
 	"io"
 	"io/fs"
-	"io/ioutil"
 	"log"
 	"os"
-	"path"
 	"path/filepath"
 	"regexp"
 	"strconv"
@@ -162,32 +160,6 @@ func IsDirectoryEmpty(pathname string) (bool, error) {
 
 func IsDocumentPathname(pathname string) bool {
 	return IsStringInStrings(GetBasenameExtension(pathname), documentFormatExtensions)
-}
-
-func IsFileNewestInDirectory(directoryName, baseName string) bool {
-	file, e := os.Open(path.Join(directoryName, baseName))
-	if e != nil {
-		return false
-	}
-	defer file.Close()
-
-	status, e := file.Stat()
-	if e != nil {
-		return false
-	}
-	modified := status.ModTime()
-
-	infos, e := ioutil.ReadDir(directoryName)
-	if e != nil {
-		return false
-	}
-
-	for _, info := range infos {
-		if info.IsDir() && modified.Before(info.ModTime()) {
-			return false
-		}
-	}
-	return true
 }
 
 func IsFileWorldReadable(info os.FileInfo) bool {

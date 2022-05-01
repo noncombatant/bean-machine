@@ -315,6 +315,7 @@ func main() {
 			Lint(cleanedRoot)
 		case "serve":
 			assertValidRootPathname(cleanedRoot)
+			catalog.ReadCatalog(cleanedRoot)
 			serveApp(cleanedRoot, portString, configurationPathname)
 		case "set-password":
 			setPassword(configurationPathname)

@@ -20,15 +20,6 @@ import (
 
 type Catalog struct {
 	ItemInfos
-
-	// Time at which this Catalog's ItemInfos were last updated from the
-	// filesystem.
-	Modified time.Time
-
-	// `buildCatalogFromWalk` could be invoked through either `buildCatalog` or
-	// `serveApp`. This sentinel avoids having multiple invocations walk twice
-	// and stomp on the `catalogFile`.
-	buildCatalogFromWalkInProgress bool
 }
 
 var (
@@ -36,32 +27,14 @@ var (
 )
 
 const (
-	catalogFile     = "catalog.gobs"
-	catalogFileTemp = "catalog.gobs.tmp"
+	catalogFile     = "catalog.gobs.gz"
 )
 
-func (c *Catalog) readCatalog(gobs io.Reader) {
-	decoder := gob.NewDecoder(gobs)
-	infos := ItemInfos{}
-	if e := decoder.Decode(&infos); e != nil && e != io.EOF {
-		log.Fatal(e)
-	}
-	c.ItemInfos = infos
-}
-
-func (c *Catalog) writeCatalog(root string, infos ItemInfos) {
-	catalogFileTempPath := path.Join(root, catalogFileTemp)
+func (c *Catalog) writeCatalog(root string) {
 	catalogFilePath := path.Join(root, catalogFile)
-	gobs, e := os.OpenFile(catalogFileTempPath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
+	gobs, e := os.OpenFile(catalogFilePath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
 	if e != nil {
 		log.Fatal(e)
-	}
-
-	status, e := gobs.Stat()
-	if e != nil {
-		log.Fatal(e)
-	} else {
-		c.Modified = status.ModTime()
 	}
 
 	gz, e := gzip.NewWriterLevel(gobs, 9)
@@ -70,7 +43,7 @@ func (c *Catalog) writeCatalog(root string, infos ItemInfos) {
 	}
 
 	encoder := gob.NewEncoder(gz)
-	if e := encoder.Encode(infos); e != nil {
+	if e := encoder.Encode(c); e != nil {
 		log.Fatal(e)
 	}
 
@@ -81,10 +54,6 @@ func (c *Catalog) writeCatalog(root string, infos ItemInfos) {
 	if e := gobs.Close(); e != nil {
 		log.Fatal(e)
 	}
-
-	if e := os.Rename(catalogFileTempPath, catalogFilePath); e != nil {
-		log.Fatal(e)
-	}
 }
 
 func shouldSkipFile(pathname string, info os.FileInfo) bool {
@@ -92,22 +61,13 @@ func shouldSkipFile(pathname string, info os.FileInfo) bool {
 	return basename == "" || basename[0] == '.' || info.Size() == 0
 }
 
-func (c *Catalog) buildCatalogFromWalk(root string) {
-	if c.buildCatalogFromWalkInProgress {
-		return
-	}
-	c.buildCatalogFromWalkInProgress = true
-	defer func() {
-		c.buildCatalogFromWalkInProgress = false
-	}()
-
+func (c *Catalog) BuildCatalog(root string) {
 	// Log the walk progress periodically so that the operator knows what’s going
 	// on.
 	count := 0
 	timerFrequency := 1 * time.Second
 	timer := time.NewTimer(timerFrequency)
 
-	newItems := ItemInfos{}
 	e := filepath.Walk(root,
 		func(pathname string, info os.FileInfo, e error) error {
 			if e != nil {
@@ -132,7 +92,7 @@ func (c *Catalog) buildCatalogFromWalk(root string) {
 				time := info.ModTime()
 				itemInfo.ModTime = fmt.Sprintf("%04d-%02d-%02d", time.Year(), time.Month(), time.Day())
 				itemInfo.fillMetadata()
-				newItems = append(newItems, &itemInfo)
+				c.ItemInfos = append(c.ItemInfos, itemInfo)
 
 				count++
 				select {
@@ -154,42 +114,27 @@ func (c *Catalog) buildCatalogFromWalk(root string) {
 	if e != nil {
 		log.Print(e)
 	}
-	c.buildCatalogFromWalkInProgress = false
-	c.writeCatalog(root, newItems)
-	c.ItemInfos = newItems
+	c.writeCatalog(root)
 }
 
-func (c *Catalog) BuildCatalog(root string) {
-	if !IsFileNewestInDirectory(root, catalogFile) {
-		c.buildCatalogFromWalk(root)
-		return
-	}
-
+func (c *Catalog) ReadCatalog(root string) {
 	gobs, e := os.Open(path.Join(root, catalogFile))
 	if e != nil {
-		c.buildCatalogFromWalk(root)
-		return
+		log.Fatal(e)
 	}
-	defer gobs.Close()
-
-	status, e := gobs.Stat()
+	gz, e := gzip.NewReader(gobs)
 	if e != nil {
-		c.buildCatalogFromWalk(root)
-		return
+		log.Fatal(e)
 	}
-
-	modified := status.ModTime()
-	if c.Modified.IsZero() || c.Modified.Before(modified) {
-		gz, e := gzip.NewReader(gobs)
-		if e != nil {
-			log.Fatal(e)
-		}
-		c.readCatalog(gz)
-		if e := gz.Close(); e != nil {
-			log.Fatal(e)
-		}
-		c.Modified = modified
-		return
+	decoder := gob.NewDecoder(gz)
+	if e := decoder.Decode(c); e != nil && e != io.EOF {
+		log.Fatal(e)
+	}
+	if e = gz.Close(); e != nil {
+		log.Fatal(e)
+	}
+	if e = gobs.Close(); e != nil {
+		log.Fatal(e)
 	}
 }
 
