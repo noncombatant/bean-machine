@@ -94,6 +94,7 @@ func (h *HTTPHandler) isAuthenticated(r *http.Request) bool {
 }
 
 func (h *HTTPHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	log.Printf("%q,%q,%q,%q,%q", r.RemoteAddr, r.Proto, r.Method, r.Host, r.RequestURI)
 	if r.URL.Path == "/login.html" && r.Method == http.MethodPost {
 		h.handleLogIn(w, r)
 		return
@@ -248,7 +249,6 @@ func (h *HTTPHandler) normalizePathname(pathname string) string {
 
 func (h *HTTPHandler) serveContent(w http.ResponseWriter, r *http.Request, pathname string, modified time.Time, content io.ReadSeeker) {
 	http.ServeContent(w, r, pathname, modified, content)
-	log.Printf("%v %v %v %v", r.RemoteAddr, r.Method, r.Host, r.URL)
 }
 
 func (h *HTTPHandler) serveCover(pathname string, w http.ResponseWriter, r *http.Request) {
