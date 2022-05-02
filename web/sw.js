@@ -17,10 +17,12 @@ const RunTimeCache = "runtime"
 
 const PreCacheURLs = [
   "./", // Alias for index.html
+  "download.png",
   "favicon.ico",
   "index.css",
   "index.html",
   "index.js",
+  "unknown-album.png",
 ]
 
 self.addEventListener("install", event => {
