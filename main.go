@@ -13,7 +13,6 @@ import (
 	"path"
 	"path/filepath"
 	"strings"
-	"time"
 
 	"github.com/pkg/xattr"
 )
@@ -198,13 +197,6 @@ func makeConfigurationDirectory(configurationPathname string) {
 	}
 }
 
-func monitorCatalogForUpdates(root string) {
-	for {
-		time.Sleep(2 * time.Minute)
-		catalog.BuildCatalog(root)
-	}
-}
-
 // `port` is a string (not an integer) of the form ":1234".
 func serveApp(root, port, configurationPathname string) {
 	addresses, e := net.InterfaceAddrs()
@@ -239,7 +231,6 @@ func serveApp(root, port, configurationPathname string) {
 	}
 
 	certificatePathname, keyPathname := generateServerCredentials(hosts, configurationPathname)
-	go monitorCatalogForUpdates(root)
 	handler := HTTPHandler{Root: root, ConfigurationPathname: configurationPathname}
 	log.Fatal(http.ListenAndServeTLS(port, certificatePathname, keyPathname, &handler))
 }
