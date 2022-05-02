@@ -100,6 +100,7 @@ const buildAlbumTitleDiv = function(item, itemID) {
   const coverImg = createElement("img")
   coverA.href = directory + "/media.html"
   coverImg.src = directory + "/cover"
+  coverImg.title = "Album art and inserts"
   coverImg.height = coverImg.width = 32
   coverImg.loading = "lazy"
   coverA.target = "cover"
@@ -110,6 +111,7 @@ const buildAlbumTitleDiv = function(item, itemID) {
   const downloadImg = createElement("img")
   downloadA.href = directory + "?download"
   downloadImg.src = "/download.png"
+  downloadImg.title = "Download album"
   downloadImg.height = downloadImg.width = 32
   downloadImg.loading = "lazy"
   downloadA.target = "download"
