@@ -15,8 +15,7 @@ operating system, but you can install it for free.
 
 To run Bean Machine, you will need to [**download the Go programming
 language**](https://golang.org/dl/) for your computer. Download the **latest
-stable version** (at least version 1.14) of the **installer package**, and
-install it.
+stable version** of the **installer package**, and install it.
 
 ### 2: Build The Server
 
@@ -45,9 +44,9 @@ go build
 
 The result of this process will be a file named bean-machine (macOS and Linux)
 or bean-machine.exe (Windows). This is the Bean Machine server program. Its
-purpose is to scan your music collection to build a catalog, and then to serve
-that catalog and your music to web browsers. The actual music-playing user
-interface appears in the browser.
+purpose is to build a catalog of your music collection, and then to serve that
+catalog and your music to web browsers. The actual music-playing user interface
+appears in the browser.
 
 ### 3. Run The Server
 
@@ -58,17 +57,17 @@ Windows, that is most likely to be your Music folder.
 #### macOS And Linux
 
 ```
-./bean-machine -m ~/Music serve
+./bean-machine -m ~/Music catalog serve
 ```
 
 #### Windows
 
 ```
-.\bean-machine.exe -m %HOMEPATH\Music serve
+.\bean-machine.exe -m %HOMEPATH\Music catalog serve
 ```
 
-bean-machine will scan your music directory (this might take a while) and then
-print out the URL(s) by which you can access it.
+bean-machine will catalog your music directory (this might take a while) and
+then print out the URL(s) by which you can access it.
 
 #### Important Note
 
@@ -79,10 +78,10 @@ server, but the certificate has not been *signed* by an authority your browser
 knows about. Normally, you shouldn’t expect to see invalid certificates on real,
 public internet sites.
 
-But for running servers (like Bean Machine) on your own computer at home, it’s
-OK, and you can click through this warning without hurting anything. Although
-you know you are talking to your own server, the browser doesn’t ‘know’ that,
-and so it warns you out of an abundance of caution.
+But for running servers (like Bean Machine) **on your own computer at home**,
+it’s OK, and you can click through this warning without hurting anything.
+Although you know you are talking to your own server, the browser doesn’t ‘know’
+that, and so it warns you out of an abundance of caution.
 
 (For public web sites like facebook.com or google.com, such a warning would be
 important and real, and you should not click through it!)
