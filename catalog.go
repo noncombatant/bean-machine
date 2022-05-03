@@ -15,7 +15,6 @@ import (
 	"path"
 	"path/filepath"
 	"strings"
-	"time"
 )
 
 type Catalog struct {
@@ -27,7 +26,8 @@ var (
 )
 
 const (
-	catalogFile     = "catalog.gobs.gz"
+	catalogFile = "catalog.gobs.gz"
+	eraseLine   = "\033[2K\r"
 )
 
 func (c *Catalog) writeCatalog(root string) {
@@ -62,12 +62,7 @@ func shouldSkipFile(pathname string, info os.FileInfo) bool {
 }
 
 func (c *Catalog) BuildCatalog(root string) {
-	// Log the walk progress periodically so that the operator knows what’s going
-	// on.
-	count := 0
-	timerFrequency := 1 * time.Second
-	timer := time.NewTimer(timerFrequency)
-
+	previousDir := ""
 	e := filepath.Walk(root,
 		func(pathname string, info os.FileInfo, e error) error {
 			if e != nil {
@@ -85,6 +80,13 @@ func (c *Catalog) BuildCatalog(root string) {
 			}
 			defer input.Close()
 
+			// If we have progressed to a new directory, print progress indicator.
+			dir := path.Dir(path.Dir(pathname[len(root)+1:]))
+			if dir != previousDir {
+				fmt.Fprintf(os.Stdout, "%s%s", eraseLine, dir)
+				previousDir = dir
+			}
+
 			if IsAudioPathname(pathname) || IsVideoPathname(pathname) {
 				webPathname := pathname[len(root)+1:]
 				itemInfo := ItemInfo{Pathname: webPathname}
@@ -93,27 +95,14 @@ func (c *Catalog) BuildCatalog(root string) {
 				itemInfo.ModTime = fmt.Sprintf("%04d-%02d-%02d", time.Year(), time.Month(), time.Day())
 				itemInfo.fillMetadata()
 				c.ItemInfos = append(c.ItemInfos, itemInfo)
-
-				count++
-				select {
-				case _, ok := <-timer.C:
-					if ok {
-						log.Print(count)
-						timer.Reset(timerFrequency)
-					} else {
-						log.Fatal("Channel closed?!")
-					}
-				default:
-					// Do nothing.
-				}
 			}
-
 			return nil
 		})
 
 	if e != nil {
 		log.Print(e)
 	}
+	fmt.Fprintf(os.Stdout, "%s\n", eraseLine)
 	c.writeCatalog(root)
 }
 
