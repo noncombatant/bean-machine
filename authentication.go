@@ -55,6 +55,7 @@ var (
 type HTTPHandler struct {
 	Root                  string
 	ConfigurationPathname string
+	*Catalog
 }
 
 // Creates a gzipped version of the uncompressed file named by pathname, and
@@ -205,7 +206,7 @@ func (h *HTTPHandler) handleSearch(w http.ResponseWriter, r *http.Request) {
 				year -= 1
 			}
 			query = fmt.Sprintf("mtime:%04d-%02d-", year, int(month)-i)
-			matches = matchItems(catalog.ItemInfos, query)
+			matches = matchItems(h.Catalog.ItemInfos, query)
 			if len(matches) > 0 {
 				goto done
 			}
@@ -218,12 +219,12 @@ func (h *HTTPHandler) handleSearch(w http.ResponseWriter, r *http.Request) {
 
 	if query == "?" {
 		rand.Seed(time.Now().Unix())
-		item := catalog.ItemInfos[rand.Intn(len(catalog.ItemInfos))]
+		item := h.Catalog.ItemInfos[rand.Intn(len(h.Catalog.ItemInfos))]
 		words := wordSplitter.Split(path.Dir(item.Pathname), -1)
 		query = words[len(words)-1]
 	}
 
-	matches = matchItems(catalog.ItemInfos, query)
+	matches = matchItems(h.Catalog.ItemInfos, query)
 
 done:
 	json, e := json.Marshal(matches)

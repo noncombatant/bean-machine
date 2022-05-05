@@ -21,39 +21,32 @@ type Catalog struct {
 	ItemInfos
 }
 
-var (
-	catalog = Catalog{}
-)
-
 const (
 	catalogFile = "catalog.gobs.gz"
 	eraseLine   = "\033[2K\r"
 )
 
-func (c *Catalog) writeCatalog(root string) {
-	catalogFilePath := path.Join(root, catalogFile)
-	gobs, e := os.OpenFile(catalogFilePath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
+func WriteCatalog(w io.Writer, c *Catalog) error {
+	e := gob.NewEncoder(w)
+	return e.Encode(c)
+}
+
+func WriteCatalogByPathname(pathname string, c *Catalog) error {
+	w, e := os.OpenFile(pathname, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
 	if e != nil {
-		log.Fatal(e)
+		return e
 	}
-
-	gz, e := gzip.NewWriterLevel(gobs, 9)
+	zw, e := gzip.NewWriterLevel(w, 9)
 	if e != nil {
-		log.Fatal(e)
+		return e
 	}
-
-	encoder := gob.NewEncoder(gz)
-	if e := encoder.Encode(c); e != nil {
-		log.Fatal(e)
+	if e := WriteCatalog(zw, c); e != nil {
+		return e
 	}
-
-	if e := gz.Close(); e != nil {
-		log.Fatal(e)
+	if e := zw.Close(); e != nil {
+		return e
 	}
-
-	if e := gobs.Close(); e != nil {
-		log.Fatal(e)
-	}
+	return w.Close()
 }
 
 func shouldSkipFile(pathname string, info os.FileInfo) bool {
@@ -61,7 +54,8 @@ func shouldSkipFile(pathname string, info os.FileInfo) bool {
 	return basename == "" || basename[0] == '.' || info.Size() == 0
 }
 
-func (c *Catalog) BuildCatalog(root string) {
+func BuildCatalog(root string) (*Catalog, error) {
+	var c Catalog
 	previousDir := ""
 	e := filepath.Walk(root,
 		func(pathname string, info os.FileInfo, e error) error {
@@ -99,32 +93,39 @@ func (c *Catalog) BuildCatalog(root string) {
 			return nil
 		})
 
-	if e != nil {
-		log.Print(e)
-	}
 	fmt.Fprintf(os.Stdout, "%s\n", eraseLine)
-	c.writeCatalog(root)
+	return &c, e
 }
 
-func (c *Catalog) ReadCatalog(root string) {
-	gobs, e := os.Open(path.Join(root, catalogFile))
+func ReadCatalog(r io.Reader) (*Catalog, error) {
+	var c Catalog
+	d := gob.NewDecoder(r)
+	if e := d.Decode(&c); e != nil && e != io.EOF {
+		return nil, e
+	}
+	return &c, nil
+}
+
+func ReadCatalogByPathname(pathname string) (*Catalog, error) {
+	f, e := os.Open(pathname)
 	if e != nil {
-		log.Fatal(e)
+		return nil, e
 	}
-	gz, e := gzip.NewReader(gobs)
+	zr, e := gzip.NewReader(f)
 	if e != nil {
-		log.Fatal(e)
+		return nil, e
 	}
-	decoder := gob.NewDecoder(gz)
-	if e := decoder.Decode(c); e != nil && e != io.EOF {
-		log.Fatal(e)
+	c, e := ReadCatalog(zr)
+	if e != nil {
+		return nil, e
 	}
-	if e = gz.Close(); e != nil {
-		log.Fatal(e)
+	if e = zr.Close(); e != nil {
+		return nil, e
 	}
-	if e = gobs.Close(); e != nil {
-		log.Fatal(e)
+	if e = f.Close(); e != nil {
+		return nil, e
 	}
+	return c, nil
 }
 
 func buildMediaIndex(pathname string) string {

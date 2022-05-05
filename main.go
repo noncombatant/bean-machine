@@ -198,7 +198,7 @@ func makeConfigurationDirectory(configurationPathname string) {
 }
 
 // `port` is a string (not an integer) of the form ":1234".
-func serveApp(root, port, configurationPathname string) {
+func serveApp(root, port, configurationPathname string, c *Catalog) {
 	addresses, e := net.InterfaceAddrs()
 	if e != nil || len(addresses) == 0 {
 		log.Fatal(e)
@@ -231,7 +231,7 @@ func serveApp(root, port, configurationPathname string) {
 	}
 
 	certificatePathname, keyPathname := generateServerCredentials(hosts, configurationPathname)
-	handler := HTTPHandler{Root: root, ConfigurationPathname: configurationPathname}
+	handler := HTTPHandler{Root: root, ConfigurationPathname: configurationPathname, Catalog: c}
 	log.Fatal(http.ListenAndServeTLS(port, certificatePathname, keyPathname, &handler))
 }
 
@@ -261,10 +261,13 @@ Here is what the commands do:
 	os.Exit(1)
 }
 
-func assertValidRootPathname(root string) {
-	info, e := os.Stat(root)
-	if e != nil || !info.IsDir() {
-		log.Fatal("Cannot continue without a valid music-directory.")
+func assertDirectory(pathname string) {
+	info, e := os.Stat(pathname)
+	if e != nil {
+		log.Fatal(e)
+	}
+	if !info.IsDir() {
+		log.Fatalf("%q is not a directory", pathname)
 	}
 }
 
@@ -273,11 +276,11 @@ func main() {
 
 	needsHelp1 := flag.Bool("help", false, "Print the help message.")
 	needsHelp2 := flag.Bool("h", false, "Print the help message.")
-	root := flag.String("m", "", "Set the music directory.")
+	rawRoot := flag.String("m", "", "Set the music directory.")
 	port := flag.Int("p", 0, "Set the port the server listens on.")
 	flag.Parse()
 
-	cleanedRoot := strings.TrimRight(*root, string(os.PathSeparator))
+	root := strings.TrimRight(*rawRoot, string(os.PathSeparator))
 
 	portString := ":1234"
 	if *port > 0 && *port < 65536 {
@@ -297,17 +300,27 @@ func main() {
 		command := flag.Arg(i)
 		switch command {
 		case "catalog":
-			assertValidRootPathname(cleanedRoot)
-			catalog.BuildCatalog(cleanedRoot)
+			assertDirectory(root)
+			c, e := BuildCatalog(root)
+			if e != nil {
+				log.Fatal(e)
+			}
+			e = WriteCatalogByPathname(path.Join(root, catalogFile), c)
+			if e != nil {
+				log.Fatal(e)
+			}
 		case "help":
 			printHelp()
 		case "lint":
-			assertValidRootPathname(cleanedRoot)
-			Lint(cleanedRoot)
+			assertDirectory(root)
+			Lint(root)
 		case "serve":
-			assertValidRootPathname(cleanedRoot)
-			catalog.ReadCatalog(cleanedRoot)
-			serveApp(cleanedRoot, portString, configurationPathname)
+			assertDirectory(root)
+			catalog, e := ReadCatalogByPathname(path.Join(root, catalogFile))
+			if e != nil {
+				log.Fatal(e)
+			}
+			serveApp(root, portString, configurationPathname, catalog)
 		case "set-password":
 			setPassword(configurationPathname)
 		default:
