@@ -62,33 +62,6 @@ var (
 	digitsFinder = regexp.MustCompile(`(\d+)`)
 )
 
-// Copies the file named by `source` into the file named by `destination`.
-// Returns an error, if any.
-//
-// See also `MustCopyFileByName`.
-func CopyFileByName(destination, source string) error {
-	source = filepath.Clean(source)
-	destination = filepath.Clean(destination)
-	if source == destination {
-		return nil
-	}
-
-	s, e := os.Open(source)
-	if e != nil {
-		return e
-	}
-	defer s.Close()
-
-	d, e := os.Create(destination)
-	if e != nil {
-		return e
-	}
-	defer d.Close()
-
-	_, e = io.Copy(d, s)
-	return e
-}
-
 // Returns a copy of `s`, with all double quotes escaped with a backslash.
 func EscapeDoubleQuotes(s string) string {
 	return strings.ReplaceAll(s, "\"", "\\\"")
@@ -182,17 +155,6 @@ func IsImagePathname(pathname string) bool {
 
 func IsVideoPathname(pathname string) bool {
 	return IsStringInStrings(GetBasenameExtension(pathname), videoFormatExtensions)
-}
-
-// Copies the file named by `source` into the file named by `destination`. If
-// an error occurs, logs fatal.
-//
-// See also `CopyFileByName`.
-func MustCopyFileByName(destination, source string) {
-	e := CopyFileByName(destination, source)
-	if e != nil {
-		log.Fatal(e)
-	}
 }
 
 // Fills `bytes` with cryptographically random data. If an error occurs, logs
