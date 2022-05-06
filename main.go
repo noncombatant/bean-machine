@@ -1,9 +1,10 @@
-// Copyright 2016 by Chris Palmer (https://noncombatant.org), and released under
-// the terms of the GNU GPL3. See web/index.html for more information.
+// Copyright 2016 by Chris Palmer (https://noncombatant.org), and released
+// under the terms of the GNU GPL3. See web/index.html for more information.
 
 package main
 
 import (
+	"encoding/pem"
 	"flag"
 	"fmt"
 	"log"
@@ -13,6 +14,7 @@ import (
 	"path"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/pkg/xattr"
 )
@@ -156,7 +158,9 @@ func generateServerCredentials(hosts []string, configurationPathname string) (st
 		return certificatePathname, keyPathname
 	}
 
-	certificateFile, e := os.Create(certificatePathname)
+	notBefore := time.Now()
+	notAfter := notBefore.Add(365 * 24 * time.Hour)
+	key, der, e := GenerateCertificate(hosts, "Bean Machine Server", notBefore, notAfter)
 	if e != nil {
 		log.Fatal(e)
 	}
@@ -165,10 +169,28 @@ func generateServerCredentials(hosts []string, configurationPathname string) (st
 	if e != nil {
 		log.Fatal(e)
 	}
+	if keyPEM, e := PEMBlockForKey(key); e != nil {
+		log.Fatal(e)
+	} else {
+		if e := pem.Encode(keyFile, keyPEM); e != nil {
+			log.Fatal(e)
+		}
+	}
+	if e := keyFile.Close(); e != nil {
+		log.Fatal(e)
+	}
 
-	generateCertificate(hosts, false, keyFile, certificateFile)
-	certificateFile.Close()
-	keyFile.Close()
+	certificateFile, e := os.Create(certificatePathname)
+	if e != nil {
+		log.Fatal(e)
+	}
+	if e := pem.Encode(certificateFile, PEMBlockForCertificate(der)); e != nil {
+		log.Fatal(e)
+	}
+	if e := certificateFile.Close(); e != nil {
+		log.Fatal(e)
+	}
+
 	return certificatePathname, keyPathname
 }
 
