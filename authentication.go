@@ -56,6 +56,7 @@ type HTTPHandler struct {
 	Root                  string
 	ConfigurationPathname string
 	*Catalog
+	*log.Logger
 }
 
 // Creates a gzipped version of the uncompressed file named by pathname, and
@@ -64,19 +65,19 @@ type HTTPHandler struct {
 //
 // pathname, file, and info all refer to the uncompressed file. (We need
 // pathname because `info.Name()` gives us only the basename.)
-func createGzipped(pathname string, file *os.File, info os.FileInfo) (*os.File, os.FileInfo) {
+func (h *HTTPHandler) createGzipped(pathname string, file *os.File, info os.FileInfo) (*os.File, os.FileInfo) {
 	gzPathname := pathname + ".gz"
 	// Remove any old one.
 	os.Remove(gzPathname)
 	e := GzipStream(gzPathname, file)
 	if e != nil {
-		log.Print(e)
+		h.Logger.Print(e)
 		return nil, nil
 	}
 
 	gzFile, gzInfo, e := OpenFileAndInfo(gzPathname)
 	if e != nil {
-		log.Print(e)
+		h.Logger.Print(e)
 		return nil, nil
 	}
 	return gzFile, gzInfo
@@ -95,7 +96,7 @@ func (h *HTTPHandler) isAuthenticated(r *http.Request) bool {
 }
 
 func (h *HTTPHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	log.Printf("%q,%q,%q,%q,%q", r.RemoteAddr, r.Proto, r.Method, r.Host, r.RequestURI)
+	h.Logger.Printf("%q,%q,%q,%q,%q", r.RemoteAddr, r.Proto, r.Method, r.Host, r.RequestURI)
 	if r.URL.Path == "/login.html" && r.Method == http.MethodPost {
 		h.handleLogIn(w, r)
 		return
@@ -160,12 +161,12 @@ func (h *HTTPHandler) generateToken() string {
 
 	file, e := os.Create(pathname)
 	if e != nil {
-		log.Fatal(e)
+		h.Logger.Fatal(e)
 	}
 
 	e = file.Close()
 	if e != nil {
-		log.Fatal(e)
+		h.Logger.Fatal(e)
 	}
 
 	return token
@@ -178,12 +179,12 @@ func (h *HTTPHandler) handleLogIn(w http.ResponseWriter, r *http.Request) {
 
 	cookie := &http.Cookie{Name: "token", Value: "", Secure: true, HttpOnly: true, Expires: getCookieLifetime(), Path: "/"}
 	if checkPassword(credentials, username, password) {
-		log.Printf("%q successful", username)
+		h.Logger.Printf("%q successful", username)
 		cookie.Value = h.generateToken()
 		http.SetCookie(w, cookie)
 		http.Redirect(w, r, "/index.html", http.StatusFound)
 	} else {
-		log.Printf("%q unsuccessful", username)
+		h.Logger.Printf("%q unsuccessful", username)
 		http.SetCookie(w, cookie)
 		redirectToLogin(w, r)
 	}
@@ -192,7 +193,7 @@ func (h *HTTPHandler) handleLogIn(w http.ResponseWriter, r *http.Request) {
 func (h *HTTPHandler) handleSearch(w http.ResponseWriter, r *http.Request) {
 	queries := r.URL.Query()["q"]
 	if len(queries) == 0 {
-		log.Print("Ignoring empty search.")
+		h.Logger.Print("Ignoring empty search.")
 		return
 	}
 
@@ -229,7 +230,7 @@ func (h *HTTPHandler) handleSearch(w http.ResponseWriter, r *http.Request) {
 done:
 	json, e := json.Marshal(matches)
 	if e != nil {
-		log.Print(e)
+		h.Logger.Print(e)
 		http.Error(w, "", 500)
 	} else {
 		w.Header().Set("Content-Type", "text/json")
@@ -254,7 +255,7 @@ func (h *HTTPHandler) serveContent(w http.ResponseWriter, r *http.Request, pathn
 
 func (h *HTTPHandler) serveCover(pathname string, w http.ResponseWriter, r *http.Request) {
 	for _, extension := range coverExtensions {
-		file, info, _, e := openFileIfPublic(pathname+extension, false)
+		file, info, _, e := h.openFileIfPublic(pathname+extension, false)
 		if e != nil {
 			continue
 		}
@@ -265,7 +266,7 @@ func (h *HTTPHandler) serveCover(pathname string, w http.ResponseWriter, r *http
 
 	f, info, e := OpenFileAndInfoFS("web/unknown-album.png", frontend)
 	if e != nil {
-		log.Fatal(e)
+		h.Logger.Fatal(e)
 	}
 	defer f.Close()
 	data, _ := ioutil.ReadAll(f)
@@ -314,19 +315,19 @@ func (h *HTTPHandler) serveZip(w http.ResponseWriter, r *http.Request) {
 	pathname := h.normalizePathname(r.URL.Path)
 	info, e := os.Stat(pathname)
 	if e != nil {
-		log.Print("stat", e)
+		h.Logger.Print("stat", e)
 		return
 	}
 
 	zipFile, e := zipDirectory(pathname)
 	if e != nil {
-		log.Print(e)
+		h.Logger.Print(e)
 		return
 	}
 
 	_, e = zipFile.Seek(0, 0)
 	if e != nil {
-		log.Print(e)
+		h.Logger.Print(e)
 		zipFile.Close()
 		return
 	}
@@ -338,7 +339,7 @@ func (h *HTTPHandler) serveZip(w http.ResponseWriter, r *http.Request) {
 
 	e = zipFile.Close()
 	if e != nil {
-		log.Print(e)
+		h.Logger.Print(e)
 	}
 }
 
@@ -356,9 +357,9 @@ func (h *HTTPHandler) serveFileContents(pathname string, w http.ResponseWriter, 
 	acceptsGzip := strings.Contains(r.Header.Get("Accept-Encoding"), "gzip")
 	gzippable := IsStringInStrings(path.Ext(pathname), gzippableExtensions)
 
-	file, info, isGzipped, e := openFileIfPublic(pathname, gzippable && acceptsGzip)
+	file, info, isGzipped, e := h.openFileIfPublic(pathname, gzippable && acceptsGzip)
 	if e != nil || file == nil || info == nil {
-		log.Print(e)
+		h.Logger.Print(e)
 		http.NotFound(w, r)
 		return
 	}
@@ -383,7 +384,7 @@ func (h *HTTPHandler) serveFileContents(pathname string, w http.ResponseWriter, 
 
 // Returns an open File, a FileInfo, any error, and a bool indicating whether
 // or not the file contains gzipped contents.
-func openFileIfPublic(pathname string, shouldTryGzip bool) (*os.File, os.FileInfo, bool, error) {
+func (h *HTTPHandler) openFileIfPublic(pathname string, shouldTryGzip bool) (*os.File, os.FileInfo, bool, error) {
 	file, info, e := OpenFileAndInfo(pathname)
 	if e != nil {
 		return nil, nil, false, e
@@ -395,9 +396,9 @@ func openFileIfPublic(pathname string, shouldTryGzip bool) (*os.File, os.FileInf
 	}
 
 	if shouldTryGzip {
-		gzFile, gzInfo := openOrCreateGzipped(pathname, file, info)
+		gzFile, gzInfo := h.openOrCreateGzipped(pathname, file, info)
 		if gzFile == nil {
-			log.Print(e)
+			h.Logger.Print(e)
 			file.Seek(0, io.SeekStart)
 			return file, info, false, nil
 		}
@@ -413,18 +414,18 @@ func openFileIfPublic(pathname string, shouldTryGzip bool) (*os.File, os.FileInf
 //
 // pathname, file, and info all refer to the uncompressed file. (We need
 // pathname because `info.Name()` gives us only the basename.)
-func openOrCreateGzipped(pathname string, file *os.File, info os.FileInfo) (*os.File, os.FileInfo) {
+func (h *HTTPHandler) openOrCreateGzipped(pathname string, file *os.File, info os.FileInfo) (*os.File, os.FileInfo) {
 	gzPathname := pathname + ".gz"
 	gzFile, gzInfo, e := OpenFileAndInfo(gzPathname)
 	if e != nil {
-		log.Print(e)
-		return createGzipped(pathname, file, info)
+		h.Logger.Print(e)
+		return h.createGzipped(pathname, file, info)
 	}
 
 	if gzInfo.ModTime().After(info.ModTime()) {
 		return gzFile, gzInfo
 	}
-	return createGzipped(pathname, file, info)
+	return h.createGzipped(pathname, file, info)
 }
 
 func redirectToLogin(w http.ResponseWriter, r *http.Request) {

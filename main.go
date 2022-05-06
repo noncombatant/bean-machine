@@ -231,7 +231,7 @@ func serveApp(root, port, configurationPathname string, c *Catalog) {
 	}
 
 	certificatePathname, keyPathname := generateServerCredentials(hosts, configurationPathname)
-	handler := HTTPHandler{Root: root, ConfigurationPathname: configurationPathname, Catalog: c}
+	handler := HTTPHandler{Root: root, ConfigurationPathname: configurationPathname, Catalog: c, Logger: log.Default()}
 	log.Fatal(http.ListenAndServeTLS(port, certificatePathname, keyPathname, &handler))
 }
 
