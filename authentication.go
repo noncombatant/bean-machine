@@ -130,7 +130,7 @@ func (h *HTTPHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 
 		w.WriteHeader(http.StatusOK)
-		page := buildMediaIndex(pathname)
+		page := h.buildMediaIndex(pathname)
 		w.Write([]byte(page))
 		return
 	} else if r.URL.RawQuery == "download" {
@@ -430,4 +430,33 @@ func (h *HTTPHandler) openOrCreateGzipped(pathname string, file *os.File, info o
 
 func redirectToLogin(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/login.html", http.StatusFound)
+}
+
+func (h *HTTPHandler) buildMediaIndex(pathname string) string {
+	header := `<!DOCTYPE html>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<link rel="stylesheet" href="/media.css"/>
+<title>` + path.Base(pathname) + `</title>
+`
+
+	var builder strings.Builder
+	builder.WriteString(header)
+
+	infos, e := ioutil.ReadDir(pathname)
+	if e != nil {
+		h.Logger.Print(e)
+		return builder.String()
+	}
+
+	for _, info := range infos {
+		name := info.Name()
+		if IsImagePathname(name) {
+			builder.WriteString(fmt.Sprintf("<img src=\"%s\"/>\n", EscapeDoubleQuotes(name)))
+		} else if IsDocumentPathname(name) {
+			name = EscapeDoubleQuotes(name)
+			builder.WriteString(fmt.Sprintf("<li><a href=\"%s\">%s</a></li>\n", name, name))
+		}
+	}
+	return builder.String()
 }

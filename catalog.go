@@ -9,12 +9,10 @@ import (
 	"fmt"
 	"id3"
 	"io"
-	"io/ioutil"
 	"log"
 	"os"
 	"path"
 	"path/filepath"
-	"strings"
 )
 
 type Catalog struct {
@@ -54,7 +52,7 @@ func shouldSkipFile(pathname string, info os.FileInfo) bool {
 	return basename == "" || basename[0] == '.' || info.Size() == 0
 }
 
-func BuildCatalog(root string) (*Catalog, error) {
+func BuildCatalog(log *log.Logger, root string) (*Catalog, error) {
 	var c Catalog
 	previousDir := ""
 	e := filepath.Walk(root,
@@ -126,33 +124,4 @@ func ReadCatalogByPathname(pathname string) (*Catalog, error) {
 		return nil, e
 	}
 	return c, nil
-}
-
-func buildMediaIndex(pathname string) string {
-	header := `<!DOCTYPE html>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1"/>
-<link rel="stylesheet" href="/media.css"/>
-<title>` + path.Base(pathname) + `</title>
-`
-
-	var builder strings.Builder
-	builder.WriteString(header)
-
-	infos, e := ioutil.ReadDir(pathname)
-	if e != nil {
-		log.Print(e)
-		return builder.String()
-	}
-
-	for _, info := range infos {
-		name := info.Name()
-		if IsImagePathname(name) {
-			builder.WriteString(fmt.Sprintf("<img src=\"%s\"/>\n", EscapeDoubleQuotes(name)))
-		} else if IsDocumentPathname(name) {
-			name = EscapeDoubleQuotes(name)
-			builder.WriteString(fmt.Sprintf("<li><a href=\"%s\">%s</a></li>\n", name, name))
-		}
-	}
-	return builder.String()
 }

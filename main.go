@@ -301,7 +301,7 @@ func main() {
 		switch command {
 		case "catalog":
 			assertDirectory(root)
-			c, e := BuildCatalog(root)
+			c, e := BuildCatalog(log.Default(), root)
 			if e != nil {
 				log.Fatal(e)
 			}
