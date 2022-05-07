@@ -86,17 +86,14 @@ func GetBasenameExtension(pathname string) string {
 // in a file named by `outputPathname`. This function will clobber any previous
 // file named by `outputPathname`.
 func GzipStream(outputPathname string, input io.Reader) error {
-	gzFile, e := os.OpenFile(outputPathname, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0666)
+	gzFile, e := os.Create(outputPathname)
 	if e != nil {
 		return e
 	}
-	defer gzFile.Close()
-
 	gzWriter, e := gzip.NewWriterLevel(gzFile, gzip.BestCompression)
 	if e != nil {
 		return e
 	}
-	defer gzWriter.Close()
 
 	buffer := make([]byte, 4096)
 	for {
@@ -105,15 +102,23 @@ func GzipStream(outputPathname string, input io.Reader) error {
 			break
 		}
 		if e != nil {
+			gzWriter.Close()
+			gzFile.Close()
 			return e
 		}
 
 		_, e = gzWriter.Write(buffer[:count])
 		if e != nil {
+			gzWriter.Close()
+			gzFile.Close()
 			return e
 		}
 	}
-	return nil
+
+	if e := gzWriter.Close(); e != nil {
+		return e
+	}
+	return gzFile.Close()
 }
 
 func IsAudioPathname(pathname string) bool {
