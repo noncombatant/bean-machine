@@ -1,5 +1,5 @@
-// Copyright 2016 by Chris Palmer (https://noncombatant.org), and released under
-// the terms of the GNU GPL3. See web/index.html for more information.
+// Copyright 2016 by Chris Palmer (https://noncombatant.org), and released
+// under the terms of the GNU GPL3. See web/index.html for more information.
 
 package main
 
@@ -47,8 +47,6 @@ var (
 		".png",
 	}
 
-	cookieLifetime, _ = time.ParseDuration("24000h")
-
 	wordSplitter = regexp.MustCompile(`\s+`)
 )
 
@@ -81,10 +79,6 @@ func (h *HTTPHandler) createGzipped(pathname string, file *os.File, info os.File
 		return nil, nil
 	}
 	return gzFile, gzInfo
-}
-
-func getCookieLifetime() time.Time {
-	return (time.Now()).Add(cookieLifetime)
 }
 
 func (h *HTTPHandler) isAuthenticated(r *http.Request) bool {
@@ -140,6 +134,7 @@ func (h *HTTPHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	h.serveFile(w, r)
 }
 
+// TODO: Move this to cookie.go, too; make it independent of `h`
 func (h *HTTPHandler) checkToken(token string) bool {
 	if len(token) != encodedTokenLength {
 		return false
@@ -154,6 +149,7 @@ func (h *HTTPHandler) checkToken(token string) bool {
 	return e == nil
 }
 
+// TODO: Move this to cookie.go, make it indepdenent of `h`
 func (h *HTTPHandler) generateToken() string {
 	bytes := MustMakeRandomBytes(tokenLength)
 	token := base64.URLEncoding.EncodeToString(bytes)
@@ -177,22 +173,20 @@ func (h *HTTPHandler) handleLogIn(w http.ResponseWriter, r *http.Request) {
 	password := r.FormValue("password")
 	credentials := readCredentials(path.Join(h.ConfigurationPathname, passwordsBasename))
 
-	cookie := &http.Cookie{Name: "token", Value: "", Secure: true, HttpOnly: true, Expires: getCookieLifetime(), Path: "/"}
 	ok, e := CheckPassword(credentials, username, password)
 	if e != nil {
 		log.Print(e)
-		// Unlikely to work, but:
+		// Unlikely to do the person much good, but:
 		redirectToLogin(w, r)
 		return
 	}
 	if ok {
 		h.Logger.Printf("%q successful", username)
-		cookie.Value = h.generateToken()
+		cookie := GetCookie(h.generateToken())
 		http.SetCookie(w, cookie)
 		http.Redirect(w, r, "/index.html", http.StatusFound)
 	} else {
 		h.Logger.Printf("%q unsuccessful", username)
-		http.SetCookie(w, cookie)
 		redirectToLogin(w, r)
 	}
 }
