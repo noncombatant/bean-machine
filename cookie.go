@@ -35,7 +35,10 @@ func CheckToken(token string, sessionsDirectoryPathname string) bool {
 }
 
 func CreateToken(sessionsDirectoryPathname string) (string, error) {
-	bytes := MustMakeRandomBytes(tokenLength)
+	bytes, e := GetRandomBytes(tokenLength)
+	if e != nil {
+		return "", e
+	}
 	token := base64.URLEncoding.EncodeToString(bytes)
 	pathname := path.Join(sessionsDirectoryPathname, token)
 

@@ -104,23 +104,6 @@ func TestIsStringInStrings(t *testing.T) {
 	}
 }
 
-func TestMustGetRandomBytes(t *testing.T) {
-	bytes := make([]byte, 100)
-	for i := range bytes {
-		bytes[i] = 42
-	}
-
-	MustGetRandomBytes(bytes)
-
-	for _, b := range bytes {
-		if b != 42 {
-			return
-		}
-	}
-
-	t.Errorf("All bytes were still 42")
-}
-
 func TestParseIntegerOr0(t *testing.T) {
 	type Expectation struct {
 		Input  string

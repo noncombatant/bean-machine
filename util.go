@@ -11,7 +11,6 @@ import (
 	"embed"
 	"io"
 	"io/fs"
-	"log"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -157,25 +156,16 @@ func IsVideoPathname(pathname string) bool {
 	return IsStringInStrings(GetBasenameExtension(pathname), videoFormatExtensions)
 }
 
-// Fills `bytes` with cryptographically random data. If an error occurs, logs
-// fatal.
-//
-// See also `MustMakeRandomBytes`.
-func MustGetRandomBytes(bytes []byte) {
-	_, e := rand.Read(bytes)
-	if e != nil {
-		log.Fatal(e)
-	}
-}
-
-// Returns `count` cryptographically random bytes. If an error occurs, logs
-// fatal.
-//
-// See also `MustGetRandomBytes`.
-func MustMakeRandomBytes(count int) []byte {
+func GetRandomBytes(count int) ([]byte, error) {
 	bytes := make([]byte, count)
-	MustGetRandomBytes(bytes)
-	return bytes
+	n, e := rand.Read(bytes)
+	if e != nil {
+		return nil, e
+	}
+	if n != count {
+		return nil, nil
+	}
+	return bytes, nil
 }
 
 // Returns the pathname with the basename's extension (including its '.')

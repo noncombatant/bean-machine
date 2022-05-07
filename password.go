@@ -96,11 +96,13 @@ func WriteCredentials(w io.Writer, cs Credentials) error {
 func SetPassword(configurationPathname string) error {
 	username, password := promptForCredentials()
 
-	// TODO: Don't use Must; return the error
-	salt := MustMakeRandomBytes(saltSize)
+	salt, e := GetRandomBytes(saltSize)
+	if e != nil {
+		return e
+	}
 	obfuscated, e := ObfuscatePassword([]byte(password), salt)
 	if e != nil {
-		return nil
+		return e
 	}
 
 	pathname := path.Join(configurationPathname, passwordsBasename)
