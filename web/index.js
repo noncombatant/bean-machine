@@ -341,20 +341,20 @@ const $ = function(id) {
 }
 
 // TODO: This doesn't seem to return true in all the cases that it should.
-const isElementInViewport = function(element) {
-  if (!element) {
+const isElementInViewport = function(e) {
+  if (!e) {
     return false
   }
 
-  let top = element.offsetTop
-  let left = element.offsetLeft
-  const width = element.offsetWidth
-  const height = element.offsetHeight
+  let top = e.offsetTop
+  let left = e.offsetLeft
+  const width = e.offsetWidth
+  const height = e.offsetHeight
 
-  while (element.offsetParent) {
-    element = element.offsetParent
-    top += element.offsetTop
-    left += element.offsetLeft
+  while (e.offsetParent) {
+    e = e.offsetParent
+    top += e.offsetTop
+    left += e.offsetLeft
   }
 
   return top >= window.pageYOffset &&
