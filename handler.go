@@ -248,9 +248,15 @@ func (h *HTTPHandler) serveCover(pathname string, w http.ResponseWriter, r *http
 	if e != nil {
 		h.Logger.Fatal(e)
 	}
-	defer f.Close()
-	data, _ := ioutil.ReadAll(f)
-	h.serveContent(w, r, r.URL.Path, info.ModTime(), bytes.NewReader(data))
+	data, e := ioutil.ReadAll(f)
+	if e != nil {
+		h.Logger.Print(e)
+	} else {
+		h.serveContent(w, r, r.URL.Path, info.ModTime(), bytes.NewReader(data))
+	}
+	if e := f.Close(); e != nil {
+		h.Logger.Print(e)
+	}
 }
 
 func zipDirectory(pathname string) (*os.File, error) {
