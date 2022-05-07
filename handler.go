@@ -27,7 +27,7 @@ const (
 	encodedTokenLength = 24
 )
 
-//go:embed web/*
+//go:embed web
 var frontend embed.FS
 
 var (
