@@ -140,8 +140,7 @@ func (h *HTTPHandler) handleLogIn(w http.ResponseWriter, r *http.Request) {
 
 	ok, e := CheckPassword(credentials, username, password)
 	if e != nil {
-		log.Print(e)
-		// Unlikely to do the person much good, but:
+		h.Logger.Print(e)
 		redirectToLogin(w, r)
 		return
 	}
@@ -154,8 +153,7 @@ func (h *HTTPHandler) handleLogIn(w http.ResponseWriter, r *http.Request) {
 	h.Logger.Printf("%q successful", username)
 	token, e := CreateToken(path.Join(h.ConfigurationPathname, sessionsDirectoryName))
 	if e != nil {
-		log.Print(e)
-		// Unlikely to do the person much good, but:
+		h.Logger.Print(e)
 		redirectToLogin(w, r)
 		return
 	}
