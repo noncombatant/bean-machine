@@ -7,6 +7,7 @@ import (
 	"crypto/subtle"
 	"encoding/hex"
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"path"
@@ -51,12 +52,7 @@ func readCredentials(pathname string) Credentials {
 	return credentials
 }
 
-func writeCredentials(file *os.File, credentials Credentials) {
-	for k, v := range credentials {
-		fmt.Fprintf(file, "%s %s\n", k, v)
-	}
-}
-
+// TODO: This should go in main.go. TODO: Consider getting rid of username.
 func promptForCredentials() (string, string) {
 	var username, password string
 	fmt.Print("Username: ")
@@ -66,29 +62,46 @@ func promptForCredentials() (string, string) {
 	return username, password
 }
 
-func obfuscatePassword(password, salt []byte) []byte {
-	obfuscated, e := scrypt.Key(password, salt, scryptN, scryptR, scryptP, scryptLength)
-	if e != nil {
-		log.Fatal(e)
-	}
-	return obfuscated
+func ObfuscatePassword(password, salt []byte) ([]byte, error) {
+	return scrypt.Key(password, salt, scryptN, scryptR, scryptP, scryptLength)
 }
 
-func setPassword(configurationPathname string) {
+func WriteCredentialsByPathname(pathname string, cs Credentials) error {
+	w, e := os.OpenFile(pathname, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0600)
+	if e != nil {
+		return e
+	}
+	if e := WriteCredentials(w, cs); e != nil {
+		w.Close()
+		return e
+	}
+	return w.Close()
+}
+
+func WriteCredentials(w io.Writer, cs Credentials) error {
+	for k, v := range cs {
+		if _, e := fmt.Fprintf(w, "%s %s\n", k, v); e != nil {
+			return e
+		}
+	}
+	return nil
+}
+
+// TODO: This should be changed to (username, password string) error
+func SetPassword(configurationPathname string) error {
+	username, password := promptForCredentials()
+
+	// TODO: Don't use Must; return the error
 	salt := MustMakeRandomBytes(saltSize)
+	obfuscated, e := ObfuscatePassword([]byte(password), salt)
+	if e != nil {
+		return nil
+	}
+
 	pathname := path.Join(configurationPathname, passwordsBasename)
 	credentials := readCredentials(pathname)
-
-	file, e := os.OpenFile(pathname, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0600)
-	if e != nil {
-		log.Fatal(e)
-	}
-	defer file.Close()
-
-	username, password := promptForCredentials()
-	obfuscated := obfuscatePassword([]byte(password), salt)
 	credentials[normalizeUsername(username)] = hex.EncodeToString(salt) + hex.EncodeToString(obfuscated)
-	writeCredentials(file, credentials)
+	return WriteCredentialsByPathname(pathname, credentials)
 }
 
 func getSaltAndScrypted(storedCredential string) ([]byte, []byte) {
@@ -99,17 +112,16 @@ func getSaltAndScrypted(storedCredential string) ([]byte, []byte) {
 	return decodedCredential[:saltSize], decodedCredential[saltSize:]
 }
 
-func checkPassword(stored Credentials, username, password string) bool {
+func CheckPassword(stored Credentials, username, password string) (bool, error) {
 	username = normalizeUsername(username)
 	storedCredential, ok := stored[username]
-	// BUG: Timing oracle for username existence.
 	if !ok {
-		log.Print("No such user ", username)
-		return false
+		return false, nil
 	}
-
 	salt, scrypted := getSaltAndScrypted(storedCredential)
-	obfuscated := obfuscatePassword([]byte(password), salt)
-
-	return subtle.ConstantTimeEq(1, int32(subtle.ConstantTimeCompare(obfuscated, scrypted))) == 1
+	obfuscated, e := ObfuscatePassword([]byte(password), salt)
+	if e != nil {
+		return false, e
+	}
+	return subtle.ConstantTimeEq(1, int32(subtle.ConstantTimeCompare(obfuscated, scrypted))) == 1, nil
 }

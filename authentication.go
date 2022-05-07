@@ -178,7 +178,14 @@ func (h *HTTPHandler) handleLogIn(w http.ResponseWriter, r *http.Request) {
 	credentials := readCredentials(path.Join(h.ConfigurationPathname, passwordsBasename))
 
 	cookie := &http.Cookie{Name: "token", Value: "", Secure: true, HttpOnly: true, Expires: getCookieLifetime(), Path: "/"}
-	if checkPassword(credentials, username, password) {
+	ok, e := CheckPassword(credentials, username, password)
+	if e != nil {
+		log.Print(e)
+		// Unlikely to work, but:
+		redirectToLogin(w, r)
+		return
+	}
+	if ok {
 		h.Logger.Printf("%q successful", username)
 		cookie.Value = h.generateToken()
 		http.SetCookie(w, cookie)

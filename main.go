@@ -344,7 +344,7 @@ func main() {
 			}
 			serveApp(root, portString, configurationPathname, catalog)
 		case "set-password":
-			setPassword(configurationPathname)
+			SetPassword(configurationPathname)
 		default:
 			printHelp()
 		}
