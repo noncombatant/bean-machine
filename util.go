@@ -129,9 +129,12 @@ func IsDirectoryEmpty(pathname string) (bool, error) {
 	if e != nil {
 		return false, e
 	}
-	defer f.Close()
 	_, e = f.Readdir(1)
-	return e == io.EOF, e
+	empty := e == io.EOF
+	if e != nil && e != io.EOF {
+		return empty, e
+	}
+	return empty, f.Close()
 }
 
 func IsDocumentPathname(pathname string) bool {
