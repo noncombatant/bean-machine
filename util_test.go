@@ -103,29 +103,3 @@ func TestIsStringInStrings(t *testing.T) {
 		t.Errorf("Found \"goat\" even though it's not in `audioFormatExtensions`")
 	}
 }
-
-func TestParseIntegerOr0(t *testing.T) {
-	type Expectation struct {
-		Input  string
-		Output int
-	}
-	expectations := []Expectation{
-		{"0x00DADB0D", 0xdadb0d},
-		{"0xdadb0d", 0xdadb0d},
-		{"0xdeadbeef", 0},
-		{"0x0", 0x0},
-		{"42", 42},
-		{"hello", 0},
-		{"", 0},
-		{"  -99", 0},
-		{"-99", -99},
-		{"2000123", 2000123},
-	}
-
-	for _, e := range expectations {
-		r := ParseIntegerOr0(e.Input)
-		if e.Output != r {
-			t.Errorf("%d != ParseIntegerOr0(%q) (%d)\n", e.Output, e.Input, r)
-		}
-	}
-}

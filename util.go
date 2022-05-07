@@ -14,7 +14,6 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
-	"strconv"
 	"strings"
 	"unicode"
 
@@ -215,17 +214,6 @@ func OpenFileAndInfoFS(pathname string, fs embed.FS) (fs.File, os.FileInfo, erro
 		return nil, nil, e
 	}
 	return file, info, nil
-}
-
-// Parses `s` as a signed 32-bit integer, represented in any base up to base
-// 36, and returns the result. (The functionality is equivalent to
-// `strconv.ParseInt(s, 0, 32)`.) If any error occurs, returns 0.
-func ParseIntegerOr0(s string) int {
-	i, e := strconv.ParseInt(s, 0, 32)
-	if e != nil {
-		return 0
-	}
-	return int(i)
 }
 
 // https://twinnation.org/articles/33/remove-accents-from-characters-in-go
