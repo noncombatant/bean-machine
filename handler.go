@@ -7,7 +7,6 @@ import (
 	"archive/zip"
 	"bytes"
 	"embed"
-	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -86,7 +85,7 @@ func (h *HTTPHandler) isAuthenticated(r *http.Request) bool {
 	if e != nil {
 		return false
 	}
-	return h.checkToken(cookie.Value)
+	return CheckToken(cookie.Value, path.Join(h.ConfigurationPathname, sessionsDirectoryName))
 }
 
 func (h *HTTPHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -134,40 +133,6 @@ func (h *HTTPHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	h.serveFile(w, r)
 }
 
-// TODO: Move this to cookie.go, too; make it independent of `h`
-func (h *HTTPHandler) checkToken(token string) bool {
-	if len(token) != encodedTokenLength {
-		return false
-	}
-
-	data, e := base64.URLEncoding.DecodeString(token)
-	if e != nil || len(data) != tokenLength {
-		return false
-	}
-
-	_, e = os.Stat(path.Join(h.ConfigurationPathname, sessionsDirectoryName, token))
-	return e == nil
-}
-
-// TODO: Move this to cookie.go, make it indepdenent of `h`
-func (h *HTTPHandler) generateToken() string {
-	bytes := MustMakeRandomBytes(tokenLength)
-	token := base64.URLEncoding.EncodeToString(bytes)
-	pathname := path.Join(h.ConfigurationPathname, sessionsDirectoryName, token)
-
-	file, e := os.Create(pathname)
-	if e != nil {
-		h.Logger.Fatal(e)
-	}
-
-	e = file.Close()
-	if e != nil {
-		h.Logger.Fatal(e)
-	}
-
-	return token
-}
-
 func (h *HTTPHandler) handleLogIn(w http.ResponseWriter, r *http.Request) {
 	username := normalizeUsername(r.FormValue("name"))
 	password := r.FormValue("password")
@@ -180,15 +145,22 @@ func (h *HTTPHandler) handleLogIn(w http.ResponseWriter, r *http.Request) {
 		redirectToLogin(w, r)
 		return
 	}
-	if ok {
-		h.Logger.Printf("%q successful", username)
-		cookie := GetCookie(h.generateToken())
-		http.SetCookie(w, cookie)
-		http.Redirect(w, r, "/index.html", http.StatusFound)
-	} else {
+	if !ok {
 		h.Logger.Printf("%q unsuccessful", username)
 		redirectToLogin(w, r)
+		return
 	}
+
+	h.Logger.Printf("%q successful", username)
+	token, e := CreateToken(path.Join(h.ConfigurationPathname, sessionsDirectoryName))
+	if e != nil {
+		log.Print(e)
+		// Unlikely to do the person much good, but:
+		redirectToLogin(w, r)
+		return
+	}
+	http.SetCookie(w, GetCookie(token))
+	http.Redirect(w, r, "/index.html", http.StatusFound)
 }
 
 func (h *HTTPHandler) handleSearch(w http.ResponseWriter, r *http.Request) {
