@@ -103,11 +103,13 @@ func (h *HTTPHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path == "/index.html" && !h.isAuthenticated(r) {
 		redirectToLogin(w, r)
 	}
-	f, info, e := OpenFileAndInfoFS("web"+r.URL.Path, frontend)
-	if e == nil {
-		defer f.Close()
+
+	if f, info, e := OpenFileAndInfoFS("web"+r.URL.Path, frontend); e == nil {
 		data, _ := ioutil.ReadAll(f)
 		h.serveContent(w, r, r.URL.Path, info.ModTime(), bytes.NewReader(data))
+		if e := f.Close(); e != nil {
+			h.Logger.Print(e)
+		}
 		return
 	}
 
