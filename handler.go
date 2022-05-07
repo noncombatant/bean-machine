@@ -354,7 +354,6 @@ func (h *HTTPHandler) serveFileContents(pathname string, w http.ResponseWriter, 
 		http.NotFound(w, r)
 		return
 	}
-	defer file.Close()
 
 	if isGzipped {
 		w.Header().Set("Content-Encoding", "gzip")
@@ -371,6 +370,9 @@ func (h *HTTPHandler) serveFileContents(pathname string, w http.ResponseWriter, 
 	}
 
 	h.serveContent(w, r, pathname, info.ModTime(), file)
+	if e := file.Close(); e != nil {
+		h.Logger.Print(e)
+	}
 }
 
 // Returns an open File, a FileInfo, any error, and a bool indicating whether
