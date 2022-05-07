@@ -91,6 +91,7 @@ func GzipStream(outputPathname string, input io.Reader) error {
 	}
 	gzWriter, e := gzip.NewWriterLevel(gzFile, gzip.BestCompression)
 	if e != nil {
+		gzFile.Close()
 		return e
 	}
 
