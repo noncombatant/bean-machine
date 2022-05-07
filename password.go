@@ -67,7 +67,7 @@ func WriteCredentialsByPathname(pathname string, cs Credentials) error {
 		return e
 	}
 	if e := WriteCredentials(w, cs); e != nil {
-		w.Close()
+		_ = w.Close()
 		return e
 	}
 	return w.Close()

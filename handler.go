@@ -381,7 +381,7 @@ func (h *HTTPHandler) openFileIfPublic(pathname string, shouldTryGzip bool) (*os
 	}
 
 	if !IsFileWorldReadable(info) {
-		file.Close()
+		_ = file.Close()
 		return nil, nil, false, fmt.Errorf("openFileIfPublic: %q not public", pathname)
 	}
 

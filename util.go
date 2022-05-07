@@ -91,7 +91,7 @@ func GzipStream(outputPathname string, input io.Reader) error {
 	}
 	gzWriter, e := gzip.NewWriterLevel(gzFile, gzip.BestCompression)
 	if e != nil {
-		gzFile.Close()
+		_ = gzFile.Close()
 		return e
 	}
 
@@ -102,15 +102,15 @@ func GzipStream(outputPathname string, input io.Reader) error {
 			break
 		}
 		if e != nil {
-			gzWriter.Close()
-			gzFile.Close()
+			_ = gzWriter.Close()
+			_ = gzFile.Close()
 			return e
 		}
 
 		_, e = gzWriter.Write(buffer[:count])
 		if e != nil {
-			gzWriter.Close()
-			gzFile.Close()
+			_ = gzWriter.Close()
+			_ = gzFile.Close()
 			return e
 		}
 	}
@@ -201,7 +201,7 @@ func OpenFileAndInfo(pathname string) (*os.File, os.FileInfo, error) {
 	}
 	info, e := file.Stat()
 	if e != nil {
-		file.Close()
+		_ = file.Close()
 		return nil, nil, e
 	}
 	return file, info, nil
@@ -214,7 +214,7 @@ func OpenFileAndInfoFS(pathname string, fs embed.FS) (fs.File, os.FileInfo, erro
 	}
 	info, e := file.Stat()
 	if e != nil {
-		file.Close()
+		_ = file.Close()
 		return nil, nil, e
 	}
 	return file, info, nil
