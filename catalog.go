@@ -30,7 +30,7 @@ func WriteCatalog(w io.Writer, c *Catalog) error {
 }
 
 func WriteCatalogByPathname(pathname string, c *Catalog) error {
-	w, e := os.OpenFile(pathname, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
+	w, e := os.Create(pathname)
 	if e != nil {
 		return e
 	}
