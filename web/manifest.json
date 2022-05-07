@@ -1,8 +1,13 @@
 {
   "short_name": "Bean Machine",
   "name": "Bean Machine",
+  "categories": [ "music", "audio", "video" ],
   "description": "A delightful music player",
-  "start_url": "./",
+  "display": "standalone",
+  "lang": "en-US",
+  "dir": "auto",
+  "orientation": "portrait",
+  "start_url": "/",
   "theme_color": "#ffc0cb",
   "background_color": "#ffc0cb",
   "icons": [
