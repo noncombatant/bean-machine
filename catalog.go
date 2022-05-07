@@ -47,9 +47,8 @@ func WriteCatalogByPathname(pathname string, c *Catalog) error {
 	return w.Close()
 }
 
-func shouldSkipFile(pathname string, info os.FileInfo) bool {
-	basename := path.Base(pathname)
-	return basename == "" || basename[0] == '.' || info.Size() == 0
+func shouldSkipFile(info os.FileInfo) bool {
+	return info.Name() == "" || info.Name()[0] == '.' || info.Size() == 0 || info.Mode().IsDir() || !info.Mode().IsRegular()
 }
 
 func BuildCatalog(log *log.Logger, root string) (*Catalog, error) {
@@ -61,7 +60,7 @@ func BuildCatalog(log *log.Logger, root string) (*Catalog, error) {
 				log.Print(e)
 				return e
 			}
-			if shouldSkipFile(pathname, info) || info.Mode().IsDir() || !info.Mode().IsRegular() {
+			if shouldSkipFile(info) {
 				return nil
 			}
 
