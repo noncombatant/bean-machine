@@ -259,13 +259,18 @@ func (h *HTTPHandler) serveCover(pathname string, w http.ResponseWriter, r *http
 	}
 }
 
-func zipDirectory(pathname string) (*os.File, error) {
+func zipDirectory(log *log.Logger, pathname string) (*os.File, error) {
 	os.Mkdir("/tmp/beanzip", 0700)
 	file, e := ioutil.TempFile("/tmp/beanzip", "album.zip")
 	if e != nil {
 		return nil, e
 	}
-	defer os.Remove(file.Name())
+	defer func() {
+		e := os.Remove(file.Name())
+		if e != nil {
+			log.Print(e)
+		}
+	}()
 
 	zipWriter := zip.NewWriter(file)
 
@@ -305,7 +310,7 @@ func (h *HTTPHandler) serveZip(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	zipFile, e := zipDirectory(pathname)
+	zipFile, e := zipDirectory(h.Logger, pathname)
 	if e != nil {
 		h.Logger.Print(e)
 		return
