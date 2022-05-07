@@ -64,13 +64,6 @@ func BuildCatalog(log *log.Logger, root string) (*Catalog, error) {
 				return nil
 			}
 
-			input, e := os.Open(pathname)
-			if e != nil {
-				log.Print(e)
-				return e
-			}
-			defer input.Close()
-
 			// If we have progressed to a new directory, print progress indicator.
 			dir := path.Dir(path.Dir(pathname[len(root)+1:]))
 			if dir != previousDir {
@@ -81,7 +74,18 @@ func BuildCatalog(log *log.Logger, root string) (*Catalog, error) {
 			if IsAudioPathname(pathname) || IsVideoPathname(pathname) {
 				webPathname := pathname[len(root)+1:]
 				itemInfo := ItemInfo{Pathname: webPathname}
+
+				input, e := os.Open(pathname)
+				if e != nil {
+					log.Print(e)
+					return e
+				}
 				itemInfo.File, _ = id3.Read(input)
+				if e := input.Close(); e != nil {
+					log.Print(e)
+					return e
+				}
+
 				time := info.ModTime()
 				itemInfo.ModTime = fmt.Sprintf("%04d-%02d-%02d", time.Year(), time.Month(), time.Day())
 				itemInfo.fillMetadata()
