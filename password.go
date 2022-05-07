@@ -8,7 +8,6 @@ import (
 	"encoding/hex"
 	"fmt"
 	"io"
-	"log"
 	"os"
 	"path"
 	"strings"
@@ -113,12 +112,13 @@ func SetPassword(configurationPathname string) error {
 	return WriteCredentialsByPathname(pathname, credentials)
 }
 
-func getSaltAndScrypted(storedCredential string) ([]byte, []byte) {
-	decodedCredential, e := hex.DecodeString(storedCredential)
+// Returns the salt and the obfuscated password.
+func decodeObfuscated(obfuscated string) ([]byte, []byte, error) {
+	decoded, e := hex.DecodeString(obfuscated)
 	if e != nil {
-		log.Fatal(e)
+		return nil, nil, e
 	}
-	return decodedCredential[:saltSize], decodedCredential[saltSize:]
+	return decoded[:saltSize], decoded[saltSize:], nil
 }
 
 func CheckPassword(stored Credentials, username, password string) (bool, error) {
@@ -127,7 +127,10 @@ func CheckPassword(stored Credentials, username, password string) (bool, error) 
 	if !ok {
 		return false, nil
 	}
-	salt, scrypted := getSaltAndScrypted(storedCredential)
+	salt, scrypted, e := decodeObfuscated(storedCredential)
+	if e != nil {
+		return false, e
+	}
 	obfuscated, e := ObfuscatePassword([]byte(password), salt)
 	if e != nil {
 		return false, e
