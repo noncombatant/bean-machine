@@ -20,7 +20,7 @@ func getCookieLifetime() time.Time {
 }
 
 func GetCookie(token string) *http.Cookie {
-	return &http.Cookie{Name: "token", Value: token, Secure: true, HttpOnly: true, Expires: getCookieLifetime(), Path: "/"}
+	return &http.Cookie{Name: "token", Value: token, Secure: true, HttpOnly: true, Expires: getCookieLifetime(), Path: "/", SameSite: http.SameSiteDefaultMode}
 }
 
 func CheckToken(token string, sessionsDirectoryPathname string) bool {
