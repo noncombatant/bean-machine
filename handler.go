@@ -260,7 +260,9 @@ func (h *HTTPHandler) serveCover(pathname string, w http.ResponseWriter, r *http
 }
 
 func zipDirectory(log *log.Logger, pathname string) (*os.File, error) {
-	os.Mkdir("/tmp/beanzip", 0700)
+	if e := os.Mkdir("/tmp/beanzip", 0700); e != nil {
+		return nil, e
+	}
 	file, e := ioutil.TempFile("/tmp/beanzip", "album.zip")
 	if e != nil {
 		return nil, e
@@ -272,13 +274,12 @@ func zipDirectory(log *log.Logger, pathname string) (*os.File, error) {
 		}
 	}()
 
-	zipWriter := zip.NewWriter(file)
-
 	infos, e := ioutil.ReadDir(pathname)
 	if e != nil {
 		return nil, e
 	}
 
+	zipWriter := zip.NewWriter(file)
 	for _, info := range infos {
 		f, e := zipWriter.Create(info.Name())
 		if e != nil {
@@ -294,11 +295,9 @@ func zipDirectory(log *log.Logger, pathname string) (*os.File, error) {
 		}
 	}
 
-	e = zipWriter.Close()
-	if e != nil {
+	if e := zipWriter.Close(); e != nil {
 		return nil, e
 	}
-
 	return file, nil
 }
 
@@ -315,11 +314,14 @@ func (h *HTTPHandler) serveZip(w http.ResponseWriter, r *http.Request) {
 		h.Logger.Print(e)
 		return
 	}
+	defer func() {
+		if e := zipFile.Close(); e != nil {
+			h.Logger.Print(e)
+		}
+	}()
 
-	_, e = zipFile.Seek(0, 0)
-	if e != nil {
+	if _, e := zipFile.Seek(0, 0); e != nil {
 		h.Logger.Print(e)
-		zipFile.Close()
 		return
 	}
 
@@ -327,11 +329,6 @@ func (h *HTTPHandler) serveZip(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/zip, application/octet-stream")
 	w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%q", filepath.Base(filepath.Dir(pathname))+" - "+filepath.Base(pathname)+".zip"))
 	h.serveContent(w, r, pathname, info.ModTime(), zipFile)
-
-	e = zipFile.Close()
-	if e != nil {
-		h.Logger.Print(e)
-	}
 }
 
 func (h *HTTPHandler) serveFile(w http.ResponseWriter, r *http.Request) {
