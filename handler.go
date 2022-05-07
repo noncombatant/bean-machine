@@ -237,8 +237,10 @@ func (h *HTTPHandler) serveCover(pathname string, w http.ResponseWriter, r *http
 		if e != nil {
 			continue
 		}
-		defer file.Close()
 		h.serveContent(w, r, pathname, info.ModTime(), file)
+		if e := file.Close(); e != nil {
+			h.Logger.Print(e)
+		}
 		return
 	}
 
