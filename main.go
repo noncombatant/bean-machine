@@ -58,7 +58,7 @@ var (
 	}
 )
 
-func Lint(root string) {
+func Lint(log *log.Logger, root string) {
 	e := filepath.Walk(root,
 		func(pathname string, info os.FileInfo, e error) error {
 			if e != nil {
@@ -75,12 +75,11 @@ func Lint(root string) {
 				log.Printf("Hidden: %q", pathname)
 			}
 
-			file, e := os.OpenFile(pathname, os.O_RDONLY, 0755)
+			file, e := os.Open(pathname)
 			if e != nil {
 				log.Print(e)
 				return e
 			}
-			defer file.Close()
 
 			if info.IsDir() {
 				empty, e := IsDirectoryEmpty(pathname)
@@ -128,6 +127,11 @@ func Lint(root string) {
 					log.Print(e)
 					return e
 				}
+			}
+
+			if e := file.Close(); e != nil {
+				log.Print(e)
+				return e
 			}
 
 			savedPathname := pathname
@@ -345,7 +349,7 @@ func main() {
 			printHelp()
 		case "lint":
 			assertDirectory(root)
-			Lint(root)
+			Lint(log.Default(), root)
 		case "serve":
 			assertDirectory(root)
 			catalog, e := ReadCatalogByPathname(path.Join(root, catalogFile))
