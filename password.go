@@ -57,16 +57,6 @@ func ReadCredentials(pathname string) (Credentials, error) {
 	return credentials, nil
 }
 
-// TODO: This should go in main.go. TODO: Consider getting rid of username.
-func promptForCredentials() (string, string) {
-	var username, password string
-	fmt.Print("Username: ")
-	fmt.Scanln(&username)
-	fmt.Print("Password: ")
-	fmt.Scanln(&password)
-	return username, password
-}
-
 func ObfuscatePassword(password, salt []byte) ([]byte, error) {
 	return scrypt.Key(password, salt, scryptN, scryptR, scryptP, scryptLength)
 }
@@ -92,10 +82,7 @@ func WriteCredentials(w io.Writer, cs Credentials) error {
 	return nil
 }
 
-// TODO: This should be changed to (username, password string) error
-func SetPassword(configurationPathname string) error {
-	username, password := promptForCredentials()
-
+func SetPassword(configurationPathname, username, password string) error {
 	salt, e := GetRandomBytes(saltSize)
 	if e != nil {
 		return e

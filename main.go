@@ -7,6 +7,7 @@ import (
 	"encoding/pem"
 	"flag"
 	"fmt"
+	"io"
 	"log"
 	"net"
 	"net/http"
@@ -194,6 +195,15 @@ func generateServerCredentials(hosts []string, configurationPathname string) (st
 	return certificatePathname, keyPathname
 }
 
+func promptForCredentials(r io.Reader, w io.Writer) (string, string) {
+	var username, password string
+	fmt.Fprint(w, "Username: ")
+	fmt.Fscanln(r, &username)
+	fmt.Fprint(w, "Password: ")
+	fmt.Fscanln(r, &password)
+	return username, password
+}
+
 func getHomePathname() string {
 	homes := []string{
 		"HOME",
@@ -344,7 +354,10 @@ func main() {
 			}
 			serveApp(root, portString, configurationPathname, catalog)
 		case "set-password":
-			SetPassword(configurationPathname)
+			username, password := promptForCredentials(os.Stdin, os.Stdout)
+			if e := SetPassword(configurationPathname, username, password); e != nil {
+				log.Fatal(e)
+			}
 		default:
 			printHelp()
 		}
