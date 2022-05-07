@@ -136,7 +136,12 @@ func (h *HTTPHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 func (h *HTTPHandler) handleLogIn(w http.ResponseWriter, r *http.Request) {
 	username := normalizeUsername(r.FormValue("name"))
 	password := r.FormValue("password")
-	credentials := readCredentials(path.Join(h.ConfigurationPathname, passwordsBasename))
+	credentials, e := ReadCredentials(path.Join(h.ConfigurationPathname, passwordsBasename))
+	if e != nil {
+		h.Logger.Print(e)
+		redirectToLogin(w, r)
+		return
+	}
 
 	ok, e := CheckPassword(credentials, username, password)
 	if e != nil {

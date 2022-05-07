@@ -30,26 +30,32 @@ func normalizeUsername(username string) string {
 	return strings.TrimSpace(strings.ToLower(username))
 }
 
-func readCredentials(pathname string) Credentials {
+func ReadCredentials(pathname string) (Credentials, error) {
 	file, _, e := OpenFileAndInfo(pathname)
 	if e != nil {
 		if os.IsNotExist(e) {
-			return make(Credentials)
+			return make(Credentials), nil
 		}
-		log.Fatal(e)
+		return nil, e
 	}
-	defer file.Close()
 
 	credentials := make(Credentials)
 	var username, password string
 	for {
 		_, e := fmt.Fscanf(file, "%s %s\n", &username, &password)
 		if e != nil {
+			if e != io.EOF {
+				return nil, e
+			}
 			break
 		}
 		credentials[normalizeUsername(username)] = password
 	}
-	return credentials
+
+	if e := file.Close(); e != nil {
+		return nil, e
+	}
+	return credentials, nil
 }
 
 // TODO: This should go in main.go. TODO: Consider getting rid of username.
@@ -99,7 +105,10 @@ func SetPassword(configurationPathname string) error {
 	}
 
 	pathname := path.Join(configurationPathname, passwordsBasename)
-	credentials := readCredentials(pathname)
+	credentials, e := ReadCredentials(pathname)
+	if e != nil {
+		return e
+	}
 	credentials[normalizeUsername(username)] = hex.EncodeToString(salt) + hex.EncodeToString(obfuscated)
 	return WriteCredentialsByPathname(pathname, credentials)
 }
