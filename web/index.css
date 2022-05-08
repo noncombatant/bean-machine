@@ -2,13 +2,34 @@
   box-sizing: border-box;
 }
 
-.flexbox { display: flex; }
-.flexbox .stretch { flex: 1; }
-.flexbox .normal { flex: 0; margin: 0 0 0 1rem; }
-.flexbox div input { width: 100%; }
-.flexbox div audio { width: 100%; }
-.flexbox div video { width: 100%; }
-.flexbox div button { white-space: nowrap; }
+.flexbox {
+  display: flex;
+}
+
+.flexbox .stretch {
+  flex: 1;
+}
+
+.flexbox .normal {
+  flex: 0;
+  margin: 0 0 0 1rem;
+}
+
+.flexbox div input {
+  width: 100%;
+}
+
+.flexbox div audio {
+  width: 100%;
+}
+
+.flexbox div video {
+  width: 100%;
+}
+
+.flexbox div button {
+  white-space: nowrap;
+}
 
 body {
   font-family: system-ui;
@@ -39,7 +60,6 @@ th, td {
   position: sticky;
   top: 0px;
   left: 0px;
-  background-color: #ddd;
   border-bottom: 1px #999 solid;
   line-height: 190%;
   background: linear-gradient(to bottom, #ffc0cb, #aaf);
@@ -50,15 +70,10 @@ th, td {
   display: none;
   background-color: rgb(33, 33, 33, 0.95);
   color: #ccc;
-  /*border-radius: 0.3em;*/
   position: absolute;
   top: 0px;
-  /*left: 5px;*/
-  /*overflow-y: scroll;*/
   margin-left: auto;
   margin-right: auto;
-  /*max-width: 90%;*/
-  /*height: 90%;*/
   padding: 0.5em;
 }
 
@@ -75,7 +90,7 @@ th, td {
   display: table;
   width: 100%;
   background-size: cover;
-  background: linear-gradient(to bottom, #cbc0ff, #abe793);
+  background: linear-gradient(to bottom, #ffc0cb, #aaf);
 }
 
 .itemDiv {

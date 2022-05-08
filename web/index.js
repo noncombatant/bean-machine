@@ -470,6 +470,25 @@ const isVideoPathname = function(pathname) {
   return isPathnameInExtensions(pathname, videoFormatExtensions)
 }
 
+const randomRGB = function() {
+  return Math.min(Math.floor(Math.random() * 255 + 1), 255)
+}
+
+const randomColor = function() {
+  const r = randomRGB()
+  const g = randomRGB()
+  const b = randomRGB()
+  return "#" + (((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1))
+}
+
+const changeThemeColor = function() {
+  const top = randomColor()
+  const bottom = randomColor()
+  const themeColor = document.querySelector("meta[name=theme-color]")
+  themeColor.setAttribute("content", top)
+  controlsDiv.style.background = itemListDiv.style.background = "linear-gradient(to bottom," + top + "," + bottom + ")"
+}
+
 const main = function() {
   if ("serviceWorker" in navigator) {
     navigator.serviceWorker.register("sw.js");
@@ -489,6 +508,7 @@ const main = function() {
   }
   restoreState()
   setInterval(fetchSearchHits, 2000)
+  setInterval(changeThemeColor, 60 * 60 * 1000)
 }
 
 main()
