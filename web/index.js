@@ -37,6 +37,9 @@ const preparePlay = function(itemID) {
   const itemDiv = $("itemDiv" + itemID)
   itemDiv.scrollIntoView({behavior: "smooth", block: "center"})
   itemDiv.className = "itemDiv nowPlayingItemDiv"
+  if (getArtist(item).toLocaleLowerCase().includes("prince")) {
+    purpulate()
+  }
 }
 
 let fetchSearchHitsInProgress = false
@@ -475,18 +478,31 @@ const randomRGB = function() {
 }
 
 const randomColor = function() {
-  const r = randomRGB()
-  const g = randomRGB()
-  const b = randomRGB()
-  return "#" + (((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1))
+  return [randomRGB(), randomRGB(), randomRGB()]
 }
 
+const colorToString = function(c) {
+  return "rgb(" + c[0] + "," + c[1] + "," + c[2] + ", 1.0)"
+}
+
+let themeTopColor, themeBottomColor
+
 const changeThemeColor = function() {
-  const top = randomColor()
-  const bottom = randomColor()
+  themeTopColor = randomColor()
+  themeBottomColor = randomColor()
   const themeColor = document.querySelector("meta[name=theme-color]")
   themeColor.setAttribute("content", top)
-  controlsDiv.style.background = itemListDiv.style.background = "linear-gradient(to bottom," + top + "," + bottom + ")"
+  controlsDiv.style.background = itemListDiv.style.background = "linear-gradient(to bottom," + colorToString(themeTopColor) + "," + colorToString(themeBottomColor) + ")"
+}
+
+const purpulate = function() {
+  themeTopColor[0] += 7
+  themeTopColor[1] -= 7
+  themeTopColor[2] += 7
+  themeBottomColor[0] -= 7
+  themeBottomColor[1] += 7
+  themeBottomColor[2] -= 7
+  controlsDiv.style.background = itemListDiv.style.background = "linear-gradient(to bottom," + colorToString(themeTopColor) + "," + colorToString(themeBottomColor) + ")"
 }
 
 const main = function() {
@@ -508,6 +524,7 @@ const main = function() {
   }
   restoreState()
   setInterval(fetchSearchHits, 2000)
+  changeThemeColor()
   setInterval(changeThemeColor, 60 * 60 * 1000)
 }
 
