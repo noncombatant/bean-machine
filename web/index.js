@@ -233,6 +233,9 @@ window.onkeydown = function(event) {
 const bodyOnKeyup = function(event) {
   event.stopPropagation()
   switch (event.key) {
+    case "c":
+      changeThemeColor()
+      break
     case "ArrowRight":
     case "n":
       if (undefined === player.itemID) {
