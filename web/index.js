@@ -194,6 +194,7 @@ const windowOnScroll = function(event) {
 
 const closeHelpButtonOnClick = function(event) {
   helpDiv.style.display = "none"
+  controlsDiv.style.display = itemListDiv.style.display = "block"
 }
 
 const displayNowPlaying = function(item, element) {
@@ -255,9 +256,10 @@ const bodyOnKeyup = function(event) {
     case "h":
       helpDiv.style.display = helpDiv.style.display || "none"
       helpDiv.style.display = "none" === helpDiv.style.display ? "block" : "none"
+      controlsDiv.style.display = itemListDiv.style.display = "none" === itemListDiv.style.display ? "block" : "none"
       break
     case "Escape":
-      helpDiv.style.display = "none"
+      closeHelpButtonOnClick()
   }
 }
 
