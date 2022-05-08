@@ -485,14 +485,20 @@ const colorToString = function(c) {
   return "rgb(" + c[0] + "," + c[1] + "," + c[2] + ", 1.0)"
 }
 
+// TODO: Get rid of all globals
 let themeTopColor, themeBottomColor
+
+const setThemeColor = function() {
+  const t = colorToString(themeTopColor)
+  const b = colorToString(themeBottomColor)
+  document.querySelector("meta[name=theme-color]").setAttribute("content", t)
+  controlsDiv.style.background = itemListDiv.style.background = "linear-gradient(to bottom," + t + "," + b + ")"
+}
 
 const changeThemeColor = function() {
   themeTopColor = randomColor()
   themeBottomColor = randomColor()
-  const themeColor = document.querySelector("meta[name=theme-color]")
-  themeColor.setAttribute("content", top)
-  controlsDiv.style.background = itemListDiv.style.background = "linear-gradient(to bottom," + colorToString(themeTopColor) + "," + colorToString(themeBottomColor) + ")"
+  setThemeColor()
 }
 
 const purpulate = function() {
@@ -502,7 +508,7 @@ const purpulate = function() {
   themeBottomColor[0] -= 7
   themeBottomColor[1] += 7
   themeBottomColor[2] -= 7
-  controlsDiv.style.background = itemListDiv.style.background = "linear-gradient(to bottom," + colorToString(themeTopColor) + "," + colorToString(themeBottomColor) + ")"
+  setThemeColor()
 }
 
 const main = function() {

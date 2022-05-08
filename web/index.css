@@ -106,6 +106,12 @@ th, td {
   box-shadow: 0px 1px 1px gray;
 }
 
+#nowPlayingTitle {
+  background: rgba(255, 255, 255, 0.4);
+  padding: 0.5em;
+  border-radius: 0.3em;
+}
+
 .itemDiv:hover {
   color: #000;
   background-color: rgb(255, 255, 255, 0.6);
