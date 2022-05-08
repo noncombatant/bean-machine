@@ -38,7 +38,7 @@ const preparePlay = function(itemID) {
   itemDiv.scrollIntoView({behavior: "smooth", block: "center"})
   itemDiv.className = "itemDiv nowPlayingItemDiv"
   if (getArtist(item).toLocaleLowerCase().includes("prince")) {
-    purpulate()
+    purpulate(themeTopColor, themeBottomColor)
   }
 }
 
@@ -485,30 +485,28 @@ const colorToString = function(c) {
   return "rgb(" + c[0] + "," + c[1] + "," + c[2] + ", 1.0)"
 }
 
-// TODO: Get rid of all globals
-let themeTopColor, themeBottomColor
-
-const setThemeColor = function() {
-  const t = colorToString(themeTopColor)
-  const b = colorToString(themeBottomColor)
+const setThemeColors = function(topColor, bottomColor) {
+  const t = colorToString(topColor)
+  const b = colorToString(bottomColor)
   document.querySelector("meta[name=theme-color]").setAttribute("content", t)
   controlsDiv.style.background = itemListDiv.style.background = "linear-gradient(to bottom," + t + "," + b + ")"
 }
 
+// TODO: Get rid of all globals
+let themeTopColor, themeBottomColor
+
 const changeThemeColor = function() {
-  themeTopColor = randomColor()
-  themeBottomColor = randomColor()
-  setThemeColor()
+  setThemeColors(themeTopColor = randomColor(), themeBottomColor = randomColor())
 }
 
-const purpulate = function() {
-  themeTopColor[0] += 7
-  themeTopColor[1] -= 7
-  themeTopColor[2] += 7
-  themeBottomColor[0] -= 7
-  themeBottomColor[1] += 7
-  themeBottomColor[2] -= 7
-  setThemeColor()
+const purpulate = function(topColor, bottomColor) {
+  topColor[0] += 5
+  topColor[1] -= 5
+  topColor[2] += 5
+  bottomColor[0] -= 5
+  bottomColor[1] += 5
+  bottomColor[2] -= 5
+  setThemeColors(topColor, bottomColor)
 }
 
 const main = function() {
