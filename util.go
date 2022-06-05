@@ -125,19 +125,6 @@ func IsAudioPathname(pathname string) bool {
 	return IsStringInStrings(GetBasenameExtension(pathname), audioFormatExtensions)
 }
 
-func IsDirectoryEmpty(pathname string) (bool, error) {
-	f, e := os.Open(pathname)
-	if e != nil {
-		return false, e
-	}
-	_, e = f.Readdir(1)
-	empty := e == io.EOF
-	if e != nil && e != io.EOF {
-		return empty, e
-	}
-	return empty, f.Close()
-}
-
 func IsDocumentPathname(pathname string) bool {
 	return IsStringInStrings(GetBasenameExtension(pathname), documentFormatExtensions)
 }

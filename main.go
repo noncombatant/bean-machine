@@ -13,11 +13,8 @@ import (
 	"net/http"
 	"os"
 	"path"
-	"path/filepath"
 	"strings"
 	"time"
-
-	"github.com/pkg/xattr"
 )
 
 const (
@@ -27,131 +24,6 @@ const (
 	passwordsBasename         = "passwords"
 	sessionsDirectoryName     = "sessions"
 )
-
-var (
-	combiningCharacterReplacements = map[string]string{
-		"á": "á",
-		"à": "à",
-		"ä": "ä",
-		"â": "â",
-		"ç": "ç",
-		"è": "è",
-		"É": "É",
-		"È": "È",
-		"ë": "ë",
-		"é": "é",
-		"ê": "ê",
-		"í": "í",
-		"ì": "ì",
-		"ï": "ï",
-		"ñ": "ñ",
-		"Ó": "Ó",
-		"ó": "ó",
-		"ò": "ò",
-		"ö": "ö",
-		"ô": "ô",
-		"ř": "ř",
-		"ú": "ú",
-		"ù": "ù",
-		"ü": "ü",
-		"ž": "ž",
-	}
-)
-
-func Lint(log *log.Logger, root string) {
-	e := filepath.Walk(root,
-		func(pathname string, info os.FileInfo, e error) error {
-			if e != nil {
-				log.Print(e)
-				return e
-			}
-
-			basename := path.Base(pathname)
-			if basename == ".AppleFileInfo" && info.IsDir() {
-				return os.RemoveAll(pathname)
-			} else if basename == ".DS_Store" && !info.IsDir() {
-				return os.Remove(pathname)
-			} else if basename[0] == '.' {
-				log.Printf("Hidden: %q", pathname)
-			}
-
-			file, e := os.Open(pathname)
-			if e != nil {
-				log.Print(e)
-				return e
-			}
-
-			if info.IsDir() {
-				empty, e := IsDirectoryEmpty(pathname)
-				if e != nil {
-					log.Printf("%q: %v", pathname, e)
-					//return e
-				}
-				if empty {
-					e = os.Remove(pathname)
-					if e != nil {
-						log.Printf("%q: %v", pathname, e)
-					}
-					return e
-				}
-
-				if info.Mode().Perm() != 0755 {
-					e = file.Chmod(0755)
-					if e != nil {
-						log.Print(e)
-						return e
-					}
-				}
-			} else if info.Mode().IsRegular() {
-				if info.Size() == 0 {
-					return os.Remove(pathname)
-				}
-
-				if info.Mode().Perm() != 0644 {
-					e = file.Chmod(0644)
-					if e != nil {
-						log.Print(e)
-						return e
-					}
-				}
-			}
-
-			xattrs, e := xattr.FList(file)
-			if e != nil {
-				log.Print(e)
-				return e
-			}
-			for _, name := range xattrs {
-				e = xattr.FRemove(file, name)
-				if e != nil {
-					log.Print(e)
-					return e
-				}
-			}
-
-			if e := file.Close(); e != nil {
-				log.Print(e)
-				return e
-			}
-
-			savedPathname := pathname
-			for k, v := range combiningCharacterReplacements {
-				pathname = strings.ReplaceAll(pathname, k, v)
-			}
-			if savedPathname != pathname {
-				e := os.Rename(savedPathname, pathname)
-				if e != nil {
-					log.Print(e)
-				}
-			}
-
-			return nil
-		})
-
-	if e != nil {
-		log.Print(e)
-	}
-}
 
 func generateServerCredentials(hosts []string, configurationPathname string) (string, string) {
 	certificatePathname := path.Join(configurationPathname, serverCertificateBasename)
@@ -275,7 +147,6 @@ func printHelp() {
 	fmt.Println(`Usage:
 
   bean-machine -m music-directory serve
-  bean-machine -m music-directory lint
   bean-machine set-password
 
 Here is what the commands do:
@@ -286,10 +157,6 @@ Here is what the commands do:
 
     Starts a web server rooted at music-directory, and prints out the URL(s)
     of the Bean Machine web app.
-
-  lint
-    Scans music-directory for junk and empty files and removes them. Sets
-    file and directory permissions, and removes POSIX extended attributes.
 
   set-password
     Prompts for a username and password, and sets the password for the given
@@ -347,9 +214,6 @@ func main() {
 			}
 		case "help":
 			printHelp()
-		case "lint":
-			assertDirectory(root)
-			Lint(log.Default(), root)
 		case "serve":
 			assertDirectory(root)
 			catalog, e := ReadCatalogByPathname(path.Join(root, catalogFile))
