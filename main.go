@@ -7,15 +7,24 @@ import (
 	"encoding/pem"
 	"flag"
 	"fmt"
-	"github.com/NYTimes/gziphandler"
 	"io"
 	"log"
 	"net"
 	"net/http"
 	"os"
 	"path"
+	"regexp"
 	"strings"
 	"time"
+
+	"github.com/NYTimes/gziphandler"
+	"github.com/tdewolff/minify"
+	"github.com/tdewolff/minify/css"
+	"github.com/tdewolff/minify/html"
+	"github.com/tdewolff/minify/js"
+	"github.com/tdewolff/minify/json"
+	"github.com/tdewolff/minify/svg"
+	"github.com/tdewolff/minify/xml"
 )
 
 const (
@@ -141,8 +150,18 @@ func serveApp(root, port, configurationPathname string, c *Catalog) {
 
 	certificatePathname, keyPathname := generateServerCredentials(hosts, configurationPathname)
 	handler := HTTPHandler{Root: root, ConfigurationPathname: configurationPathname, Catalog: c, Logger: log.Default()}
+
+	minifier := minify.New()
+	minifier.AddFunc("text/css", css.Minify)
+	minifier.AddFunc("text/html", html.Minify)
+	minifier.AddFunc("image/svg+xml", svg.Minify)
+	minifier.AddFuncRegexp(regexp.MustCompile("^(application|text)/(x-)?(java|ecma)script$"), js.Minify)
+	minifier.AddFuncRegexp(regexp.MustCompile("[/+]json$"), json.Minify)
+	minifier.AddFuncRegexp(regexp.MustCompile("[/+]xml$"), xml.Minify)
+
 	mux := http.NewServeMux()
-	mux.Handle("/", gziphandler.GzipHandler(&handler))
+	mux.Handle("/", gziphandler.GzipHandler(minifier.Middleware(&handler)))
+
 	log.Fatal(http.ListenAndServeTLS(port, certificatePathname, keyPathname, mux))
 }
 
