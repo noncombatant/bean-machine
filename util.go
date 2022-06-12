@@ -6,10 +6,8 @@
 package main
 
 import (
-	"compress/gzip"
 	"crypto/rand"
 	"embed"
-	"io"
 	"io/fs"
 	"os"
 	"path/filepath"
@@ -79,46 +77,6 @@ func ExtractDigits(s string) string {
 // lowercase. If the basename has no extension, returns an empty string.
 func GetBasenameExtension(pathname string) string {
 	return strings.ToLower(filepath.Ext(pathname))
-}
-
-// Reads `input`, gzips it (with `gzip.BestCompression`), and stores the output
-// in a file named by `outputPathname`. This function will clobber any previous
-// file named by `outputPathname`.
-func GzipStream(outputPathname string, input io.Reader) error {
-	gzFile, e := os.Create(outputPathname)
-	if e != nil {
-		return e
-	}
-	gzWriter, e := gzip.NewWriterLevel(gzFile, gzip.BestCompression)
-	if e != nil {
-		_ = gzFile.Close()
-		return e
-	}
-
-	buffer := make([]byte, 4096)
-	for {
-		count, e := input.Read(buffer)
-		if count == 0 && io.EOF == e {
-			break
-		}
-		if e != nil {
-			_ = gzWriter.Close()
-			_ = gzFile.Close()
-			return e
-		}
-
-		_, e = gzWriter.Write(buffer[:count])
-		if e != nil {
-			_ = gzWriter.Close()
-			_ = gzFile.Close()
-			return e
-		}
-	}
-
-	if e := gzWriter.Close(); e != nil {
-		return e
-	}
-	return gzFile.Close()
 }
 
 func IsAudioPathname(pathname string) bool {

@@ -9,6 +9,9 @@ require (
 	id3 v0.0.0-00010101000000-000000000000
 )
 
-require golang.org/x/sys v0.0.0-20190412213103-97732733099d // indirect
+require (
+	github.com/NYTimes/gziphandler v1.1.1 // indirect
+	golang.org/x/sys v0.0.0-20190412213103-97732733099d // indirect
+)
 
 replace id3 => ./id3

@@ -7,6 +7,7 @@ import (
 	"encoding/pem"
 	"flag"
 	"fmt"
+	"github.com/NYTimes/gziphandler"
 	"io"
 	"log"
 	"net"
@@ -141,7 +142,7 @@ func serveApp(root, port, configurationPathname string, c *Catalog) {
 	certificatePathname, keyPathname := generateServerCredentials(hosts, configurationPathname)
 	handler := HTTPHandler{Root: root, ConfigurationPathname: configurationPathname, Catalog: c, Logger: log.Default()}
 	mux := http.NewServeMux()
-	mux.Handle("/", &handler)
+	mux.Handle("/", gziphandler.GzipHandler(&handler))
 	log.Fatal(http.ListenAndServeTLS(port, certificatePathname, keyPathname, mux))
 }
 
