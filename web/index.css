@@ -127,6 +127,7 @@ th, td {
 
 img {
   float: left;
+  max-width: 100%;
 }
 
 .itemDivCell {

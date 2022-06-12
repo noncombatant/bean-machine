@@ -426,7 +426,7 @@ func (h *HTTPHandler) buildMediaIndex(pathname string) string {
 	header := `<!DOCTYPE html>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<link rel="stylesheet" href="/media.css"/>
+<link rel="stylesheet" href="/index.css"/>
 <title>` + path.Base(pathname) + `</title>
 `
 
