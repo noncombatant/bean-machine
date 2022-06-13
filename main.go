@@ -148,7 +148,6 @@ func serveApp(root, port, configurationPathname string, c *Catalog) {
 		}
 	}
 
-	certificatePathname, keyPathname := generateServerCredentials(hosts, configurationPathname)
 	handler := HTTPHandler{Root: root, ConfigurationPathname: configurationPathname, Catalog: c, Logger: log.Default()}
 
 	minifier := minify.New()
@@ -161,7 +160,7 @@ func serveApp(root, port, configurationPathname string, c *Catalog) {
 
 	mux := http.NewServeMux()
 	mux.Handle("/", gziphandler.GzipHandler(minifier.Middleware(&handler)))
-
+	certificatePathname, keyPathname := generateServerCredentials(hosts, configurationPathname)
 	log.Fatal(http.ListenAndServeTLS(port, certificatePathname, keyPathname, mux))
 }
 
