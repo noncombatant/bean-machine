@@ -516,7 +516,11 @@ const purpulate = function(topColor, bottomColor) {
 
 const main = function() {
   if ("serviceWorker" in navigator) {
-    navigator.serviceWorker.register("sw.js");
+    navigator.serviceWorker.register("sw.js", { scope: "/" }).then((registration) => {
+      registration.update()
+    }).catch((error) => {
+      console.error(`Registration failed with ${error}`)
+    })
   }
 
   player.addEventListener("ended", playNext)

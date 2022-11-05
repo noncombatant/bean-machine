@@ -6,7 +6,7 @@
 const cacheName = "cache"
 
 self.addEventListener("install", event => {
-  //console.log("install")
+  console.log("install")
   // If we wanted to pre-cache anything:
   //event.waitUntil((async () => {
   //  const cache = await caches.open(cacheName);
@@ -15,29 +15,29 @@ self.addEventListener("install", event => {
 })
 
 self.addEventListener("register", event => {
-  //console.log("register")
+  console.log("register")
 })
 
-self.addEventListener("activate", event => {
-  //console.log("activate")
-})
-
-self.addEventListener("fetch", event => {
-  //console.log("fetch")
-  event.respondWith((async () => {
-    //console.log("responding...")
-    let r = await caches.match(event.request)
-    //console.log("cached response?", r)
-    if (r) {
-      //console.log("returning cached response")
-      return r
-    }
-
-    r = await fetch(event.request)
-    //console.log("fetched response", r)
-    const c = await caches.open(cacheName)
-    c.put(event.request, r.clone())
-    //console.log("put cloned response, returning r")
-    return r
-  })())
-})
+//self.addEventListener("activate", event => {
+//  console.log("activate")
+//})
+//
+//self.addEventListener("fetch", event => {
+//  console.log("fetch")
+//  event.respondWith((async () => {
+//    console.log("responding...")
+//    let r = await caches.match(event.request)
+//    console.log("cached response?", r)
+//    if (r) {
+//      console.log("returning cached response")
+//      return r
+//    }
+//
+//    r = await fetch(event.request)
+//    console.log("fetched response", r)
+//    const c = await caches.open(cacheName)
+//    c.put(event.request, r.clone())
+//    console.log("put cloned response, returning r")
+//    return r
+//  })())
+//})
