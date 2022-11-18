@@ -42,6 +42,18 @@ const preparePlay = function(itemID) {
   }
 }
 
+let notify = async function(message) {
+  if (!("Notification" in window)) {
+    return
+  }
+  if (Notification.permission === "granted") {
+    const notification = new Notification(message, {silent: true, requireInteraction: false })
+  } else if (Notification.permission !== "denied") {
+    const p = await Notification.requestPermission()
+    notify(message)
+  }
+}
+
 let fetchSearchHitsInProgress = false
 const blobCache = {}
 const fetchSearchHits = function() {
@@ -204,6 +216,7 @@ const displayNowPlaying = function(item, element) {
   element.appendChild(createElement("span", "", " from "))
   element.appendChild(createElement("em", "", getAlbum(item)))
   document.title = element.textContent
+  notify(element.textContent)
 }
 
 let searchHitsUpdated = false
