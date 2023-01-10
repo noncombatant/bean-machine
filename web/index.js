@@ -304,6 +304,7 @@ const restoreState = function() {
   shuffleButton.title = shuffleOn ? "Sort (s)" : "Shuffle (s)"
   shuffleButton.innerText = shuffleOn ? "Sort" : "Shuffle"
   searchCatalog(localStorage.getItem("query") || "")
+  audioPlayer.volume = videoPlayer.volume = 0.75
 }
 
 let searchCatalogFetchIndex = 0
