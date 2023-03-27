@@ -43,7 +43,7 @@ func pathnameEscape(pathname string) string {
 }
 
 var (
-	discTrackAndNameMatcher = regexp.MustCompile("^\\s*(\\d*)?-?(\\d*)?\\s+(.*)$")
+	discTrackAndNameMatcher = regexp.MustCompile(`^\s*(\d*)?-?(\d*)?\s+(.*)$`)
 )
 
 func getDiscTrackAndNameFromBasename(basename string) (string, string, string) {
@@ -59,8 +59,8 @@ func getDiscTrackAndNameFromBasename(basename string) (string, string, string) {
 
 // Sets fields of `i` from `i.Pathname`, assuming the format:
 //
-//   ".../AC_DC/Back In Black/1-01 Hells Bells.m4a"
-//        performer/album/disc#-track# name
+//	".../AC_DC/Back In Black/1-01 Hells Bells.m4a"
+//	     performer/album/disc#-track# name
 func (i *ItemInfo) fillMetadataFromPathname() {
 	parts := strings.Split(i.Pathname, string(filepath.Separator))
 	length := len(parts)

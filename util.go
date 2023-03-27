@@ -125,7 +125,7 @@ func GetRandomBytes(count int) ([]byte, error) {
 // removed. If the basename has no extension, returns the pathname.
 func RemoveBasenameExtension(pathname string) string {
 	dot := strings.LastIndex(pathname, ".")
-	if -1 == dot {
+	if dot == -1 {
 		return pathname
 	}
 

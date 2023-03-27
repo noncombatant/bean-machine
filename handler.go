@@ -8,8 +8,10 @@ import (
 	"bytes"
 	"embed"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
+	"io/fs"
 	"io/ioutil"
 	"log"
 	"math/rand"
@@ -228,8 +230,8 @@ func (h *HTTPHandler) serveCover(pathname string, w http.ResponseWriter, r *http
 }
 
 func zipDirectory(log *log.Logger, pathname string) (*os.File, error) {
-	if e := os.Mkdir("/tmp/beanzip", 0700); e != nil {
-		//return nil, e
+	if e := os.Mkdir("/tmp/beanzip", 0700); e != nil && errors.Is(e, fs.ErrExist) {
+		return nil, e
 	}
 	file, e := ioutil.TempFile("/tmp/beanzip", "album.zip")
 	if e != nil {
