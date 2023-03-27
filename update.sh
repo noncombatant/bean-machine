@@ -6,6 +6,6 @@ source "$HOME"/bin/script.sh
 
 source ~/.go_profile
 make
-fslint -E -J -P -X ~/muzak
-./bean-machine -m ~/muzak catalog
-~/web/server-control music
+fslint -E -J -P -X ~/d/muzak
+./bean-machine -m ~/d/muzak catalog
+~/d/web/server-control music
