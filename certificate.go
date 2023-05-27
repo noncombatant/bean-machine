@@ -1,6 +1,3 @@
-// Copyright 2022 by Chris Palmer (https://noncombatant.org), and released
-// under the terms of the GNU GPL3. See web/index.html for more information.
-//
 // Adapted from https://golang.org/src/crypto/tls/generate_cert.go?m=text,
 // which has the following copyright notice:
 //
