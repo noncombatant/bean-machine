@@ -9,3 +9,4 @@ make
 fslint -E -J -P -X ~/d/muzak
 ./bean-machine -m ~/d/muzak catalog
 ~/d/web/server-control music
+~/d/web/server-control ssh
