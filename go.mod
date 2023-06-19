@@ -13,7 +13,8 @@ require (
 	github.com/NYTimes/gziphandler v1.1.1 // indirect
 	github.com/tdewolff/minify v2.3.6+incompatible // indirect
 	github.com/tdewolff/parse v2.3.4+incompatible // indirect
-	golang.org/x/sys v0.0.0-20190412213103-97732733099d // indirect
+	golang.org/x/exp v0.0.0-20230522175609-2e198f4a06a1 // indirect
+	golang.org/x/sys v0.1.0 // indirect
 )
 
 replace id3 => ./id3

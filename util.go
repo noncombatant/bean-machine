@@ -15,6 +15,7 @@ import (
 	"strings"
 	"unicode"
 
+	"golang.org/x/exp/slices"
 	"golang.org/x/text/runes"
 	"golang.org/x/text/transform"
 	"golang.org/x/text/unicode/norm"
@@ -80,33 +81,23 @@ func GetBasenameExtension(pathname string) string {
 }
 
 func IsAudioPathname(pathname string) bool {
-	return Contains[string](GetBasenameExtension(pathname), audioFormatExtensions)
+	return slices.Contains[string](audioFormatExtensions, GetBasenameExtension(pathname))
 }
 
 func IsDocumentPathname(pathname string) bool {
-	return Contains[string](GetBasenameExtension(pathname), documentFormatExtensions)
+	return slices.Contains[string](documentFormatExtensions, GetBasenameExtension(pathname))
 }
 
 func IsFileWorldReadable(info os.FileInfo) bool {
 	return info.Mode()&0004 == 04
 }
 
-// Returns true if `haystack` contains `needle`.
-func Contains[T comparable](needle T, haystack []T) bool {
-	for _, x := range haystack {
-		if needle == x {
-			return true
-		}
-	}
-	return false
-}
-
 func IsImagePathname(pathname string) bool {
-	return Contains[string](GetBasenameExtension(pathname), imageFormatExtensions)
+	return slices.Contains[string](imageFormatExtensions, GetBasenameExtension(pathname))
 }
 
 func IsVideoPathname(pathname string) bool {
-	return Contains[string](GetBasenameExtension(pathname), videoFormatExtensions)
+	return slices.Contains[string](videoFormatExtensions, GetBasenameExtension(pathname))
 }
 
 func GetRandomBytes(count int) ([]byte, error) {
@@ -128,14 +119,12 @@ func RemoveBasenameExtension(pathname string) string {
 	if dot == -1 {
 		return pathname
 	}
-
 	slash := strings.LastIndex(pathname, string(os.PathSeparator))
 	if slash > dot {
 		// There may be a dot, but it's not in the basename. In that case, return
 		// the whole pathname.
 		return pathname
 	}
-
 	return pathname[:dot]
 }
 
