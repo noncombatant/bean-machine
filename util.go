@@ -80,11 +80,11 @@ func GetBasenameExtension(pathname string) string {
 }
 
 func IsAudioPathname(pathname string) bool {
-	return IsStringInStrings(GetBasenameExtension(pathname), audioFormatExtensions)
+	return Contains[string](GetBasenameExtension(pathname), audioFormatExtensions)
 }
 
 func IsDocumentPathname(pathname string) bool {
-	return IsStringInStrings(GetBasenameExtension(pathname), documentFormatExtensions)
+	return Contains[string](GetBasenameExtension(pathname), documentFormatExtensions)
 }
 
 func IsFileWorldReadable(info os.FileInfo) bool {
@@ -92,9 +92,9 @@ func IsFileWorldReadable(info os.FileInfo) bool {
 }
 
 // Returns true if `haystack` contains `needle`.
-func IsStringInStrings(needle string, haystack []string) bool {
-	for _, s := range haystack {
-		if needle == s {
+func Contains[T comparable](needle T, haystack []T) bool {
+	for _, x := range haystack {
+		if needle == x {
 			return true
 		}
 	}
@@ -102,11 +102,11 @@ func IsStringInStrings(needle string, haystack []string) bool {
 }
 
 func IsImagePathname(pathname string) bool {
-	return IsStringInStrings(GetBasenameExtension(pathname), imageFormatExtensions)
+	return Contains[string](GetBasenameExtension(pathname), imageFormatExtensions)
 }
 
 func IsVideoPathname(pathname string) bool {
-	return IsStringInStrings(GetBasenameExtension(pathname), videoFormatExtensions)
+	return Contains[string](GetBasenameExtension(pathname), videoFormatExtensions)
 }
 
 func GetRandomBytes(count int) ([]byte, error) {

@@ -88,18 +88,18 @@ func TestEscapeDoubleQuotes(t *testing.T) {
 	}
 }
 
-func TestIsStringInStrings(t *testing.T) {
+func TestContains(t *testing.T) {
 	for _, s := range audioFormatExtensions {
-		if !IsStringInStrings(s, audioFormatExtensions) {
+		if !Contains[string](s, audioFormatExtensions) {
 			t.Errorf("Could not find %q", s)
 		}
 	}
 
-	if IsStringInStrings(".FLAC", audioFormatExtensions) {
+	if Contains[string](".FLAC", audioFormatExtensions) {
 		t.Errorf("Found \".FLAC\" even though it's upper-case")
 	}
 
-	if IsStringInStrings("goat", audioFormatExtensions) {
+	if Contains[string]("goat", audioFormatExtensions) {
 		t.Errorf("Found \"goat\" even though it's not in `audioFormatExtensions`")
 	}
 }

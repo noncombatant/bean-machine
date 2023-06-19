@@ -1,6 +1,6 @@
 module noncombatant.org/bean-machine
 
-go 1.17
+go 1.18
 
 require (
 	github.com/pkg/xattr v0.4.1
