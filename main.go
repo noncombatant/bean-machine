@@ -229,7 +229,7 @@ func main() {
 			if e != nil {
 				log.Fatal(e)
 			}
-			e = WriteCatalogByPathname(path.Join(root, catalogFile), c)
+			e = c.WriteToFile(path.Join(root, catalogBasename))
 			if e != nil {
 				log.Fatal(e)
 			}
@@ -237,7 +237,7 @@ func main() {
 			printHelp()
 		case "serve":
 			assertDirectory(root)
-			catalog, e := ReadCatalogByPathname(path.Join(root, catalogFile))
+			catalog, e := ReadCatalogFromFile(path.Join(root, catalogBasename))
 			if e != nil {
 				log.Fatal(e)
 			}

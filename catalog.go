@@ -19,17 +19,7 @@ type Catalog struct {
 	ItemInfos
 }
 
-const (
-	catalogFile = "catalog.gobs.gz"
-	eraseLine   = "\033[2K\r"
-)
-
-func WriteCatalog(w io.Writer, c *Catalog) error {
-	e := gob.NewEncoder(w)
-	return e.Encode(c)
-}
-
-func WriteCatalogByPathname(pathname string, c *Catalog) error {
+func (c *Catalog) WriteToFile(pathname string) error {
 	w, e := os.Create(pathname)
 	if e != nil {
 		return e
@@ -38,7 +28,7 @@ func WriteCatalogByPathname(pathname string, c *Catalog) error {
 	if e != nil {
 		return e
 	}
-	if e := WriteCatalog(zw, c); e != nil {
+	if e := gob.NewEncoder(zw).Encode(c); e != nil {
 		return e
 	}
 	if e := zw.Close(); e != nil {
@@ -46,6 +36,11 @@ func WriteCatalogByPathname(pathname string, c *Catalog) error {
 	}
 	return w.Close()
 }
+
+const (
+	catalogBasename = "catalog.gobs.gz"
+	eraseLine       = "\033[2K\r"
+)
 
 func shouldSkipFile(info os.FileInfo) bool {
 	return info.Name() == "" || info.Name()[0] == '.' || info.Size() == 0 || info.Mode().IsDir() || !info.Mode().IsRegular()
@@ -98,16 +93,7 @@ func BuildCatalog(log *log.Logger, root string) (*Catalog, error) {
 	return &c, e
 }
 
-func ReadCatalog(r io.Reader) (*Catalog, error) {
-	var c Catalog
-	d := gob.NewDecoder(r)
-	if e := d.Decode(&c); e != nil && e != io.EOF {
-		return nil, e
-	}
-	return &c, nil
-}
-
-func ReadCatalogByPathname(pathname string) (*Catalog, error) {
+func ReadCatalogFromFile(pathname string) (*Catalog, error) {
 	f, e := os.Open(pathname)
 	if e != nil {
 		return nil, e
@@ -116,8 +102,9 @@ func ReadCatalogByPathname(pathname string) (*Catalog, error) {
 	if e != nil {
 		return nil, e
 	}
-	c, e := ReadCatalog(zr)
-	if e != nil {
+	var c Catalog
+	d := gob.NewDecoder(zr)
+	if e := d.Decode(&c); e != nil && e != io.EOF {
 		return nil, e
 	}
 	if e = zr.Close(); e != nil {
@@ -126,5 +113,5 @@ func ReadCatalogByPathname(pathname string) (*Catalog, error) {
 	if e = f.Close(); e != nil {
 		return nil, e
 	}
-	return c, nil
+	return &c, nil
 }
