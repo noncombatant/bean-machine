@@ -12,10 +12,10 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"slices"
 	"strings"
 	"unicode"
 
-	"golang.org/x/exp/slices"
 	"golang.org/x/text/runes"
 	"golang.org/x/text/transform"
 	"golang.org/x/text/unicode/norm"
@@ -81,11 +81,11 @@ func GetBasenameExtension(pathname string) string {
 }
 
 func IsAudioPathname(pathname string) bool {
-	return slices.Contains[string](audioFormatExtensions, GetBasenameExtension(pathname))
+	return slices.Contains(audioFormatExtensions, GetBasenameExtension(pathname))
 }
 
 func IsDocumentPathname(pathname string) bool {
-	return slices.Contains[string](documentFormatExtensions, GetBasenameExtension(pathname))
+	return slices.Contains(documentFormatExtensions, GetBasenameExtension(pathname))
 }
 
 func IsFileWorldReadable(info os.FileInfo) bool {
@@ -93,11 +93,11 @@ func IsFileWorldReadable(info os.FileInfo) bool {
 }
 
 func IsImagePathname(pathname string) bool {
-	return slices.Contains[string](imageFormatExtensions, GetBasenameExtension(pathname))
+	return slices.Contains(imageFormatExtensions, GetBasenameExtension(pathname))
 }
 
 func IsVideoPathname(pathname string) bool {
-	return slices.Contains[string](videoFormatExtensions, GetBasenameExtension(pathname))
+	return slices.Contains(videoFormatExtensions, GetBasenameExtension(pathname))
 }
 
 func GetRandomBytes(count int) ([]byte, error) {
