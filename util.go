@@ -54,6 +54,7 @@ var (
 		".jpeg",
 		".jpg",
 		".png",
+		".webp",
 	}
 
 	digitsFinder = regexp.MustCompile(`(\d+)`)
