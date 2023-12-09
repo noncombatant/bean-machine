@@ -2,11 +2,11 @@
 
 help="Updates the catalog and synchronizes with the server."
 
-source "$HOME/bin/script.sh"
+source "$(dirname "$0")/script.sh"
 
 source ~/.go_profile
 make
-fslint -E -J -P ~/muzak
-./bean-machine -m ~/muzak catalog
-~/web/server-control music
-~/web/server-control ssh
+fslint -E -J -P /Users/Shared/music
+./bean-machine -m /Users/Shared/music catalog
+backup file
+ssh file
