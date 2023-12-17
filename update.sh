@@ -2,7 +2,7 @@
 
 help="Updates the catalog and synchronizes with the server."
 
-source "$(dirname "$0")/script.sh"
+source "$HOME/bin/script.sh"
 
 source ~/.go_profile
 make
