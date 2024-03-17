@@ -15,11 +15,11 @@ import (
 	"path/filepath"
 )
 
-type Catalog struct {
-	ItemInfos
+type catalog struct {
+	itemInfos
 }
 
-func (c *Catalog) WriteToFile(pathname string) error {
+func (c *catalog) writeToFile(pathname string) error {
 	w, e := os.Create(pathname)
 	if e != nil {
 		return e
@@ -46,8 +46,8 @@ func shouldSkipFile(info os.FileInfo) bool {
 	return info.Name() == "" || info.Name()[0] == '.' || info.Size() == 0 || info.Mode().IsDir() || !info.Mode().IsRegular()
 }
 
-func BuildCatalog(log *log.Logger, root string) (*Catalog, error) {
-	var c Catalog
+func newCatalog(log *log.Logger, root string) (*catalog, error) {
+	var c catalog
 	previousDir := ""
 	e := filepath.Walk(root,
 		func(pathname string, info os.FileInfo, e error) error {
@@ -66,9 +66,9 @@ func BuildCatalog(log *log.Logger, root string) (*Catalog, error) {
 				previousDir = dir
 			}
 
-			if IsAudioPathname(pathname) || IsVideoPathname(pathname) {
+			if isAudioPathname(pathname) || isVideoPathname(pathname) {
 				webPathname := pathname[len(root)+1:]
-				itemInfo := ItemInfo{Pathname: webPathname}
+				itemInfo := itemInfo{Pathname: webPathname}
 
 				input, e := os.Open(pathname)
 				if e != nil {
@@ -84,7 +84,7 @@ func BuildCatalog(log *log.Logger, root string) (*Catalog, error) {
 				time := info.ModTime()
 				itemInfo.ModTime = fmt.Sprintf("%04d-%02d-%02d", time.Year(), time.Month(), time.Day())
 				itemInfo.fillMetadata()
-				c.ItemInfos = append(c.ItemInfos, itemInfo)
+				c.itemInfos = append(c.itemInfos, itemInfo)
 			}
 			return nil
 		})
@@ -93,7 +93,7 @@ func BuildCatalog(log *log.Logger, root string) (*Catalog, error) {
 	return &c, e
 }
 
-func ReadCatalogFromFile(pathname string) (*Catalog, error) {
+func readCatalogFromFile(pathname string) (*catalog, error) {
 	f, e := os.Open(pathname)
 	if e != nil {
 		return nil, e
@@ -102,7 +102,7 @@ func ReadCatalogFromFile(pathname string) (*Catalog, error) {
 	if e != nil {
 		return nil, e
 	}
-	var c Catalog
+	var c catalog
 	d := gob.NewDecoder(zr)
 	if e := d.Decode(&c); e != nil && e != io.EOF {
 		return nil, e
