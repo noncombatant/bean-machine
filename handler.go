@@ -10,7 +10,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"math/rand"
 	"net/http"
@@ -238,19 +237,18 @@ func zipDirectory(log *log.Logger, pathname string) (*os.File, error) {
 		}
 	}()
 
-	// TODO: Refactor for os.ReadDir.
-	infos, e := ioutil.ReadDir(pathname)
+	entries, e := os.ReadDir(pathname)
 	if e != nil {
 		return nil, e
 	}
 
 	zipWriter := zip.NewWriter(file)
-	for _, info := range infos {
-		f, e := zipWriter.Create(info.Name())
+	for _, entry := range entries {
+		f, e := zipWriter.Create(entry.Name())
 		if e != nil {
 			return nil, e
 		}
-		contents, e := os.ReadFile(pathname + "/" + info.Name())
+		contents, e := os.ReadFile(pathname + "/" + entry.Name())
 		if e != nil {
 			return nil, e
 		}
@@ -346,14 +344,18 @@ func (h *httpHandler) buildMediaIndex(pathname string) string {
 	var builder strings.Builder
 	builder.WriteString(header)
 
-	// TODO: Refactor for os.ReadDir.
-	infos, e := ioutil.ReadDir(pathname)
+	entries, e := os.ReadDir(pathname)
 	if e != nil {
 		h.Logger.Print(e)
 		return builder.String()
 	}
 
-	for _, info := range infos {
+	for _, entry := range entries {
+		info, e := entry.Info()
+		if e != nil {
+			log.Print(e)
+			continue
+		}
 		name := info.Name()
 		if isImagePathname(name) {
 			builder.WriteString(fmt.Sprintf("<img src=\"%s\"/>\n", escapeDoubleQuotes(name)))
