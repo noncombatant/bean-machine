@@ -52,7 +52,7 @@ func stringSlicesEqual(a, b []string) bool {
 }
 
 func testParseTermsHelper(t *testing.T) []string {
-	terms := ParseTerms(rawTerms)
+	terms := parseTerms(rawTerms)
 	if !stringSlicesEqual(expectedParsedTerms, terms) {
 		t.Error(expectedParsedTerms, terms)
 	}
@@ -65,7 +65,7 @@ func TestParseTerms(t *testing.T) {
 
 func TestReconstructQueries(t *testing.T) {
 	terms := testParseTermsHelper(t)
-	queries := ReconstructQueries(terms)
+	queries := reconstructQueries(terms)
 	if len(expectedQueries) != len(queries) {
 		t.Errorf("mismatched lengths")
 	}

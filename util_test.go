@@ -24,7 +24,7 @@ func TestExtractDigits(t *testing.T) {
 	}
 
 	for _, e := range expectations {
-		r := ExtractDigits(e.Input)
+		r := extractDigits(e.Input)
 		if e.Output != r {
 			t.Errorf("%q != ExtractDigits(%q) (%q)\n", e.Output, e.Input, r)
 		}
@@ -46,7 +46,7 @@ func TestGetBasenameExtension(t *testing.T) {
 	}
 
 	for _, e := range expectations {
-		r := GetBasenameExtension(e.Input)
+		r := getBasenameExtension(e.Input)
 		if e.Output != r {
 			t.Errorf("%q != GetBasenameExtension(%q) (%q)\n", e.Output, e.Input, r)
 		}
@@ -67,7 +67,7 @@ func TestRemoveBasenameExtension(t *testing.T) {
 	}
 
 	for _, e := range expectations {
-		r := RemoveBasenameExtension(e.Input)
+		r := removeBasenameExtension(e.Input)
 		if e.Output != r {
 			t.Errorf("%q != RemoveBasenameExtension(%q) (%q)\n", e.Output, e.Input, r)
 		}
@@ -81,7 +81,7 @@ func TestEscapeDoubleQuotes(t *testing.T) {
 	}
 
 	for _, e := range expectations {
-		r := EscapeDoubleQuotes(e.Input)
+		r := escapeDoubleQuotes(e.Input)
 		if e.Output != r {
 			t.Errorf("%q != EscapeDoubleQuotes(%q) (%q)\n", e.Output, e.Input, r)
 		}
