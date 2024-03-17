@@ -23,22 +23,22 @@ const (
 	scryptR      = 8
 )
 
-type Credentials map[string]string
+type credentials map[string]string
 
 func normalizeUsername(username string) string {
 	return strings.TrimSpace(strings.ToLower(username))
 }
 
-func ReadCredentials(pathname string) (Credentials, error) {
-	file, _, e := OpenFileAndInfo(pathname)
+func readCredentials(pathname string) (credentials, error) {
+	file, _, e := openFileAndInfo(pathname)
 	if e != nil {
 		if os.IsNotExist(e) {
-			return make(Credentials), nil
+			return make(credentials), nil
 		}
 		return nil, e
 	}
 
-	credentials := make(Credentials)
+	credentials := make(credentials)
 	var username, password string
 	for {
 		_, e := fmt.Fscanf(file, "%s %s\n", &username, &password)
@@ -57,23 +57,23 @@ func ReadCredentials(pathname string) (Credentials, error) {
 	return credentials, nil
 }
 
-func ObfuscatePassword(password, salt []byte) ([]byte, error) {
+func obfuscatePassword(password, salt []byte) ([]byte, error) {
 	return scrypt.Key(password, salt, scryptN, scryptR, scryptP, scryptLength)
 }
 
-func WriteCredentialsByPathname(pathname string, cs Credentials) error {
+func writeCredentialsByPathname(pathname string, cs credentials) error {
 	w, e := os.OpenFile(pathname, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0600)
 	if e != nil {
 		return e
 	}
-	if e := WriteCredentials(w, cs); e != nil {
+	if e := writeCredentials(w, cs); e != nil {
 		_ = w.Close()
 		return e
 	}
 	return w.Close()
 }
 
-func WriteCredentials(w io.Writer, cs Credentials) error {
+func writeCredentials(w io.Writer, cs credentials) error {
 	for k, v := range cs {
 		if _, e := fmt.Fprintf(w, "%s %s\n", k, v); e != nil {
 			return e
@@ -82,23 +82,20 @@ func WriteCredentials(w io.Writer, cs Credentials) error {
 	return nil
 }
 
-func SetPassword(configurationPathname, username, password string) error {
-	salt, e := GetRandomBytes(saltSize)
-	if e != nil {
-		return e
-	}
-	obfuscated, e := ObfuscatePassword([]byte(password), salt)
+func setPassword(configurationPathname, username, password string) error {
+	salt := getRandomBytes(saltSize)
+	obfuscated, e := obfuscatePassword([]byte(password), salt)
 	if e != nil {
 		return e
 	}
 
 	pathname := path.Join(configurationPathname, passwordsBasename)
-	credentials, e := ReadCredentials(pathname)
+	credentials, e := readCredentials(pathname)
 	if e != nil {
 		return e
 	}
 	credentials[normalizeUsername(username)] = hex.EncodeToString(salt) + hex.EncodeToString(obfuscated)
-	return WriteCredentialsByPathname(pathname, credentials)
+	return writeCredentialsByPathname(pathname, credentials)
 }
 
 // Returns the salt and the obfuscated password.
@@ -110,7 +107,7 @@ func decodeObfuscated(obfuscated string) ([]byte, []byte, error) {
 	return decoded[:saltSize], decoded[saltSize:], nil
 }
 
-func CheckPassword(stored Credentials, username, password string) (bool, error) {
+func checkPassword(stored credentials, username, password string) (bool, error) {
 	username = normalizeUsername(username)
 	storedCredential, ok := stored[username]
 	if !ok {
@@ -120,7 +117,7 @@ func CheckPassword(stored Credentials, username, password string) (bool, error) 
 	if e != nil {
 		return false, e
 	}
-	obfuscated, e := ObfuscatePassword([]byte(password), salt)
+	obfuscated, e := obfuscatePassword([]byte(password), salt)
 	if e != nil {
 		return false, e
 	}
