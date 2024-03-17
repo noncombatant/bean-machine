@@ -9,7 +9,7 @@ package main
 import (
 	"crypto/ecdsa"
 	"crypto/elliptic"
-	"crypto/rand"
+	crand "crypto/rand"
 	"crypto/x509"
 	"crypto/x509/pkix"
 	"encoding/pem"
@@ -36,13 +36,13 @@ func pemBlockForCertificate(der []byte) *pem.Block {
 //
 // Returns a new ECDSA key and a DER-encoded X.509 certificate, or an error.
 func generateCertificate(hosts []string, ou string, notBefore, notAfter time.Time) (*ecdsa.PrivateKey, []byte, error) {
-	key, e := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
+	key, e := ecdsa.GenerateKey(elliptic.P256(), crand.Reader)
 	if e != nil {
 		return nil, nil, e
 	}
 
 	serialNumberLimit := new(big.Int).Lsh(big.NewInt(1), 128)
-	serialNumber, e := rand.Int(rand.Reader, serialNumberLimit)
+	serialNumber, e := crand.Int(crand.Reader, serialNumberLimit)
 	if e != nil {
 		return nil, nil, e
 	}
@@ -67,7 +67,7 @@ func generateCertificate(hosts []string, ou string, notBefore, notAfter time.Tim
 		}
 	}
 
-	der, e := x509.CreateCertificate(rand.Reader, &template, &template, &key.PublicKey, key)
+	der, e := x509.CreateCertificate(crand.Reader, &template, &template, &key.PublicKey, key)
 	if e != nil {
 		return nil, nil, e
 	}

@@ -6,7 +6,7 @@
 package main
 
 import (
-	"crypto/rand"
+	crand "crypto/rand"
 	"embed"
 	"io/fs"
 	"os"
@@ -105,8 +105,8 @@ func isVideoPathname(pathname string) bool {
 
 func getRandomBytes(count int) []byte {
 	bytes := make([]byte, count)
-	// crypto/rand.Read calls io.ReadFull.
-	rand.Read(bytes)
+	// crypto/Read calls io.ReadFull.
+	crand.Read(bytes)
 	return bytes
 }
 
