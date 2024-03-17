@@ -19,11 +19,11 @@ func getCookieLifetime() time.Time {
 	return (time.Now()).Add(cookieLifetime)
 }
 
-func GetCookie(token string) *http.Cookie {
+func getCookie(token string) *http.Cookie {
 	return &http.Cookie{Name: "token", Value: token, Secure: true, HttpOnly: true, Expires: getCookieLifetime(), Path: "/", SameSite: http.SameSiteDefaultMode}
 }
 
-func CheckToken(token string, sessionsDirectoryPathname string) bool {
+func checkToken(token string, sessionsDirectoryPathname string) bool {
 	if len(token) != encodedTokenLength {
 		return false
 	}
@@ -34,11 +34,8 @@ func CheckToken(token string, sessionsDirectoryPathname string) bool {
 	return e == nil
 }
 
-func CreateToken(sessionsDirectoryPathname string) (string, error) {
-	bytes, e := GetRandomBytes(tokenLength)
-	if e != nil {
-		return "", e
-	}
+func createToken(sessionsDirectoryPathname string) (string, error) {
+	bytes := getRandomBytes(tokenLength)
 	token := base64.URLEncoding.EncodeToString(bytes)
 	pathname := path.Join(sessionsDirectoryPathname, token)
 
