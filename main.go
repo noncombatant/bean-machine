@@ -47,7 +47,7 @@ func generateServerCredentials(hosts []string, configurationPathname string) (st
 
 	notBefore := time.Now()
 	notAfter := notBefore.Add(365 * 24 * time.Hour)
-	key, der, e := GenerateCertificate(hosts, "Bean Machine Server", notBefore, notAfter)
+	key, der, e := generateCertificate(hosts, "Bean Machine Server", notBefore, notAfter)
 	if e != nil {
 		log.Fatal(e)
 	}
@@ -56,7 +56,7 @@ func generateServerCredentials(hosts []string, configurationPathname string) (st
 	if e != nil {
 		log.Fatal(e)
 	}
-	if keyPEM, e := PEMBlockForKey(key); e != nil {
+	if keyPEM, e := pemBlockForKey(key); e != nil {
 		log.Fatal(e)
 	} else {
 		if e := pem.Encode(keyFile, keyPEM); e != nil {
@@ -71,7 +71,7 @@ func generateServerCredentials(hosts []string, configurationPathname string) (st
 	if e != nil {
 		log.Fatal(e)
 	}
-	if e := pem.Encode(certificateFile, PEMBlockForCertificate(der)); e != nil {
+	if e := pem.Encode(certificateFile, pemBlockForCertificate(der)); e != nil {
 		log.Fatal(e)
 	}
 	if e := certificateFile.Close(); e != nil {
@@ -116,7 +116,7 @@ func makeConfigurationDirectory(configurationPathname string) {
 }
 
 // `port` is a string (not an integer) of the form ":1234".
-func serveApp(root, port, configurationPathname string, c *Catalog) {
+func serveApp(root, port, configurationPathname string, c *catalog) {
 	addresses, e := net.InterfaceAddrs()
 	if e != nil || len(addresses) == 0 {
 		log.Fatal(e)
@@ -148,7 +148,7 @@ func serveApp(root, port, configurationPathname string, c *Catalog) {
 		}
 	}
 
-	handler := HTTPHandler{Root: root, ConfigurationPathname: configurationPathname, Catalog: c, Logger: log.Default()}
+	handler := httpHandler{Root: root, ConfigurationPathname: configurationPathname, catalog: c, Logger: log.Default()}
 
 	minifier := minify.New()
 	minifier.AddFunc("text/css", css.Minify)
@@ -225,11 +225,11 @@ func main() {
 		switch command {
 		case "catalog":
 			assertDirectory(root)
-			c, e := BuildCatalog(log.Default(), root)
+			c, e := newCatalog(log.Default(), root)
 			if e != nil {
 				log.Fatal(e)
 			}
-			e = c.WriteToFile(path.Join(root, catalogBasename))
+			e = c.writeToFile(path.Join(root, catalogBasename))
 			if e != nil {
 				log.Fatal(e)
 			}
@@ -237,14 +237,14 @@ func main() {
 			printHelp()
 		case "serve":
 			assertDirectory(root)
-			catalog, e := ReadCatalogFromFile(path.Join(root, catalogBasename))
+			catalog, e := readCatalogFromFile(path.Join(root, catalogBasename))
 			if e != nil {
 				log.Fatal(e)
 			}
 			serveApp(root, portString, configurationPathname, catalog)
 		case "set-password":
 			username, password := promptForCredentials(os.Stdin, os.Stdout)
-			if e := SetPassword(configurationPathname, username, password); e != nil {
+			if e := setPassword(configurationPathname, username, password); e != nil {
 				log.Fatal(e)
 			}
 		default:
