@@ -18,7 +18,7 @@ import (
 	"time"
 )
 
-func PEMBlockForKey(key *ecdsa.PrivateKey) (*pem.Block, error) {
+func pemBlockForKey(key *ecdsa.PrivateKey) (*pem.Block, error) {
 	bytes, e := x509.MarshalECPrivateKey(key)
 	if e != nil {
 		return nil, e
@@ -26,7 +26,7 @@ func PEMBlockForKey(key *ecdsa.PrivateKey) (*pem.Block, error) {
 	return &pem.Block{Type: "EC PRIVATE KEY", Bytes: bytes}, nil
 }
 
-func PEMBlockForCertificate(der []byte) *pem.Block {
+func pemBlockForCertificate(der []byte) *pem.Block {
 	return &pem.Block{Type: "CERTIFICATE", Bytes: der}
 }
 
@@ -35,7 +35,7 @@ func PEMBlockForCertificate(der []byte) *pem.Block {
 // for the validity period `notBefore` through `notAfter`.
 //
 // Returns a new ECDSA key and a DER-encoded X.509 certificate, or an error.
-func GenerateCertificate(hosts []string, ou string, notBefore, notAfter time.Time) (*ecdsa.PrivateKey, []byte, error) {
+func generateCertificate(hosts []string, ou string, notBefore, notAfter time.Time) (*ecdsa.PrivateKey, []byte, error) {
 	key, e := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 	if e != nil {
 		return nil, nil, e

@@ -60,14 +60,15 @@ var (
 	digitsFinder = regexp.MustCompile(`(\d+)`)
 )
 
-// Returns a copy of `s`, with all double quotes escaped with a backslash.
-func EscapeDoubleQuotes(s string) string {
+// escapeDoubleQuotes returns a copy of `s`, with all double quotes escaped with
+// a backslash.
+func escapeDoubleQuotes(s string) string {
 	return strings.ReplaceAll(s, "\"", "\\\"")
 }
 
-// Returns the first substring of decimal digits in `s`, or an empty string if
-// there is no such substring.
-func ExtractDigits(s string) string {
+// extractDigits returns the first substring of decimal digits in `s`, or an
+// empty string if there is no such substring.
+func extractDigits(s string) string {
 	results := digitsFinder.FindStringSubmatch(s)
 	if len(results) > 0 {
 		return results[0]
@@ -75,47 +76,41 @@ func ExtractDigits(s string) string {
 	return ""
 }
 
-// Returns the basename's extension, including the '.', normalized to
-// lowercase. If the basename has no extension, returns an empty string.
-func GetBasenameExtension(pathname string) string {
+// getBasenameExtension returns the basename's extension, including the '.',
+// normalized to lowercase. If the basename has no extension, returns an empty
+// string.
+func getBasenameExtension(pathname string) string {
 	return strings.ToLower(filepath.Ext(pathname))
 }
 
-func IsAudioPathname(pathname string) bool {
-	return slices.Contains(audioFormatExtensions, GetBasenameExtension(pathname))
+func isAudioPathname(pathname string) bool {
+	return slices.Contains(audioFormatExtensions, getBasenameExtension(pathname))
 }
 
-func IsDocumentPathname(pathname string) bool {
-	return slices.Contains(documentFormatExtensions, GetBasenameExtension(pathname))
+func isDocumentPathname(pathname string) bool {
+	return slices.Contains(documentFormatExtensions, getBasenameExtension(pathname))
 }
 
-func IsFileWorldReadable(info os.FileInfo) bool {
+func isFileWorldReadable(info os.FileInfo) bool {
 	return info.Mode()&0004 == 04
 }
 
-func IsImagePathname(pathname string) bool {
-	return slices.Contains(imageFormatExtensions, GetBasenameExtension(pathname))
+func isImagePathname(pathname string) bool {
+	return slices.Contains(imageFormatExtensions, getBasenameExtension(pathname))
 }
 
-func IsVideoPathname(pathname string) bool {
-	return slices.Contains(videoFormatExtensions, GetBasenameExtension(pathname))
+func isVideoPathname(pathname string) bool {
+	return slices.Contains(videoFormatExtensions, getBasenameExtension(pathname))
 }
 
-func GetRandomBytes(count int) ([]byte, error) {
+func getRandomBytes(count int) []byte {
 	bytes := make([]byte, count)
-	n, e := rand.Read(bytes)
-	if e != nil {
-		return nil, e
-	}
-	if n != count {
-		return nil, nil
-	}
-	return bytes, nil
+	// crypto/rand.Read calls io.ReadFull.
+	rand.Read(bytes)
+	return bytes
 }
 
-// Returns the pathname with the basename's extension (including its '.')
-// removed. If the basename has no extension, returns the pathname.
-func RemoveBasenameExtension(pathname string) string {
+func removeBasenameExtension(pathname string) string {
 	dot := strings.LastIndex(pathname, ".")
 	if dot == -1 {
 		return pathname
@@ -129,7 +124,7 @@ func RemoveBasenameExtension(pathname string) string {
 	return pathname[:dot]
 }
 
-func OpenFileAndInfo(pathname string) (*os.File, os.FileInfo, error) {
+func openFileAndInfo(pathname string) (*os.File, os.FileInfo, error) {
 	file, e := os.Open(pathname)
 	if e != nil {
 		return nil, nil, e
@@ -142,7 +137,7 @@ func OpenFileAndInfo(pathname string) (*os.File, os.FileInfo, error) {
 	return file, info, nil
 }
 
-func OpenFileAndInfoFS(pathname string, fs embed.FS) (fs.File, os.FileInfo, error) {
+func openFileAndInfoFS(pathname string, fs embed.FS) (fs.File, os.FileInfo, error) {
 	file, e := fs.Open(pathname)
 	if e != nil {
 		return nil, nil, e
@@ -156,7 +151,7 @@ func OpenFileAndInfoFS(pathname string, fs embed.FS) (fs.File, os.FileInfo, erro
 }
 
 // https://twinnation.org/articles/33/remove-accents-from-characters-in-go
-func RemoveAccents(s string) string {
+func removeAccents(s string) string {
 	t := transform.Chain(norm.NFD, runes.Remove(runes.In(unicode.Mn)), norm.NFC)
 	output, _, e := transform.String(t, s)
 	if e != nil {

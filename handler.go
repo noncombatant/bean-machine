@@ -41,22 +41,22 @@ var (
 	wordSplitter = regexp.MustCompile(`\s+`)
 )
 
-type HTTPHandler struct {
+type httpHandler struct {
 	Root                  string
 	ConfigurationPathname string
-	*Catalog
+	*catalog
 	*log.Logger
 }
 
-func (h *HTTPHandler) isAuthenticated(r *http.Request) bool {
+func (h *httpHandler) isAuthenticated(r *http.Request) bool {
 	cookie, e := r.Cookie("token")
 	if e != nil {
 		return false
 	}
-	return CheckToken(cookie.Value, path.Join(h.ConfigurationPathname, sessionsDirectoryName))
+	return checkToken(cookie.Value, path.Join(h.ConfigurationPathname, sessionsDirectoryName))
 }
 
-func (h *HTTPHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (h *httpHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	h.Logger.Printf("%q,%q,%q,%q,%q", r.RemoteAddr, r.Proto, r.Method, r.Host, r.RequestURI)
 	if r.URL.Path == "/login.html" && r.Method == http.MethodPost {
 		h.handleLogIn(w, r)
@@ -72,8 +72,8 @@ func (h *HTTPHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		redirectToLogin(w, r)
 	}
 
-	if f, info, e := OpenFileAndInfoFS("web"+r.URL.Path, frontend); e == nil {
-		data, _ := ioutil.ReadAll(f)
+	if f, info, e := openFileAndInfoFS("web"+r.URL.Path, frontend); e == nil {
+		data, _ := io.ReadAll(f)
 		h.serveContent(w, r, r.URL.Path, info.ModTime(), bytes.NewReader(data))
 		if e := f.Close(); e != nil {
 			h.Logger.Print(e)
@@ -103,17 +103,17 @@ func (h *HTTPHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	h.serveFile(w, r)
 }
 
-func (h *HTTPHandler) handleLogIn(w http.ResponseWriter, r *http.Request) {
+func (h *httpHandler) handleLogIn(w http.ResponseWriter, r *http.Request) {
 	username := normalizeUsername(r.FormValue("name"))
 	password := r.FormValue("password")
-	credentials, e := ReadCredentials(path.Join(h.ConfigurationPathname, passwordsBasename))
+	credentials, e := readCredentials(path.Join(h.ConfigurationPathname, passwordsBasename))
 	if e != nil {
 		h.Logger.Print(e)
 		redirectToLogin(w, r)
 		return
 	}
 
-	ok, e := CheckPassword(credentials, username, password)
+	ok, e := checkPassword(credentials, username, password)
 	if e != nil {
 		h.Logger.Print(e)
 		redirectToLogin(w, r)
@@ -126,17 +126,17 @@ func (h *HTTPHandler) handleLogIn(w http.ResponseWriter, r *http.Request) {
 	}
 
 	h.Logger.Printf("%q successful", username)
-	token, e := CreateToken(path.Join(h.ConfigurationPathname, sessionsDirectoryName))
+	token, e := createToken(path.Join(h.ConfigurationPathname, sessionsDirectoryName))
 	if e != nil {
 		h.Logger.Print(e)
 		redirectToLogin(w, r)
 		return
 	}
-	http.SetCookie(w, GetCookie(token))
+	http.SetCookie(w, getCookie(token))
 	http.Redirect(w, r, "/index.html", http.StatusFound)
 }
 
-func (h *HTTPHandler) handleSearch(w http.ResponseWriter, r *http.Request) {
+func (h *httpHandler) handleSearch(w http.ResponseWriter, r *http.Request) {
 	queries := r.URL.Query()["q"]
 	if len(queries) == 0 {
 		h.Logger.Print("Ignoring empty search.")
@@ -144,7 +144,7 @@ func (h *HTTPHandler) handleSearch(w http.ResponseWriter, r *http.Request) {
 	}
 
 	query := strings.TrimSpace(queries[0])
-	var matches ItemInfos
+	var matches itemInfos
 	if len(query) == 0 {
 		year, month, _ := time.Now().Date()
 		for i := 0; i < 6; i++ {
@@ -153,7 +153,7 @@ func (h *HTTPHandler) handleSearch(w http.ResponseWriter, r *http.Request) {
 				year -= 1
 			}
 			query = fmt.Sprintf("mtime:%04d-%02d-", year, int(month)-i)
-			matches = matchItems(h.Catalog.ItemInfos, query)
+			matches = matchItems(h.catalog.itemInfos, query)
 			if len(matches) > 0 {
 				goto done
 			}
@@ -165,13 +165,12 @@ func (h *HTTPHandler) handleSearch(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if query == "?" {
-		rand.Seed(time.Now().Unix())
-		item := h.Catalog.ItemInfos[rand.Intn(len(h.Catalog.ItemInfos))]
+		item := h.catalog.itemInfos[rand.Intn(len(h.catalog.itemInfos))]
 		words := wordSplitter.Split(path.Dir(item.Pathname), -1)
 		query = words[len(words)-1]
 	}
 
-	matches = matchItems(h.Catalog.ItemInfos, query)
+	matches = matchItems(h.catalog.itemInfos, query)
 
 done:
 	json, e := json.Marshal(matches)
@@ -184,7 +183,7 @@ done:
 	}
 }
 
-func (h *HTTPHandler) normalizePathname(pathname string) string {
+func (h *httpHandler) normalizePathname(pathname string) string {
 	if pathname == "/" {
 		pathname = "/index.html"
 	}
@@ -195,11 +194,11 @@ func (h *HTTPHandler) normalizePathname(pathname string) string {
 	return pathname
 }
 
-func (h *HTTPHandler) serveContent(w http.ResponseWriter, r *http.Request, pathname string, modified time.Time, content io.ReadSeeker) {
+func (h *httpHandler) serveContent(w http.ResponseWriter, r *http.Request, pathname string, modified time.Time, content io.ReadSeeker) {
 	http.ServeContent(w, r, pathname, modified, content)
 }
 
-func (h *HTTPHandler) serveCover(pathname string, w http.ResponseWriter, r *http.Request) {
+func (h *httpHandler) serveCover(pathname string, w http.ResponseWriter, r *http.Request) {
 	for _, extension := range coverExtensions {
 		file, info, e := h.openFileIfPublic(pathname + extension)
 		if e != nil {
@@ -212,11 +211,11 @@ func (h *HTTPHandler) serveCover(pathname string, w http.ResponseWriter, r *http
 		return
 	}
 
-	f, info, e := OpenFileAndInfoFS("web/unknown-album.png", frontend)
+	f, info, e := openFileAndInfoFS("web/unknown-album.png", frontend)
 	if e != nil {
 		h.Logger.Fatal(e)
 	}
-	data, e := ioutil.ReadAll(f)
+	data, e := io.ReadAll(f)
 	if e != nil {
 		h.Logger.Print(e)
 	} else {
@@ -239,6 +238,7 @@ func zipDirectory(log *log.Logger, pathname string) (*os.File, error) {
 		}
 	}()
 
+	// TODO: Refactor for os.ReadDir.
 	infos, e := ioutil.ReadDir(pathname)
 	if e != nil {
 		return nil, e
@@ -250,7 +250,7 @@ func zipDirectory(log *log.Logger, pathname string) (*os.File, error) {
 		if e != nil {
 			return nil, e
 		}
-		contents, e := ioutil.ReadFile(pathname + "/" + info.Name())
+		contents, e := os.ReadFile(pathname + "/" + info.Name())
 		if e != nil {
 			return nil, e
 		}
@@ -266,7 +266,7 @@ func zipDirectory(log *log.Logger, pathname string) (*os.File, error) {
 	return file, nil
 }
 
-func (h *HTTPHandler) serveZip(w http.ResponseWriter, r *http.Request) {
+func (h *httpHandler) serveZip(w http.ResponseWriter, r *http.Request) {
 	pathname := h.normalizePathname(r.URL.Path)
 	info, e := os.Stat(pathname)
 	if e != nil {
@@ -296,7 +296,7 @@ func (h *HTTPHandler) serveZip(w http.ResponseWriter, r *http.Request) {
 	h.serveContent(w, r, pathname, info.ModTime(), zipFile)
 }
 
-func (h *HTTPHandler) serveFile(w http.ResponseWriter, r *http.Request) {
+func (h *httpHandler) serveFile(w http.ResponseWriter, r *http.Request) {
 	pathname := h.normalizePathname(r.URL.Path)
 	if strings.HasSuffix(pathname, "/cover") {
 		h.serveCover(pathname, w, r)
@@ -306,7 +306,7 @@ func (h *HTTPHandler) serveFile(w http.ResponseWriter, r *http.Request) {
 	h.serveFileContents(pathname, w, r)
 }
 
-func (h *HTTPHandler) serveFileContents(pathname string, w http.ResponseWriter, r *http.Request) {
+func (h *httpHandler) serveFileContents(pathname string, w http.ResponseWriter, r *http.Request) {
 	file, info, e := h.openFileIfPublic(pathname)
 	if e != nil || file == nil || info == nil {
 		h.Logger.Print(e)
@@ -319,12 +319,12 @@ func (h *HTTPHandler) serveFileContents(pathname string, w http.ResponseWriter, 
 	}
 }
 
-func (h *HTTPHandler) openFileIfPublic(pathname string) (*os.File, os.FileInfo, error) {
-	file, info, e := OpenFileAndInfo(pathname)
+func (h *httpHandler) openFileIfPublic(pathname string) (*os.File, os.FileInfo, error) {
+	file, info, e := openFileAndInfo(pathname)
 	if e != nil {
 		return nil, nil, e
 	}
-	if !IsFileWorldReadable(info) {
+	if !isFileWorldReadable(info) {
 		_ = file.Close()
 		return nil, nil, fmt.Errorf("openFileIfPublic: %q not public", pathname)
 	}
@@ -335,7 +335,7 @@ func redirectToLogin(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/login.html", http.StatusFound)
 }
 
-func (h *HTTPHandler) buildMediaIndex(pathname string) string {
+func (h *httpHandler) buildMediaIndex(pathname string) string {
 	header := `<!DOCTYPE html>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
@@ -346,6 +346,7 @@ func (h *HTTPHandler) buildMediaIndex(pathname string) string {
 	var builder strings.Builder
 	builder.WriteString(header)
 
+	// TODO: Refactor for os.ReadDir.
 	infos, e := ioutil.ReadDir(pathname)
 	if e != nil {
 		h.Logger.Print(e)
@@ -354,10 +355,10 @@ func (h *HTTPHandler) buildMediaIndex(pathname string) string {
 
 	for _, info := range infos {
 		name := info.Name()
-		if IsImagePathname(name) {
-			builder.WriteString(fmt.Sprintf("<img src=\"%s\"/>\n", EscapeDoubleQuotes(name)))
-		} else if IsDocumentPathname(name) {
-			name = EscapeDoubleQuotes(name)
+		if isImagePathname(name) {
+			builder.WriteString(fmt.Sprintf("<img src=\"%s\"/>\n", escapeDoubleQuotes(name)))
+		} else if isDocumentPathname(name) {
+			name = escapeDoubleQuotes(name)
 			builder.WriteString(fmt.Sprintf("<li><a href=\"%s\">%s</a></li>\n", name, name))
 		}
 	}
