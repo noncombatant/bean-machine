@@ -18,7 +18,7 @@ func (q Query) String() string {
 	return fmt.Sprintf("{Keyword: %q, Term: %q, Negated: %t}", q.Keyword, q.Term, q.Negated)
 }
 
-func ParseTerms(query string) []string {
+func parseTerms(query string) []string {
 	const (
 		Start = iota
 		Bareword
@@ -135,7 +135,7 @@ func getQuery(terms []string) (Query, []string) {
 	}
 }
 
-func ReconstructQueries(terms []string) []Query {
+func reconstructQueries(terms []string) []Query {
 	queries := make([]Query, 0)
 
 	for {
