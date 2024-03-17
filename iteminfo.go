@@ -11,7 +11,7 @@ import (
 	"strings"
 )
 
-type ItemInfo struct {
+type itemInfo struct {
 	Pathname           string    `json:"pathname"`
 	Album              string    `json:"album"`
 	Artist             string    `json:"artist"`
@@ -32,7 +32,7 @@ type ItemInfo struct {
 	File               *id3.File `json:"-"`
 }
 
-type ItemInfos []ItemInfo
+type itemInfos []itemInfo
 
 // This terrible hack is an alternative to separately `url.PathEscape`ing each
 // pathname component and then re-joining them. That would be conceptually
@@ -61,7 +61,7 @@ func getDiscTrackAndNameFromBasename(basename string) (string, string, string) {
 //
 //	".../AC_DC/Back In Black/1-01 Hells Bells.m4a"
 //	     performer/album/disc#-track# name
-func (i *ItemInfo) fillMetadataFromPathname() {
+func (i *itemInfo) fillMetadataFromPathname() {
 	parts := strings.Split(i.Pathname, string(filepath.Separator))
 	length := len(parts)
 	if length > 2 {
@@ -72,11 +72,11 @@ func (i *ItemInfo) fillMetadataFromPathname() {
 	}
 	if length > 0 {
 		i.Disc, i.Track, i.Name = getDiscTrackAndNameFromBasename(parts[length-1])
-		i.Name = RemoveBasenameExtension(i.Name)
+		i.Name = removeBasenameExtension(i.Name)
 	}
 }
 
-func (i *ItemInfo) fillMetadata() {
+func (i *itemInfo) fillMetadata() {
 	i.fillMetadataFromPathname()
 
 	if i.File != nil {
@@ -111,16 +111,16 @@ func (i *ItemInfo) fillMetadata() {
 	}
 
 	i.Pathname = pathnameEscape(i.Pathname)
-	i.Normalize()
+	i.normalize()
 }
 
-func (i *ItemInfo) Normalize() {
+func (i *itemInfo) normalize() {
 	i.NormalizedPathname = normalizeStringForSearch(i.Pathname)
 	i.NormalizedAlbum = normalizeStringForSearch(i.Album)
 	i.NormalizedArtist = normalizeStringForSearch(i.Artist)
 	i.NormalizedName = normalizeStringForSearch(i.Name)
-	i.NormalizedDisc = ExtractDigits(i.Disc)
-	i.NormalizedTrack = ExtractDigits(i.Track)
-	i.NormalizedYear = ExtractDigits(i.Year)
+	i.NormalizedDisc = extractDigits(i.Disc)
+	i.NormalizedTrack = extractDigits(i.Track)
+	i.NormalizedYear = extractDigits(i.Year)
 	i.NormalizedGenre = normalizeStringForSearch(i.Genre)
 }
