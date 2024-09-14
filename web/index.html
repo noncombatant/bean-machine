@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Bean Machine</title>
-<link rel="manifest" href="manifest.json"/>
-<link rel="stylesheet" href="index.css"/>
-<meta name="theme-color" content="#ffc0cb"/>
-<link rel="apple-touch-icon" href="favicon.ico"/>
-<link rel="icon" href="favicon.ico"/>
+<link rel="manifest" href="manifest.json" />
+<link rel="stylesheet" href="index.css" />
+<meta name="theme-color" content="#ffc0cb" />
+<link rel="apple-touch-icon" href="favicon.ico" />
+<link rel="icon" href="favicon.ico" />
 <meta name="author" content="Chris Palmer">
 
 <noscript><strong>Bean Machine requires JavaScript to work.</strong></noscript>
@@ -26,137 +26,146 @@
     </div>
   </section>
 
-  <search><form><section class="flexbox">
-    <div class="stretch">
-      <input type="search" name="search" id="searchInput" placeholder="search or ? for random" title="Search (/)"/>
-    </div>
-    <div class="normal">
-      <input type="submit" id="searchButton" value="Search"/>
-    </div>
-  </section></form></search>
+  <search>
+    <form>
+      <section class="flexbox">
+        <div class="stretch">
+          <input type="search" name="search" id="searchInput" placeholder="search or ? for random" title="Search (/)" />
+        </div>
+        <div class="normal">
+          <input type="submit" id="searchButton" value="Search" />
+        </div>
+      </section>
+    </form>
+  </search>
 </div>
 
 <div id="itemListDiv"></div>
 
-<div id="helpDiv"><div class="mainText">
+<div id="helpDiv">
+  <div class="mainText">
 
-<button id="closeHelpButton" title="Close (? or Escape)">Close</button>
+    <button id="closeHelpButton" title="Close (? or Escape)">Close</button>
 
-<h1>Bean Machine Help</h1>
+    <h1>Bean Machine Help</h1>
 
-<h2>Searching</h2>
+    <h2>Searching</h2>
 
-<p>Bean Machine’s search feature is fairly simple.</p>
+    <p>Bean Machine’s search feature is fairly simple.</p>
 
-<ul>
+    <ul>
 
-<li>The query <code><strong>james brown</strong></code> will match all items
-that contain both “james” and “brown”, anywhere in their metadata. The matching
-function includes substrings, so this query would also match items by a
-hypothetical artist named Jameson McBrownington. This query would also match
-items from a hypothetical album named <i>Brown</i> by the band James.</li>
+      <li>The query <code><strong>james brown</strong></code> will match all items
+        that contain both “james” and “brown”, anywhere in their metadata. The matching
+        function includes substrings, so this query would also match items by a
+        hypothetical artist named Jameson McBrownington. This query would also match
+        items from a hypothetical album named <i>Brown</i> by the band James.</li>
 
-<li><code><strong>"james brown"</strong></code> will match all items that
-contain the quoted phrase anywhere in their metadata. Jameson Brownington and
-<i>Brown</i> by James no longer match, although James Brownington still
-would.</li>
+      <li><code><strong>"james brown"</strong></code> will match all items that
+        contain the quoted phrase anywhere in their metadata. Jameson Brownington and
+        <i>Brown</i> by James no longer match, although James Brownington still
+        would.
+      </li>
 
-<li>You can also prefix terms with <code><strong>-</strong></code> to negate
-them: <code><strong>james brown -popcorn</strong></code> matches all items that
-contain “james” and “brown” anywhere in their metadata, but will exclude items
-that match “popcorn”.</li>
+      <li>You can also prefix terms with <code><strong>-</strong></code> to negate
+        them: <code><strong>james brown -popcorn</strong></code> matches all items that
+        contain “james” and “brown” anywhere in their metadata, but will exclude items
+        that match “popcorn”.</li>
 
-<li>You can search by specific metadata fields by prefixing the term with the
-metadata field name. For example, <code><strong>artist:"james
+      <li>You can search by specific metadata fields by prefixing the term with the
+        metadata field name. For example, <code><strong>artist:"james
 brown"</strong></code> will find only items whose artist field matches “james
-brown”. Similarly, <code><strong>album:-goat</strong></code> will match items
-whose album name does not match “goat”. The common metadata field names are:
-<i>album</i>, <i>artist</i>, <i>name</i> (of track or item), <i>disc</i>
-(number), <i>track</i> (number), <i>year</i>, and <i>genre</i>.</li>
+        brown”. Similarly, <code><strong>album:-goat</strong></code> will match items
+        whose album name does not match “goat”. The common metadata field names are:
+        <i>album</i>, <i>artist</i>, <i>name</i> (of track or item), <i>disc</i>
+        (number), <i>track</i> (number), <i>year</i>, and <i>genre</i>.
+      </li>
 
-<li>Nerdy additional field names are <i>path</i> (and synonym <i>pathname</i>)
-and <i>added</i> (and synonym <i>mtime</i>).</li>
+      <li>Nerdy additional field names are <i>path</i> (and synonym <i>pathname</i>)
+        and <i>added</i> (and synonym <i>mtime</i>).</li>
 
-<li>Each item has in its metadata the date it was added to the catalog
-(<i>added</i> or <i>mtime</i>), in the format YYYY-MM-DD. This means you can
-search for items that were added at a given time, by searching for e.g.
-<code><strong>added:2018-03-02</strong></code>,
-<code><strong>2018-03-02</strong></code>, <code><strong>2018-03</strong></code>,
-or even just <code><strong>2018-</strong></code>.</li>
+      <li>Each item has in its metadata the date it was added to the catalog
+        (<i>added</i> or <i>mtime</i>), in the format YYYY-MM-DD. This means you can
+        search for items that were added at a given time, by searching for e.g.
+        <code><strong>added:2018-03-02</strong></code>,
+        <code><strong>2018-03-02</strong></code>, <code><strong>2018-03</strong></code>,
+        or even just <code><strong>2018-</strong></code>.
+      </li>
 
-</ul>
+    </ul>
 
-<h2>Keyboard Shortcuts</h2>
+    <h2>Keyboard Shortcuts</h2>
 
-<table>
+    <table>
 
-<tr>
-<th>Key</th>
-<th>Function<th>
-</tr>
+      <tr>
+        <th>Key</th>
+        <th>Function
+        <th>
+      </tr>
 
-<tr>
-<td><kbd>c</kbd></td>
-<td>change the <b>c</b>olor scheme</td>
-</tr>
+      <tr>
+        <td><kbd>c</kbd></td>
+        <td>change the <b>c</b>olor scheme</td>
+      </tr>
 
-<tr>
-<td><kbd>n</kbd> or <kbd>→</kbd></td>
-<td>play <b>n</b>ext item</td>
-</tr>
+      <tr>
+        <td><kbd>n</kbd> or <kbd>→</kbd></td>
+        <td>play <b>n</b>ext item</td>
+      </tr>
 
-<tr>
-<td><kbd>p</kbd> or <kbd>Space</kbd></td>
-<td>toggle <b>p</b>lay/<b>p</b>ause</td>
-</tr>
+      <tr>
+        <td><kbd>p</kbd> or <kbd>Space</kbd></td>
+        <td>toggle <b>p</b>lay/<b>p</b>ause</td>
+      </tr>
 
-<tr>
-<td><kbd>s</kbd></td>
-<td>toggle <b>s</b>huffle mode</td>
-</tr>
+      <tr>
+        <td><kbd>s</kbd></td>
+        <td>toggle <b>s</b>huffle mode</td>
+      </tr>
 
-<tr>
-<td><kbd>/</kbd></td>
-<td>search</td>
-</tr>
+      <tr>
+        <td><kbd>/</kbd></td>
+        <td>search</td>
+      </tr>
 
-<tr>
-<td><kbd>?</kbd> or <kbd>h</kbd></td>
-<td>toggle this help screen</td>
-</tr>
+      <tr>
+        <td><kbd>?</kbd> or <kbd>h</kbd></td>
+        <td>toggle this help screen</td>
+      </tr>
 
-<tr>
-<td><kbd>Esc</kbd></td>
-<td>close this help screen</td>
-</tr>
+      <tr>
+        <td><kbd>Esc</kbd></td>
+        <td>close this help screen</td>
+      </tr>
 
-</table>
+    </table>
 
-<h2>Prefetching</h2>
+    <h2>Prefetching</h2>
 
-<p>When you don’t have really good, always-on connectivity (like when walking or
-driving in areas with spotty cellular coverage), Bean Machine may pause playback
-for lack of song data.</p>
+    <p>When you don’t have really good, always-on connectivity (like when walking or
+      driving in areas with spotty cellular coverage), Bean Machine may pause playback
+      for lack of song data.</p>
 
-<p>To alleviate this problem, Bean Machine will prefetch 3 items from your
-current search results, and then will fetch 1 more item each time you play one.
-This way, you should usually have a ‘buffer’ of already-downloaded songs even
-when you have a connectivity gap.</p>
+    <p>To alleviate this problem, Bean Machine will prefetch 3 items from your
+      current search results, and then will fetch 1 more item each time you play one.
+      This way, you should usually have a ‘buffer’ of already-downloaded songs even
+      when you have a connectivity gap.</p>
 
-<h2>Authors And Copyright</h2>
+    <h2>Authors And Copyright</h2>
 
-<p>This is Bean Machine version 2023-12-08, written by <a
-href="https://noncombatant.org/">Chris Palmer</a>. It incorporates a modified
-form of the <a href="https://github.com/ascherkus/go-id3"><code>id3</code>
-package by Andrew Scherkus</a>, and uses X.509 certificate generation code
-adapted from an example by The Go Authors. It also uses <a
-href="https://github.com/NYTimes/gziphandler"><code>gziphandler</code> from the
-New York Times</a> and <a
-href="https://github.com/tdewolff/minify"><code>minify</code> by Taco de
-Wolff</a>. The parts Chris wrote are released under the <a
-href="https://www.gnu.org/licenses/gpl-3.0.en.html">GNU General Public License,
-version 3</a>.</p>
+    <p>This is Bean Machine version 2023-12-08, written by <a href="https://noncombatant.org/">Chris Palmer</a>. It
+      incorporates a modified
+      form of the <a href="https://github.com/ascherkus/go-id3"><code>id3</code>
+        package by Andrew Scherkus</a>, and uses X.509 certificate generation code
+      adapted from an example by The Go Authors. It also uses <a
+        href="https://github.com/NYTimes/gziphandler"><code>gziphandler</code> from the
+        New York Times</a> and <a href="https://github.com/tdewolff/minify"><code>minify</code> by Taco de
+        Wolff</a>. The parts Chris wrote are released under the <a
+        href="https://www.gnu.org/licenses/gpl-3.0.en.html">GNU General Public License,
+        version 3</a>.</p>
 
-</div></div>
+  </div>
+</div>
 
 <script src="index.js"></script>
