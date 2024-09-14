@@ -116,7 +116,7 @@ func makeConfigurationDirectory(configurationPathname string) {
 }
 
 // `port` is a string (not an integer) of the form ":1234".
-func serveApp(root, port, configurationPathname string, c *catalog) {
+func serveApp(root, port, configurationPathname string, c *Catalog) {
 	addresses, e := net.InterfaceAddrs()
 	if e != nil || len(addresses) == 0 {
 		log.Fatal(e)
@@ -148,7 +148,7 @@ func serveApp(root, port, configurationPathname string, c *catalog) {
 		}
 	}
 
-	handler := httpHandler{Root: root, ConfigurationPathname: configurationPathname, catalog: c, Logger: log.Default()}
+	handler := httpHandler{Root: root, ConfigurationPathname: configurationPathname, Catalog: c, Logger: log.Default()}
 
 	minifier := minify.New()
 	minifier.AddFunc("text/css", css.Minify)

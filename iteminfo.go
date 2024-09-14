@@ -11,7 +11,7 @@ import (
 	"strings"
 )
 
-type itemInfo struct {
+type ItemInfo struct {
 	Pathname           string    `json:"pathname"`
 	Album              string    `json:"album"`
 	Artist             string    `json:"artist"`
@@ -32,7 +32,7 @@ type itemInfo struct {
 	File               *id3.File `json:"-"`
 }
 
-type itemInfos []itemInfo
+type ItemInfos []ItemInfo
 
 // This terrible hack is an alternative to separately `url.PathEscape`ing each
 // pathname component and then re-joining them. That would be conceptually
@@ -61,7 +61,7 @@ func getDiscTrackAndNameFromBasename(basename string) (string, string, string) {
 //
 //	".../AC_DC/Back In Black/1-01 Hells Bells.m4a"
 //	     performer/album/disc#-track# name
-func (i *itemInfo) fillMetadataFromPathname() {
+func (i *ItemInfo) fillMetadataFromPathname() {
 	parts := strings.Split(i.Pathname, string(filepath.Separator))
 	length := len(parts)
 	if length > 2 {
@@ -76,7 +76,7 @@ func (i *itemInfo) fillMetadataFromPathname() {
 	}
 }
 
-func (i *itemInfo) fillMetadata() {
+func (i *ItemInfo) fillMetadata() {
 	i.fillMetadataFromPathname()
 
 	if i.File != nil {
@@ -114,7 +114,7 @@ func (i *itemInfo) fillMetadata() {
 	i.normalize()
 }
 
-func (i *itemInfo) normalize() {
+func (i *ItemInfo) normalize() {
 	i.NormalizedPathname = normalizeStringForSearch(i.Pathname)
 	i.NormalizedAlbum = normalizeStringForSearch(i.Album)
 	i.NormalizedArtist = normalizeStringForSearch(i.Artist)

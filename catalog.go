@@ -15,11 +15,11 @@ import (
 	"path/filepath"
 )
 
-type catalog struct {
-	itemInfos
+type Catalog struct {
+	ItemInfos
 }
 
-func (c *catalog) writeToFile(pathname string) error {
+func (c *Catalog) writeToFile(pathname string) error {
 	w, e := os.Create(pathname)
 	if e != nil {
 		return e
@@ -46,8 +46,8 @@ func shouldSkipFile(info os.FileInfo) bool {
 	return info.Name() == "" || info.Name()[0] == '.' || info.Size() == 0 || info.Mode().IsDir() || !info.Mode().IsRegular()
 }
 
-func newCatalog(log *log.Logger, root string) (*catalog, error) {
-	var c catalog
+func newCatalog(log *log.Logger, root string) (*Catalog, error) {
+	var c Catalog
 	previousDir := ""
 	e := filepath.Walk(root,
 		func(pathname string, info os.FileInfo, e error) error {
@@ -68,7 +68,7 @@ func newCatalog(log *log.Logger, root string) (*catalog, error) {
 
 			if isAudioPathname(pathname) || isVideoPathname(pathname) {
 				webPathname := pathname[len(root)+1:]
-				itemInfo := itemInfo{Pathname: webPathname}
+				itemInfo := ItemInfo{Pathname: webPathname}
 
 				input, e := os.Open(pathname)
 				if e != nil {
@@ -84,7 +84,7 @@ func newCatalog(log *log.Logger, root string) (*catalog, error) {
 				time := info.ModTime()
 				itemInfo.ModTime = fmt.Sprintf("%04d-%02d-%02d", time.Year(), time.Month(), time.Day())
 				itemInfo.fillMetadata()
-				c.itemInfos = append(c.itemInfos, itemInfo)
+				c.ItemInfos = append(c.ItemInfos, itemInfo)
 			}
 			return nil
 		})
@@ -93,7 +93,7 @@ func newCatalog(log *log.Logger, root string) (*catalog, error) {
 	return &c, e
 }
 
-func readCatalogFromFile(pathname string) (*catalog, error) {
+func readCatalogFromFile(pathname string) (*Catalog, error) {
 	f, e := os.Open(pathname)
 	if e != nil {
 		return nil, e
@@ -102,7 +102,7 @@ func readCatalogFromFile(pathname string) (*catalog, error) {
 	if e != nil {
 		return nil, e
 	}
-	var c catalog
+	var c Catalog
 	d := gob.NewDecoder(zr)
 	if e := d.Decode(&c); e != nil && e != io.EOF {
 		return nil, e

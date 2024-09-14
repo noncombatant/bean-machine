@@ -43,7 +43,7 @@ var (
 type httpHandler struct {
 	Root                  string
 	ConfigurationPathname string
-	*catalog
+	*Catalog
 	*log.Logger
 }
 
@@ -143,7 +143,7 @@ func (h *httpHandler) handleSearch(w http.ResponseWriter, r *http.Request) {
 	}
 
 	query := strings.TrimSpace(queries[0])
-	var matches itemInfos
+	var matches ItemInfos
 	if len(query) == 0 {
 		year, month, _ := time.Now().Date()
 		for i := 0; i < 6; i++ {
@@ -152,7 +152,7 @@ func (h *httpHandler) handleSearch(w http.ResponseWriter, r *http.Request) {
 				year -= 1
 			}
 			query = fmt.Sprintf("mtime:%04d-%02d-", year, int(month)-i)
-			matches = matchItems(h.catalog.itemInfos, query)
+			matches = matchItems(h.Catalog.ItemInfos, query)
 			if len(matches) > 0 {
 				goto done
 			}
@@ -164,12 +164,12 @@ func (h *httpHandler) handleSearch(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if query == "?" {
-		item := h.catalog.itemInfos[rand.Intn(len(h.catalog.itemInfos))]
+		item := h.Catalog.ItemInfos[rand.Intn(len(h.Catalog.ItemInfos))]
 		words := wordSplitter.Split(path.Dir(item.Pathname), -1)
 		query = words[len(words)-1]
 	}
 
-	matches = matchItems(h.catalog.itemInfos, query)
+	matches = matchItems(h.Catalog.ItemInfos, query)
 
 done:
 	json, e := json.Marshal(matches)

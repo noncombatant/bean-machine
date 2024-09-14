@@ -12,7 +12,7 @@ func normalizeStringForSearch(s string) string {
 	return strings.ToLower(normalized)
 }
 
-func matchItem(info *itemInfo, queries []Query) bool {
+func matchItem(info *ItemInfo, queries []Query) bool {
 	for _, query := range queries {
 		matched := false
 		if query.Keyword == "path" || query.Keyword == "pathname" {
@@ -53,10 +53,10 @@ func matchItem(info *itemInfo, queries []Query) bool {
 	return true
 }
 
-func matchItems(infos itemInfos, rawQuery string) itemInfos {
+func matchItems(infos ItemInfos, rawQuery string) ItemInfos {
 	query := strings.TrimSpace(normalizeStringForSearch(rawQuery))
 	queries := reconstructQueries(parseTerms(query))
-	results := itemInfos{}
+	results := ItemInfos{}
 	for _, info := range infos {
 		if matchItem(&info, queries) {
 			results = append(results, info)
