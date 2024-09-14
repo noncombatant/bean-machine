@@ -51,7 +51,8 @@ th {
   text-align: left;
 }
 
-th, td {
+th,
+td {
   padding: 0.25em;
 }
 
@@ -168,7 +169,8 @@ img {
   font-style: italic;
 }
 
-button, input {
+button,
+input {
   font-family: inherit;
   font-size: 100%;
   border-radius: 0.3em;
@@ -177,7 +179,8 @@ button, input {
   background-color: rgb(255, 255, 255, 0.6);
 }
 
-audio, video {
+audio,
+video {
   padding: 0.5em;
 }
 
@@ -198,7 +201,8 @@ pre {
   padding: 0.5em;
 }
 
-#searchHelp.normal, #aboutDiv.normal {
+#searchHelp.normal,
+#aboutDiv.normal {
   width: auto;
   color: #eee;
   padding: 2em;
